@@ -1,9 +1,9 @@
 /**
  * @file permissions.graphql.ts
- * @description Manager IDAM Permissions GraphQL queries
+ * @description Manager IDAM Permissions GraphQL queries (Apollo Client)
  */
 
-import { gql } from 'graphql-request';
+import { gql } from '@apollo/client';
 
 /**
  * 권한 목록 조회 쿼리

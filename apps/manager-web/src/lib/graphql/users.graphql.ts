@@ -1,9 +1,9 @@
 /**
  * @file users.graphql.ts
- * @description Manager IDAM Users GraphQL queries and mutations
+ * @description Manager IDAM Users GraphQL queries and mutations (Apollo Client)
  */
 
-import { gql } from 'graphql-request';
+import { gql } from '@apollo/client';
 
 /**
  * 사용자 목록 조회 쿼리

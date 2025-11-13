@@ -1,9 +1,10 @@
 /**
  * @file users.service.graphql.ts
- * @description Users GraphQL 서비스 레이어
+ * @description Users GraphQL 서비스 레이어 (Apollo Client)
  */
 
-import { graphqlClient } from '@/lib/graphql-client';
+import { gql } from '@apollo/client';
+import { apolloClient } from '@/lib/apollo-client';
 import {
   GET_MANAGER_USERS,
   GET_MANAGER_USER,
@@ -36,7 +37,7 @@ interface UpdateManagerUserResponse {
 }
 
 /**
- * Users GraphQL 서비스 객체
+ * Users GraphQL 서비스 객체 (Apollo Client)
  */
 export const usersGraphQLService = {
   /**
@@ -61,12 +62,13 @@ export const usersGraphQLService = {
         status: params?.status,
       };
 
-      const response = await graphqlClient.request<GetManagerUsersResponse>(
-        GET_MANAGER_USERS,
-        variables
-      );
+      const { data } = await apolloClient.query<GetManagerUsersResponse>({
+        query: GET_MANAGER_USERS,
+        variables,
+        fetchPolicy: 'network-only', // 항상 서버에서 최신 데이터 가져오기
+      });
 
-      const items = response.managerUsers || [];
+      const items = data?.managerUsers || [];
       
       // TODO: GraphQL에서 total count를 반환하도록 수정 필요
       // 현재는 items 길이를 total로 사용
@@ -87,16 +89,17 @@ export const usersGraphQLService = {
     try {
       const variables: GetManagerUserVariables = { id };
 
-      const response = await graphqlClient.request<GetManagerUserResponse>(
-        GET_MANAGER_USER,
-        variables
-      );
+      const { data } = await apolloClient.query<GetManagerUserResponse>({
+        query: GET_MANAGER_USER,
+        variables,
+        fetchPolicy: 'network-only',
+      });
 
-      if (!response.managerUser) {
+      if (!data?.managerUser) {
         throw new Error('User not found');
       }
 
-      return response.managerUser;
+      return data.managerUser;
     } catch (error) {
       console.error(`getUser(${id}) error:`, error);
       throw new Error(`Failed to fetch user: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -119,12 +122,41 @@ export const usersGraphQLService = {
     try {
       const variables: CreateManagerUserVariables = { input: data };
 
-      const response = await graphqlClient.request<CreateManagerUserResponse>(
-        CREATE_MANAGER_USER,
-        variables
-      );
+      const { data: responseData } = await apolloClient.mutate<CreateManagerUserResponse>({
+        mutation: CREATE_MANAGER_USER,
+        variables,
+        // 캐시 업데이트: 새 사용자를 목록에 추가
+        update: (cache, { data: mutationData }) => {
+          if (mutationData?.createManagerUser) {
+            cache.modify({
+              fields: {
+                managerUsers(existingUsers = []) {
+                  const newUserRef = cache.writeFragment({
+                    data: mutationData.createManagerUser,
+                    fragment: gql`
+                      fragment NewUser on ManagerUser {
+                        id
+                        userType
+                        fullName
+                        email
+                        username
+                        status
+                      }
+                    `,
+                  });
+                  return [newUserRef, ...existingUsers];
+                },
+              },
+            });
+          }
+        },
+      });
 
-      return response.createManagerUser;
+      if (!responseData?.createManagerUser) {
+        throw new Error('Failed to create user');
+      }
+
+      return responseData.createManagerUser;
     } catch (error) {
       console.error('createUser error:', error);
       throw new Error(`Failed to create user: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -152,12 +184,23 @@ export const usersGraphQLService = {
         input: data,
       };
 
-      const response = await graphqlClient.request<UpdateManagerUserResponse>(
-        UPDATE_MANAGER_USER,
-        variables
-      );
+      const { data: responseData } = await apolloClient.mutate<UpdateManagerUserResponse>({
+        mutation: UPDATE_MANAGER_USER,
+        variables,
+        // 캐시 업데이트: 수정된 사용자 정보 반영
+        refetchQueries: [
+          {
+            query: GET_MANAGER_USER,
+            variables: { id },
+          },
+        ],
+      });
 
-      return response.updateManagerUser;
+      if (!responseData?.updateManagerUser) {
+        throw new Error('Failed to update user');
+      }
+
+      return responseData.updateManagerUser;
     } catch (error) {
       console.error(`updateUser(${id}) error:`, error);
       throw new Error(`Failed to update user: ${error instanceof Error ? error.message : 'Unknown error'}`);

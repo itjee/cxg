@@ -1,9 +1,9 @@
 /**
  * @file sessions.graphql.ts
- * @description Manager IDAM Sessions GraphQL queries and mutations
+ * @description Manager IDAM Sessions GraphQL queries and mutations (Apollo Client)
  */
 
-import { gql } from 'graphql-request';
+import { gql } from '@apollo/client';
 
 /**
  * 세션 목록 조회 쿼리
