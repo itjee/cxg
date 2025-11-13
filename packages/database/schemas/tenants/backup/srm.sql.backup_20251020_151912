@@ -1,0 +1,372 @@
+-- ============================================================================
+-- Sales & Revenue Management Schema (srm)
+-- ============================================================================
+-- Description: 판매/영업 관리 (판매주문, 출고, 매출, 견적)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: srm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS srm;
+
+COMMENT ON SCHEMA srm IS 'SRM: 판매/영업 관리 스키마';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- SRM: 영업/매출 관리 (Sales & Receivables)
+-- ============================================================================
+
+-- 견적서
+CREATE TABLE srm.quotations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    quote_code VARCHAR(50) NOT NULL,
+    customer_id UUID NOT NULL,
+    doc_date DATE NOT NULL,
+    valid_until DATE,
+    sales_person_id UUID,
+    total_amount NUMERIC(18,4) DEFAULT 0,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    status VARCHAR(20) DEFAULT 'DRAFT',
+    is_deleted BOOLEAN DEFAULT false,
+    
+    CONSTRAINT uk_srm_quotations__company_code UNIQUE (company_id, quote_code)
+);
+
+-- 견적서 라인
+CREATE TABLE srm.quotation_lines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    quote_id UUID NOT NULL,
+    line_no INTEGER NOT NULL,
+    item_id UUID NOT NULL,
+    description TEXT,
+    qty INTEGER NOT NULL,
+    unit_price NUMERIC(18,4) NOT NULL,
+    discount_rate NUMERIC(5,2) DEFAULT 0,
+    total_amount NUMERIC(18,4) NOT NULL,
+    
+    CONSTRAINT uk_srm_quote_lines__quote_line UNIQUE (quote_id, line_no)
+);
+
+-- 판매주문
+CREATE TABLE srm.sales_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    so_code VARCHAR(50) NOT NULL,
+    customer_id UUID NOT NULL,
+    doc_date DATE NOT NULL,
+    delivery_date DATE,
+    warehouse_id UUID,
+    sales_person_id UUID,
+    payment_terms VARCHAR(20),
+    total_amount NUMERIC(18,4) DEFAULT 0,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    status VARCHAR(20) DEFAULT 'DRAFT',
+    is_deleted BOOLEAN DEFAULT false,
+    
+    CONSTRAINT uk_srm_sales_orders__company_code UNIQUE (company_id, so_code)
+);
+
+-- 판매주문 라인
+CREATE TABLE srm.sales_order_lines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    so_id UUID NOT NULL,
+    line_no INTEGER NOT NULL,
+    item_id UUID NOT NULL,
+    description TEXT,
+    qty INTEGER NOT NULL,
+    unit_price NUMERIC(18,4) NOT NULL,
+    discount_rate NUMERIC(5,2) DEFAULT 0,
+    total_amount NUMERIC(18,4) NOT NULL,
+    shipped_qty INTEGER DEFAULT 0,
+    
+    CONSTRAINT uk_srm_so_lines__so_line UNIQUE (so_id, line_no)
+);
+-- ============================================================================
+-- SRM 스키마 인덱스 및 제약조건 추가
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_srm_sales_orders_tenant_id ON srm.sales_orders(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_srm_sales_orders_created_at ON srm.sales_orders(created_at);
+CREATE INDEX IF NOT EXISTS idx_srm_sales_invoices_tenant_id ON srm.sales_invoices(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_srm_sales_invoices_created_at ON srm.sales_invoices(created_at);
+
+COMMENT ON SCHEMA srm IS '판매/영업 관리 스키마';
+-- ============================================================================
+-- IVM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 재고 잔액 테이블
+COMMENT ON TABLE ivm.inventory_balances IS '품목별 창고별 재고 잔액 관리 테이블';
+COMMENT ON COLUMN ivm.inventory_balances.id IS '재고 잔액 고유 식별자';
+COMMENT ON COLUMN ivm.inventory_balances.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN ivm.inventory_balances.company_id IS '회사 ID';
+COMMENT ON COLUMN ivm.inventory_balances.warehouse_id IS '창고 ID - adm.warehouses 테이블 참조';
+COMMENT ON COLUMN ivm.inventory_balances.item_id IS '품목 ID - adm.products 테이블 참조';
+COMMENT ON COLUMN ivm.inventory_balances.quantity IS '현재고 수량';
+COMMENT ON COLUMN ivm.inventory_balances.available_quantity IS '가용재고 수량 (예약 제외)';
+COMMENT ON COLUMN ivm.inventory_balances.reserved_quantity IS '예약 수량';
+COMMENT ON COLUMN ivm.inventory_balances.unit_cost IS '단위 원가';
+COMMENT ON COLUMN ivm.inventory_balances.total_value IS '재고 평가액';
+COMMENT ON COLUMN ivm.inventory_balances.last_movement_date IS '최종 입출고 일자';
+COMMENT ON COLUMN ivm.inventory_balances.created_at IS '생성일시';
+COMMENT ON COLUMN ivm.inventory_balances.updated_at IS '수정일시';
+
+-- 재고 이동 테이블
+COMMENT ON TABLE ivm.inventory_movements IS '재고 입출고 이동 이력 관리 테이블';
+COMMENT ON COLUMN ivm.inventory_movements.id IS '재고 이동 고유 식별자';
+COMMENT ON COLUMN ivm.inventory_movements.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN ivm.inventory_movements.company_id IS '회사 ID';
+COMMENT ON COLUMN ivm.inventory_movements.movement_number IS '이동 번호';
+COMMENT ON COLUMN ivm.inventory_movements.movement_date IS '이동 일자';
+COMMENT ON COLUMN ivm.inventory_movements.movement_type IS '이동 유형 (입고, 출고, 이동, 조정)';
+COMMENT ON COLUMN ivm.inventory_movements.warehouse_id IS '창고 ID';
+COMMENT ON COLUMN ivm.inventory_movements.item_id IS '품목 ID';
+COMMENT ON COLUMN ivm.inventory_movements.quantity IS '이동 수량';
+COMMENT ON COLUMN ivm.inventory_movements.unit_cost IS '단위 원가';
+COMMENT ON COLUMN ivm.inventory_movements.reference_type IS '참조 문서 유형 (구매입고, 생산입고, 판매출고 등)';
+COMMENT ON COLUMN ivm.inventory_movements.reference_id IS '참조 문서 ID';
+COMMENT ON COLUMN ivm.inventory_movements.description IS '이동 사유';
+COMMENT ON COLUMN ivm.inventory_movements.created_at IS '생성일시';
+COMMENT ON COLUMN ivm.inventory_movements.created_by IS '생성자 ID';
+
+-- ============================================================================
+-- LWM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 입고 테이블
+COMMENT ON TABLE lwm.goods_receipts IS '자재/제품 입고 관리 테이블';
+COMMENT ON COLUMN lwm.goods_receipts.id IS '입고 고유 식별자';
+COMMENT ON COLUMN lwm.goods_receipts.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN lwm.goods_receipts.company_id IS '회사 ID';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_number IS '입고 번호';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_date IS '입고 일자';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_type IS '입고 유형 (구매입고, 생산입고, 반품입고, 이동입고)';
+COMMENT ON COLUMN lwm.goods_receipts.warehouse_id IS '입고 창고 ID';
+COMMENT ON COLUMN lwm.goods_receipts.supplier_id IS '공급업체 ID (구매입고인 경우)';
+COMMENT ON COLUMN lwm.goods_receipts.purchase_order_id IS '구매발주 ID';
+COMMENT ON COLUMN lwm.goods_receipts.status IS '입고 상태 (예정, 진행중, 완료, 취소)';
+COMMENT ON COLUMN lwm.goods_receipts.inspection_status IS '검수 상태 (미검수, 검수중, 합격, 불합격)';
+COMMENT ON COLUMN lwm.goods_receipts.remarks IS '비고';
+COMMENT ON COLUMN lwm.goods_receipts.created_at IS '생성일시';
+COMMENT ON COLUMN lwm.goods_receipts.created_by IS '생성자 ID';
+COMMENT ON COLUMN lwm.goods_receipts.updated_at IS '수정일시';
+COMMENT ON COLUMN lwm.goods_receipts.updated_by IS '수정자 ID';
+
+-- 입고 상세 테이블
+COMMENT ON TABLE lwm.goods_receipt_lines IS '입고 상세 라인 테이블';
+COMMENT ON COLUMN lwm.goods_receipt_lines.id IS '입고 라인 고유 식별자';
+COMMENT ON COLUMN lwm.goods_receipt_lines.receipt_id IS '입고 ID - goods_receipts 테이블 참조';
+COMMENT ON COLUMN lwm.goods_receipt_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN lwm.goods_receipt_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN lwm.goods_receipt_lines.ordered_quantity IS '발주 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.received_quantity IS '입고 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.rejected_quantity IS '불량 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.unit_price IS '단가';
+COMMENT ON COLUMN lwm.goods_receipt_lines.amount IS '금액';
+COMMENT ON COLUMN lwm.goods_receipt_lines.location IS '보관 위치';
+COMMENT ON COLUMN lwm.goods_receipt_lines.lot_number IS '로트 번호';
+COMMENT ON COLUMN lwm.goods_receipt_lines.expiry_date IS '유효기간';
+COMMENT ON COLUMN lwm.goods_receipt_lines.created_at IS '생성일시';
+
+-- 출고 테이블
+COMMENT ON TABLE lwm.goods_issues IS '자재/제품 출고 관리 테이블';
+COMMENT ON COLUMN lwm.goods_issues.id IS '출고 고유 식별자';
+COMMENT ON COLUMN lwm.goods_issues.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN lwm.goods_issues.company_id IS '회사 ID';
+COMMENT ON COLUMN lwm.goods_issues.issue_number IS '출고 번호';
+COMMENT ON COLUMN lwm.goods_issues.issue_date IS '출고 일자';
+COMMENT ON COLUMN lwm.goods_issues.issue_type IS '출고 유형 (판매출고, 생산출고, 이동출고, 폐기)';
+COMMENT ON COLUMN lwm.goods_issues.warehouse_id IS '출고 창고 ID';
+COMMENT ON COLUMN lwm.goods_issues.customer_id IS '고객 ID (판매출고인 경우)';
+COMMENT ON COLUMN lwm.goods_issues.sales_order_id IS '판매주문 ID';
+COMMENT ON COLUMN lwm.goods_issues.status IS '출고 상태 (예정, 진행중, 완료, 취소)';
+COMMENT ON COLUMN lwm.goods_issues.remarks IS '비고';
+COMMENT ON COLUMN lwm.goods_issues.created_at IS '생성일시';
+COMMENT ON COLUMN lwm.goods_issues.created_by IS '생성자 ID';
+COMMENT ON COLUMN lwm.goods_issues.updated_at IS '수정일시';
+COMMENT ON COLUMN lwm.goods_issues.updated_by IS '수정자 ID';
+
+-- 출고 상세 테이블
+COMMENT ON TABLE lwm.goods_issue_lines IS '출고 상세 라인 테이블';
+COMMENT ON COLUMN lwm.goods_issue_lines.id IS '출고 라인 고유 식별자';
+COMMENT ON COLUMN lwm.goods_issue_lines.issue_id IS '출고 ID - goods_issues 테이블 참조';
+COMMENT ON COLUMN lwm.goods_issue_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN lwm.goods_issue_lines.ordered_quantity IS '주문 수량';
+COMMENT ON COLUMN lwm.goods_issue_lines.issued_quantity IS '출고 수량';
+COMMENT ON COLUMN lwm.goods_issue_lines.unit_price IS '단가';
+COMMENT ON COLUMN lwm.goods_issue_lines.amount IS '금액';
+COMMENT ON COLUMN lwm.goods_issue_lines.location IS '피킹 위치';
+COMMENT ON COLUMN lwm.goods_issue_lines.lot_number IS '로트 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.serial_number IS '시리얼 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.created_at IS '생성일시';
+
+-- ============================================================================
+-- PSM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 구매 요청 테이블
+COMMENT ON TABLE psm.purchase_requisitions IS '구매 요청 관리 테이블';
+COMMENT ON COLUMN psm.purchase_requisitions.id IS '구매요청 고유 식별자';
+COMMENT ON COLUMN psm.purchase_requisitions.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.company_id IS '회사 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.pr_number IS '구매요청 번호';
+COMMENT ON COLUMN psm.purchase_requisitions.pr_date IS '구매요청 일자';
+COMMENT ON COLUMN psm.purchase_requisitions.requester_id IS '요청자 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.department_id IS '요청 부서 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.required_date IS '필요 일자';
+COMMENT ON COLUMN psm.purchase_requisitions.purpose IS '구매 목적';
+COMMENT ON COLUMN psm.purchase_requisitions.status IS '상태 (작성중, 승인대기, 승인, 반려, 발주완료)';
+COMMENT ON COLUMN psm.purchase_requisitions.approved_by IS '승인자 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.approved_at IS '승인일시';
+COMMENT ON COLUMN psm.purchase_requisitions.created_at IS '생성일시';
+COMMENT ON COLUMN psm.purchase_requisitions.created_by IS '생성자 ID';
+COMMENT ON COLUMN psm.purchase_requisitions.updated_at IS '수정일시';
+COMMENT ON COLUMN psm.purchase_requisitions.updated_by IS '수정자 ID';
+
+-- 구매요청 상세 테이블
+COMMENT ON TABLE psm.purchase_requisition_lines IS '구매요청 상세 라인 테이블';
+COMMENT ON COLUMN psm.purchase_requisition_lines.id IS '구매요청 라인 고유 식별자';
+COMMENT ON COLUMN psm.purchase_requisition_lines.pr_id IS '구매요청 ID - purchase_requisitions 테이블 참조';
+COMMENT ON COLUMN psm.purchase_requisition_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN psm.purchase_requisition_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN psm.purchase_requisition_lines.quantity IS '요청 수량';
+COMMENT ON COLUMN psm.purchase_requisition_lines.unit_price IS '예상 단가';
+COMMENT ON COLUMN psm.purchase_requisition_lines.amount IS '예상 금액';
+COMMENT ON COLUMN psm.purchase_requisition_lines.specification IS '사양 및 요구사항';
+COMMENT ON COLUMN psm.purchase_requisition_lines.preferred_supplier_id IS '선호 공급업체 ID';
+COMMENT ON COLUMN psm.purchase_requisition_lines.created_at IS '생성일시';
+
+-- 구매 발주 테이블
+COMMENT ON TABLE psm.purchase_orders IS '구매 발주 관리 테이블';
+COMMENT ON COLUMN psm.purchase_orders.id IS '구매발주 고유 식별자';
+COMMENT ON COLUMN psm.purchase_orders.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN psm.purchase_orders.company_id IS '회사 ID';
+COMMENT ON COLUMN psm.purchase_orders.po_number IS '구매발주 번호';
+COMMENT ON COLUMN psm.purchase_orders.po_date IS '발주 일자';
+COMMENT ON COLUMN psm.purchase_orders.supplier_id IS '공급업체 ID';
+COMMENT ON COLUMN psm.purchase_orders.delivery_date IS '납품 예정일';
+COMMENT ON COLUMN psm.purchase_orders.delivery_address IS '납품 주소';
+COMMENT ON COLUMN psm.purchase_orders.payment_terms IS '결제 조건';
+COMMENT ON COLUMN psm.purchase_orders.total_amount IS '총 발주 금액';
+COMMENT ON COLUMN psm.purchase_orders.tax_amount IS '부가세';
+COMMENT ON COLUMN psm.purchase_orders.status IS '발주 상태 (작성중, 발주완료, 부분입고, 입고완료, 취소)';
+COMMENT ON COLUMN psm.purchase_orders.remarks IS '비고';
+COMMENT ON COLUMN psm.purchase_orders.created_at IS '생성일시';
+COMMENT ON COLUMN psm.purchase_orders.created_by IS '발주자 ID';
+COMMENT ON COLUMN psm.purchase_orders.updated_at IS '수정일시';
+COMMENT ON COLUMN psm.purchase_orders.updated_by IS '수정자 ID';
+
+-- 구매발주 상세 테이블
+COMMENT ON TABLE psm.purchase_order_lines IS '구매발주 상세 라인 테이블';
+COMMENT ON COLUMN psm.purchase_order_lines.id IS '발주 라인 고유 식별자';
+COMMENT ON COLUMN psm.purchase_order_lines.po_id IS '구매발주 ID - purchase_orders 테이블 참조';
+COMMENT ON COLUMN psm.purchase_order_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN psm.purchase_order_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN psm.purchase_order_lines.quantity IS '발주 수량';
+COMMENT ON COLUMN psm.purchase_order_lines.unit_price IS '단가';
+COMMENT ON COLUMN psm.purchase_order_lines.amount IS '금액';
+COMMENT ON COLUMN psm.purchase_order_lines.received_quantity IS '입고 수량';
+COMMENT ON COLUMN psm.purchase_order_lines.delivery_date IS '납품 요청일';
+COMMENT ON COLUMN psm.purchase_order_lines.created_at IS '생성일시';
+
+-- ============================================================================
+-- SRM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 견적 테이블
+COMMENT ON TABLE srm.quotations IS '판매 견적서 관리 테이블';
+COMMENT ON COLUMN srm.quotations.id IS '견적 고유 식별자';
+COMMENT ON COLUMN srm.quotations.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN srm.quotations.company_id IS '회사 ID';
+COMMENT ON COLUMN srm.quotations.quotation_number IS '견적 번호';
+COMMENT ON COLUMN srm.quotations.quotation_date IS '견적 일자';
+COMMENT ON COLUMN srm.quotations.customer_id IS '고객 ID';
+COMMENT ON COLUMN srm.quotations.valid_until IS '견적 유효 기간';
+COMMENT ON COLUMN srm.quotations.total_amount IS '총 견적 금액';
+COMMENT ON COLUMN srm.quotations.tax_amount IS '부가세';
+COMMENT ON COLUMN srm.quotations.status IS '견적 상태 (작성중, 발송완료, 수주, 실주, 만료)';
+COMMENT ON COLUMN srm.quotations.sales_person_id IS '영업 담당자 ID';
+COMMENT ON COLUMN srm.quotations.remarks IS '비고';
+COMMENT ON COLUMN srm.quotations.created_at IS '생성일시';
+COMMENT ON COLUMN srm.quotations.created_by IS '생성자 ID';
+COMMENT ON COLUMN srm.quotations.updated_at IS '수정일시';
+COMMENT ON COLUMN srm.quotations.updated_by IS '수정자 ID';
+
+-- 견적 상세 테이블
+COMMENT ON TABLE srm.quotation_lines IS '견적 상세 라인 테이블';
+COMMENT ON COLUMN srm.quotation_lines.id IS '견적 라인 고유 식별자';
+COMMENT ON COLUMN srm.quotation_lines.quotation_id IS '견적 ID - quotations 테이블 참조';
+COMMENT ON COLUMN srm.quotation_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN srm.quotation_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN srm.quotation_lines.quantity IS '수량';
+COMMENT ON COLUMN srm.quotation_lines.unit_price IS '단가';
+COMMENT ON COLUMN srm.quotation_lines.discount_rate IS '할인율 (%)';
+COMMENT ON COLUMN srm.quotation_lines.amount IS '금액';
+COMMENT ON COLUMN srm.quotation_lines.delivery_date IS '납품 예정일';
+COMMENT ON COLUMN srm.quotation_lines.created_at IS '생성일시';
+
+-- 판매 주문 테이블
+COMMENT ON TABLE srm.sales_orders IS '판매 주문 관리 테이블';
+COMMENT ON COLUMN srm.sales_orders.id IS '판매주문 고유 식별자';
+COMMENT ON COLUMN srm.sales_orders.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN srm.sales_orders.company_id IS '회사 ID';
+COMMENT ON COLUMN srm.sales_orders.so_number IS '판매주문 번호';
+COMMENT ON COLUMN srm.sales_orders.so_date IS '주문 일자';
+COMMENT ON COLUMN srm.sales_orders.customer_id IS '고객 ID';
+COMMENT ON COLUMN srm.sales_orders.quotation_id IS '견적 ID (견적서에서 전환된 경우)';
+COMMENT ON COLUMN srm.sales_orders.delivery_date IS '납품 예정일';
+COMMENT ON COLUMN srm.sales_orders.delivery_address IS '납품 주소';
+COMMENT ON COLUMN srm.sales_orders.payment_terms IS '결제 조건';
+COMMENT ON COLUMN srm.sales_orders.total_amount IS '총 주문 금액';
+COMMENT ON COLUMN srm.sales_orders.tax_amount IS '부가세';
+COMMENT ON COLUMN srm.sales_orders.status IS '주문 상태 (확정, 생산중, 부분출고, 출고완료, 취소)';
+COMMENT ON COLUMN srm.sales_orders.sales_person_id IS '영업 담당자 ID';
+COMMENT ON COLUMN srm.sales_orders.remarks IS '비고';
+COMMENT ON COLUMN srm.sales_orders.created_at IS '생성일시';
+COMMENT ON COLUMN srm.sales_orders.created_by IS '생성자 ID';
+COMMENT ON COLUMN srm.sales_orders.updated_at IS '수정일시';
+COMMENT ON COLUMN srm.sales_orders.updated_by IS '수정자 ID';
+
+-- 판매주문 상세 테이블
+COMMENT ON TABLE srm.sales_order_lines IS '판매주문 상세 라인 테이블';
+COMMENT ON COLUMN srm.sales_order_lines.id IS '판매주문 라인 고유 식별자';
+COMMENT ON COLUMN srm.sales_order_lines.so_id IS '판매주문 ID - sales_orders 테이블 참조';
+COMMENT ON COLUMN srm.sales_order_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN srm.sales_order_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN srm.sales_order_lines.quantity IS '주문 수량';
+COMMENT ON COLUMN srm.sales_order_lines.unit_price IS '단가';
+COMMENT ON COLUMN srm.sales_order_lines.discount_rate IS '할인율 (%)';
+COMMENT ON COLUMN srm.sales_order_lines.amount IS '금액';
+COMMENT ON COLUMN srm.sales_order_lines.delivered_quantity IS '출고 수량';
+COMMENT ON COLUMN srm.sales_order_lines.delivery_date IS '납품 요청일';
+COMMENT ON COLUMN srm.sales_order_lines.created_at IS '생성일시';
+

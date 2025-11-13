@@ -1,0 +1,3070 @@
+-- ============================================================================
+-- Administration Schema (adm)
+-- ============================================================================
+-- Description: 기준 정보 관리 (회사, 부서, 사원, 거래처, 제품, 창고 등)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: adm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS adm;
+
+COMMENT ON SCHEMA adm IS 'ADM: 기준정보 관리 스키마 (회사, 부서, 사원, 거래처, 제품, 창고 등)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 조직정보
+-- ============================================================================
+
+/*
+
+	DROP TABLE adm.companies 	CASCADE;
+	DROP TABLE adm.departments	CASCADE;
+	DROP TABLE adm.employees 	CASCADE;
+
+*/
+
+-- =====================================================================================
+-- 테이블: adm.companies
+-- 설명	: 회사(기업) 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.companies 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 회사 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+	-- 회사 기본 정보
+    company_code        VARCHAR(50)              NOT NULL,                              -- 회사 코드 (사내 규칙)
+    company_name        VARCHAR(200)             NOT NULL,                              -- 회사명
+    business_no     	VARCHAR(50),                                                    -- 사업자등록번호
+    tax_no          	VARCHAR(50),                                                    -- 법인등록번호/세무번호
+    ceo_name      		VARCHAR(100),                                                   -- 대표자명
+    
+    -- 연락처 정보
+    address             TEXT,                                                           -- 회사 주소
+    phone               VARCHAR(50),                                                    -- 대표 전화번호
+    email               VARCHAR(255),                                                   -- 대표 이메일
+    website             VARCHAR(255),                                                   -- 웹사이트 URL
+    
+    -- 설정 정보
+    currency            VARCHAR(3)               DEFAULT 'KRW',                         -- 기본 통화 (ISO 4217)
+    timezone            VARCHAR(50)              DEFAULT 'Asia/Seoul',                  -- 시간대
+    
+    -- 상태 관리
+    status           	VARCHAR(20)              NOT NULL DEFAULT 'ACTIVE',             -- 활성 상태
+    is_deleted          	BOOLEAN                  DEFAULT false,                         -- 논리 삭제 플래그
+	
+	CONSTRAINT ck_companies__company_code 	CHECK (company_code ~ '^[A-Z0-9_]{2,50}$'),
+	CONSTRAINT ck_companies__email 			CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+	CONSTRAINT ck_companies__currency 		CHECK (currency ~ '^[A-Z]{3}$'),
+	CONSTRAINT ck_companies__phone 			CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+	CONSTRAINT ck_companies__status      	CHECK (status IN ('ACTIVE', 'INACTIVE'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.companies 					IS '회사(기업) 마스터 정보 관리 테이블';
+COMMENT ON COLUMN adm.companies.id                  IS '회사 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.companies.created_at          IS '등록 일시';
+COMMENT ON COLUMN adm.companies.created_by          IS '등록자 UUID';
+COMMENT ON COLUMN adm.companies.updated_at          IS '수정 일시';
+COMMENT ON COLUMN adm.companies.updated_by          IS '수정자 UUID';
+COMMENT ON COLUMN adm.companies.company_code        IS '회사 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.companies.company_name        IS '회사명';
+COMMENT ON COLUMN adm.companies.business_no     	IS '사업자등록번호';
+COMMENT ON COLUMN adm.companies.tax_no          	IS '법인등록번호/세무번호';
+COMMENT ON COLUMN adm.companies.ceo_name      		IS '대표자명';
+COMMENT ON COLUMN adm.companies.address             IS '회사 주소';
+COMMENT ON COLUMN adm.companies.phone               IS '대표 전화번호';
+COMMENT ON COLUMN adm.companies.email               IS '대표 이메일';
+COMMENT ON COLUMN adm.companies.website             IS '웹사이트 URL';
+COMMENT ON COLUMN adm.companies.currency            IS '기본 통화 (ISO 4217)';
+COMMENT ON COLUMN adm.companies.timezone            IS '시간대';
+COMMENT ON COLUMN adm.companies.status           	IS '상태';
+COMMENT ON COLUMN adm.companies.is_deleted          IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_companies__company_code
+    ON adm.companies (company_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_companies__company_name
+    ON adm.companies (company_name)
+ WHERE is_deleted = false;
+
+-- 사업자등록번호 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_companies__business_no
+    ON adm.companies (business_no)
+ WHERE business_no IS NOT NULL 
+   AND is_deleted = false;
+
+-- 활성 상태 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_companies__status
+ WHERE is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 테넌트별 회사 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_companies__tenant_code
+ WHERE is_deleted = false;
+
+-- 사업자등록번호 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_companies__business_no
+    ON adm.companies (business_no)
+ WHERE business_no IS NOT NULL 
+   AND is_deleted = false;
+
+-- =====================================================================================
+-- 테이블: adm.departments
+-- 설명: 조직/부서 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.departments 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 부서 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 부서 기본 정보
+    parent_id           UUID,                                                           -- 상위 부서 식별자
+    department_code     VARCHAR(50)              NOT NULL,                              -- 부서 코드 (사내 규칙)
+    department_name     VARCHAR(100)             NOT NULL,                              -- 부서명
+    department_type     VARCHAR(20)              DEFAULT 'DEPARTMENT',                  -- 부서 유형
+    manager_id          UUID,                                                           -- 부서장 식별자
+    
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                    -- 부서 전화번호
+    email               VARCHAR(255),                                                   -- 부서 이메일
+    
+    -- 정렬 및 설정
+    sort_order          INTEGER                  DEFAULT 0,                             -- 정렬 순서
+    
+    -- 상태 관리
+    status              VARCHAR(20)              NOT NULL DEFAULT 'ACTIVE',             -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                         -- 논리 삭제 플래그
+    
+	-- 제약조건
+    CONSTRAINT ck_departments__department_code  CHECK (department_code ~ '^[A-Z0-9_]{2,50}$'),
+    CONSTRAINT ck_departments__department_type  CHECK (department_type IN ('COMPANY', 'DIVISION', 'DEPARTMENT', 'TEAM')),
+    CONSTRAINT ck_departments__email         	CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_departments__phone         	CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_departments__sort_order  		CHECK (sort_order >= 0),
+	CONSTRAINT ck_departments__status      		CHECK (status IN ('ACTIVE', 'INACTIVE'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.departments 				   IS '조직/부서 정보 관리 테이블';
+COMMENT ON COLUMN adm.departments.id               IS '부서 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.departments.created_at       IS '등록 일시';
+COMMENT ON COLUMN adm.departments.created_by       IS '등록자 UUID';
+COMMENT ON COLUMN adm.departments.updated_at       IS '수정 일시';
+COMMENT ON COLUMN adm.departments.updated_by       IS '수정자 UUID';
+COMMENT ON COLUMN adm.departments.company_id       IS '회사 식별자';
+COMMENT ON COLUMN adm.departments.parent_id        IS '상위 부서 식별자 (계층구조)';
+COMMENT ON COLUMN adm.departments.department_code  IS '부서 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.departments.department_name  IS '부서명';
+COMMENT ON COLUMN adm.departments.department_type  IS '부서 유형 (COMPANY/DIVISION/DEPARTMENT/TEAM)';
+COMMENT ON COLUMN adm.departments.manager_id       IS '부서장 식별자';
+COMMENT ON COLUMN adm.departments.phone            IS '부서 전화번호';
+COMMENT ON COLUMN adm.departments.email            IS '부서 이메일';
+COMMENT ON COLUMN adm.departments.sort_order       IS '정렬 순서';
+COMMENT ON COLUMN adm.departments.status           IS '상태';
+COMMENT ON COLUMN adm.departments.is_deleted          IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_departments__department_code
+    ON adm.departments (department_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_departments__department_name
+    ON adm.departments (department_name)
+ WHERE is_deleted = false;
+
+-- 계층구조 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_departments__parent_id
+    ON adm.departments (parent_id)
+ WHERE is_deleted = false;
+
+-- 부서장 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_departments__manager_id
+    ON adm.departments (manager_id)
+ WHERE manager_id IS NOT NULL 
+   AND is_deleted = false;
+
+-- 부서 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_departments__department_type
+    ON adm.departments (department_type)
+ WHERE is_deleted = false;
+
+-- 정렬 순서 인덱스
+CREATE INDEX IF NOT EXISTS ix_departments__sort_order
+    ON adm.departments (parent_id, sort_order)
+ WHERE is_deleted = false;
+
+-- 활성 상태 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_departments__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 부서 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_departments__company_code
+    ON adm.departments (department_code)
+ WHERE is_deleted = false;
+
+-- 전체 부서명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_departments__company_name
+    ON adm.departments (department_name)
+ WHERE is_deleted = false;
+ 
+-- =====================================================================================
+-- 테이블: adm.employees
+-- 설명: 사원 기본 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.employees 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 사원 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 사원 기본 정보
+    employee_code       VARCHAR(20)              NOT NULL,                              -- 사원번호
+    employee_name       VARCHAR(100)             NOT NULL,                              -- 사원명
+    
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 전화번호
+    mobile              VARCHAR(50),                                                   	-- 휴대폰 번호
+    email               VARCHAR(255),                                                  	-- 이메일 주소
+    
+    -- 주소 정보
+    postcode         	VARCHAR(10),                                                   	-- 우편번호
+    address1            VARCHAR(200),                                                  	-- 기본 주소
+    address2            VARCHAR(200),                                                  	-- 상세 주소
+    
+    -- 근무 정보
+    work_location       VARCHAR(100),                                                  	-- 근무지
+    work_type           VARCHAR(20)              DEFAULT 'OFFICE',                     	-- 근무 형태
+	
+	department_id       UUID,                                                          	-- 소속 부서 식별자
+    job_title           VARCHAR(100),                                                  	-- 직책/직위
+    job_level           VARCHAR(20),                                                   	-- 직급
+	job_description		TEXT,															-- 직무내용
+    
+    -- 입사 정보
+    hire_date           DATE,                                                          	-- 입사일
+	leave_date			DATE,															-- 퇴사일
+    
+    -- 상태 관리
+    status   			VARCHAR(20)              DEFAULT 'ACTIVE',                     	-- 재직 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+    
+	-- 제약조건
+    CONSTRAINT ck_employees__employee_code  CHECK (employee_code ~ '^[A-Z0-9_]{2,20}$'),
+    CONSTRAINT ck_employees__work_type      CHECK (work_type IN ('OFFICE', 'REMOTE', 'HYBRID', 'FIELD')),
+    CONSTRAINT ck_employees__status      	CHECK (status IN ('ACTIVE', 'PROBATION', 'LEAVE', 'TERMINATED', 'RETIRED')),
+    CONSTRAINT ck_employees__job_level      CHECK (job_level IS NULL OR job_level IN ('STAFF', 'SENIOR', 'ASSISTANT_MANAGER', 'MANAGER', 'SENIOR_MANAGER', 'DIRECTOR', 'VP', 'CEO')),
+    CONSTRAINT ck_employees__phone          CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_employees__mobile         CHECK (mobile IS NULL OR mobile ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_employees__email          CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$')
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.employees 				IS '사원 기본 정보 관리 테이블';
+COMMENT ON COLUMN adm.employees.id              IS '사원 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.employees.created_at      IS '등록 일시';
+COMMENT ON COLUMN adm.employees.created_by      IS '등록자 UUID';
+COMMENT ON COLUMN adm.employees.updated_at      IS '수정 일시';
+COMMENT ON COLUMN adm.employees.updated_by      IS '수정자 UUID';
+COMMENT ON COLUMN adm.employees.company_id      IS '회사 식별자';
+COMMENT ON COLUMN adm.employees.employee_code   IS '사원번호 (사내 규칙)';
+COMMENT ON COLUMN adm.employees.employee_name   IS '사원명';
+COMMENT ON COLUMN adm.employees.phone           IS '전화번호';
+COMMENT ON COLUMN adm.employees.mobile          IS '휴대폰 번호';
+COMMENT ON COLUMN adm.employees.email           IS '이메일 주소';
+COMMENT ON COLUMN adm.employees.postcode     	IS '우편번호';
+COMMENT ON COLUMN adm.employees.address1        IS '기본 주소';
+COMMENT ON COLUMN adm.employees.address2        IS '상세 주소';
+COMMENT ON COLUMN adm.employees.work_location   IS '근무지';
+COMMENT ON COLUMN adm.employees.work_type       IS '근무 형태 (OFFICE/REMOTE/HYBRID/FIELD)';
+COMMENT ON COLUMN adm.employees.department_id   IS '소속 부서 식별자';
+COMMENT ON COLUMN adm.employees.job_title       IS '직책/직위';
+COMMENT ON COLUMN adm.employees.job_level       IS '직급 (STAFF/SENIOR/MANAGER/DIRECTOR/VP/CEO 등)';
+COMMENT ON COLUMN adm.employees.hire_date       IS '입사일';
+COMMENT ON COLUMN adm.employees.leave_date      IS '퇴사일';
+COMMENT ON COLUMN adm.employees.status 			IS '상태 (ACTIVE/PROBATION/LEAVE/TERMINATED/RETIRED)';
+COMMENT ON COLUMN adm.employees.is_deleted         IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_employees__department_id
+    ON adm.employees (department_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_employees__employee_code
+    ON adm.employees (employee_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_employees__employee_name
+    ON adm.employees (employee_name)
+ WHERE is_deleted = false;
+
+-- 이메일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__email
+    ON adm.employees (email)
+ WHERE email IS NOT NULL 
+   AND is_deleted = false;
+
+-- 휴대폰 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__mobile
+    ON adm.employees (mobile)
+ WHERE mobile IS NOT NULL 
+   AND is_deleted = false;
+
+-- 근무 형태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__work_type
+    ON adm.employees (work_type)
+ WHERE is_deleted = false;
+
+-- 근무지별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__work_location
+    ON adm.employees (work_location)
+ WHERE work_location IS NOT NULL 
+   AND is_deleted = false;
+
+-- 직급별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__job_level
+    ON adm.employees (job_level)
+ WHERE job_level IS NOT NULL 
+   AND is_deleted = false;
+
+-- 재직 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__status
+
+-- 입사일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_employees__hire_date
+    ON adm.employees (hire_date)
+ WHERE hire_date IS NOT NULL 
+   AND is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 사원번호 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_employees__company_employee_code
+    ON adm.employees (employee_code)
+ WHERE is_deleted = false;
+
+-- 이메일 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_employees__email
+    ON adm.employees (email)
+ WHERE email IS NOT NULL 
+   AND is_deleted = false;
+
+-- 휴대폰 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_employees__mobile
+    ON adm.employees (mobile)
+ WHERE mobile IS NOT NULL 
+   AND is_deleted = false;
+   
+-- =====================================================================================
+-- 외래키 제약 조건
+-- =====================================================================================   
+
+-- departments
+ALTER TABLE adm.departments ADD CONSTRAINT fk_departments__parent_id    FOREIGN KEY (parent_id)  	REFERENCES adm.departments(id)	ON DELETE CASCADE;
+ALTER TABLE adm.departments ADD CONSTRAINT fk_departments__manager_id   FOREIGN KEY (manager_id) 	REFERENCES adm.employees(id)	ON DELETE CASCADE;
+
+-- employees
+ALTER TABLE adm.employees 	ADD CONSTRAINT fk_employees__department_id  FOREIGN KEY (department_id) REFERENCES adm.departments(id)	ON DELETE CASCADE;
+
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 거래처
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: adm.customers
+-- 설명	: 거래처(고객/벤더) 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.customers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 거래처 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 거래처 기본 정보
+    customer_code       VARCHAR(50)              NOT NULL,                              -- 거래처 코드 (사내 규칙)
+    customer_name       VARCHAR(200)             NOT NULL,                              -- 거래처명
+    customer_type       VARCHAR(20)              NOT NULL,                              -- 거래처 유형
+	
+	-- 사업자 등록 정보
+	tax_no              VARCHAR(50),                                                   	-- 법인등록번호/세무번호
+    business_no         VARCHAR(20),                                                    -- 사업자등록번호
+    business_name       VARCHAR(200),                                                   -- 상호(법인명)
+    business_type       CHAR(1)                  DEFAULT 'C',                           -- 사업자구분 (C:법인, S:개인)
+	business_kind       VARCHAR(100),                                                   -- 업태
+    business_item       VARCHAR(100),                                                   -- 종목
+    ceo_name            VARCHAR(50),                                                    -- 대표자명
+    
+	-- 주소 정보
+    postcode            VARCHAR(10),                                                    -- 우편번호
+    address1            VARCHAR(100),                                                   -- 주소1 (기본주소)
+    address2            VARCHAR(100),                                                   -- 주소2 (상세주소)
+	
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 거래처 전화번호
+    email               VARCHAR(255),                                                  	-- 거래처 이메일
+    website             VARCHAR(255),                                                  	-- 웹사이트 URL
+    
+    -- 거래 조건
+    payment_terms       VARCHAR(20),                                                   	-- 결제 조건
+    credit_limit        NUMERIC(18,4)            DEFAULT 0,                            	-- 신용 한도
+    currency            VARCHAR(3)               DEFAULT 'KRW',                        	-- 거래 통화
+    
+    -- 상태 관리
+    status              VARCHAR(20)              NOT NULL DEFAULT 'ACTIVE',           	-- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    
+	-- 제약조건
+    CONSTRAINT ck_customers__customer_code  CHECK (customer_code ~ '^[A-Z0-9_]{2,50}$'),
+    CONSTRAINT ck_customers__customer_type  CHECK (customer_type IN ('CUSTOMER', 'VENDOR', 'BOTH')),
+    CONSTRAINT ck_customers__email          CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_customers__phone          CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customers__currency       CHECK (currency ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_customers__credit_limit  	CHECK (credit_limit >= 0),
+    CONSTRAINT ck_customers__payment_terms  CHECK (payment_terms IS NULL OR payment_terms IN ('COD', 'NET7', 'NET15', 'NET30', 'NET45', 'NET60', 'NET90', 'PREPAID')),
+	CONSTRAINT ck_customers__status      	CHECK (status IN ('ACTIVE', 'INACTIVE'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.customers 				    IS '거래처(고객/벤더) 정보 관리 테이블';
+COMMENT ON COLUMN adm.customers.id                  IS '거래처 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.customers.created_at          IS '등록 일시';
+COMMENT ON COLUMN adm.customers.created_by          IS '등록자 UUID';
+COMMENT ON COLUMN adm.customers.updated_at          IS '수정 일시';
+COMMENT ON COLUMN adm.customers.updated_by          IS '수정자 UUID';
+COMMENT ON COLUMN adm.customers.company_id          IS '회사 식별자';
+COMMENT ON COLUMN adm.customers.customer_code       IS '거래처 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.customers.customer_name       IS '거래처명';
+COMMENT ON COLUMN adm.customers.customer_type       IS '거래처 유형 (CUSTOMER/VENDOR/BOTH)';
+COMMENT ON COLUMN adm.customers.tax_no              IS '법인등록번호/세무번호';
+COMMENT ON COLUMN adm.customers.business_no         IS '사업자등록번호';
+COMMENT ON COLUMN adm.customers.business_name       IS '상호';
+COMMENT ON COLUMN adm.customers.business_type       IS '사업자유형';
+COMMENT ON COLUMN adm.customers.business_kind       IS '업태';
+COMMENT ON COLUMN adm.customers.business_item       IS '종목';
+COMMENT ON COLUMN adm.customers.ceo_name            IS '대표자명';
+COMMENT ON COLUMN adm.customers.postcode            IS '우편번호';
+COMMENT ON COLUMN adm.customers.address1            IS '주소1';
+COMMENT ON COLUMN adm.customers.address2            IS '주소2';
+COMMENT ON COLUMN adm.customers.phone               IS '전화번호';
+COMMENT ON COLUMN adm.customers.email               IS '이메일';
+COMMENT ON COLUMN adm.customers.website             IS '웹사이트 URL';
+COMMENT ON COLUMN adm.customers.payment_terms       IS '결제 조건 (COD/NET30/NET60 등)';
+COMMENT ON COLUMN adm.customers.credit_limit        IS '신용 한도';
+COMMENT ON COLUMN adm.customers.currency            IS '거래 통화 (ISO 4217)';
+COMMENT ON COLUMN adm.customers.status              IS '상태(ACTIVE, INACTIVE)';
+COMMENT ON COLUMN adm.customers.is_deleted             IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customers__customer_code
+    ON adm.customers (customer_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customers__customer_name
+    ON adm.customers (customer_name)
+ WHERE is_deleted = false;
+
+-- 거래처 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__customer_type
+    ON adm.customers (customer_type)
+ WHERE is_deleted = false;
+
+-- 사업자등록번호 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__business_no
+    ON adm.customers (business_no)
+ WHERE business_no IS NOT NULL 
+   AND is_deleted = false;
+   
+-- 사업자유형 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__business_type
+    ON adm.customers (business_type)
+ WHERE business_type IS NOT NULL 
+   AND is_deleted = false;
+
+-- 업태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__business_kind
+    ON adm.customers (business_kind)
+ WHERE business_kind IS NOT NULL 
+   AND is_deleted = false;
+   
+-- 종목별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__business_item
+    ON adm.customers (business_item)
+ WHERE business_item IS NOT NULL 
+   AND is_deleted = false;
+
+-- 결제 조건별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__payment_terms
+    ON adm.customers (payment_terms)
+ WHERE payment_terms IS NOT NULL 
+   AND is_deleted = false;
+
+-- 신용 한도 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__credit_limit
+    ON adm.customers (credit_limit)
+ WHERE is_deleted = false;
+
+-- 활성 상태 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customers__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 거래처 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customers__company_code
+    ON adm.customers (customer_code)
+ WHERE is_deleted = false;
+
+-- 사업자등록번호 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customers__business_no
+    ON adm.customers (business_no)
+ WHERE business_no IS NOT NULL 
+   AND is_deleted = false;
+
+-- =====================================================================================
+-- 테이블: adm.customer_contacts
+-- 설명: 거래처 담당자 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.customer_contacts 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 담당자 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 담당자 기본 정보
+    customer_id         UUID                     NOT NULL,                              -- 거래처 식별자
+    contact_name        VARCHAR(100)             NOT NULL,                              -- 담당자명
+    position           	VARCHAR(100),                                                  	-- 직책/직위
+    department          VARCHAR(100),                                                  	-- 소속 부서
+    
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 직장 전화번호
+    mobile              VARCHAR(50),                                                   	-- 휴대폰 번호
+    email               VARCHAR(255),                                                  	-- 이메일 주소
+    
+    -- 설정 정보
+    is_primary         	BOOLEAN                  NOT NULL DEFAULT false,                -- 주담당자 여부
+    
+    -- 상태 관리
+    status              VARCHAR(20)              NOT NULL DEFAULT 'ACTIVE',           	-- 상태
+    is_deleted             BOOLEAN                  NOT NULL DEFAULT false,              	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_customer_contacts__customer_id    FOREIGN KEY (customer_id) REFERENCES adm.customers(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_customer_contacts__email   		CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_customer_contacts__phone   		CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customer_contacts__mobile  		CHECK (mobile IS NULL OR mobile ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customer_contacts__contact_info   CHECK (phone IS NOT NULL OR mobile IS NOT NULL OR email IS NOT NULL),
+	CONSTRAINT ck_customers_contact__status      	CHECK (status IN ('ACTIVE', 'INACTIVE'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.customer_contacts 				IS '거래처 담당자 정보 관리 테이블';
+COMMENT ON COLUMN adm.customer_contacts.id             	IS '담당자 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.customer_contacts.created_at     	IS '등록 일시';
+COMMENT ON COLUMN adm.customer_contacts.created_by     	IS '등록자 UUID';
+COMMENT ON COLUMN adm.customer_contacts.updated_at     	IS '수정 일시';
+COMMENT ON COLUMN adm.customer_contacts.updated_by     	IS '수정자 UUID';
+COMMENT ON COLUMN adm.customer_contacts.customer_id    	IS '거래처 식별자';
+COMMENT ON COLUMN adm.customer_contacts.contact_name   	IS '담당자명';
+COMMENT ON COLUMN adm.customer_contacts.position      	IS '직책/직위';
+COMMENT ON COLUMN adm.customer_contacts.department     	IS '소속 부서';
+COMMENT ON COLUMN adm.customer_contacts.phone          	IS '직장 전화번호';
+COMMENT ON COLUMN adm.customer_contacts.mobile         	IS '휴대폰 번호';
+COMMENT ON COLUMN adm.customer_contacts.email          	IS '이메일 주소';
+COMMENT ON COLUMN adm.customer_contacts.is_primary     	IS '주담당자 여부';
+COMMENT ON COLUMN adm.customer_contacts.status         	IS '상태';
+COMMENT ON COLUMN adm.customer_contacts.is_deleted        	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__customer_id
+    ON adm.customer_contacts (customer_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__contact_name
+    ON adm.customer_contacts (contact_name)
+ WHERE is_deleted = false;
+
+-- 이메일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__email
+    ON adm.customer_contacts (email)
+ WHERE email IS NOT NULL 
+   AND is_deleted = false;
+
+-- 휴대폰 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__mobile
+    ON adm.customer_contacts (mobile)
+ WHERE mobile IS NOT NULL 
+   AND is_deleted = false;
+
+-- 직책별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__position
+    ON adm.customer_contacts (position)
+ WHERE position IS NOT NULL 
+   AND is_deleted = false;
+
+-- 부서별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__department
+    ON adm.customer_contacts (department)
+ WHERE department IS NOT NULL 
+   AND is_deleted = false;
+
+-- 주담당자 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__is_primary
+    ON adm.customer_contacts (customer_id, is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 활성 상태 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_contacts__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 거래처별 담당자명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_contacts__customer_name
+    ON adm.customer_contacts (customer_id, contact_name)
+ WHERE is_deleted = false;
+
+-- 이메일 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_contacts__email
+    ON adm.customer_contacts (email)
+ WHERE email IS NOT NULL 
+   AND is_deleted = false;
+
+-- 휴대폰 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_contacts__mobile
+    ON adm.customer_contacts (mobile)
+ WHERE mobile IS NOT NULL 
+   AND is_deleted = false;
+   
+-- =====================================================================================
+-- 테이블: adm.customer_managers
+-- 설명	: 고객 담당자 배정 관리 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.customer_managers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 담당자 배정 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 담당자 배정 기본 정보
+    customer_id         UUID                     NOT NULL,                              -- 고객 식별자
+    employee_id         UUID                     NOT NULL,                              -- 담당 사원 식별자
+    -- 담당 기간
+    start_date          DATE                     NOT NULL,                              -- 담당 시작일
+    close_date          DATE                     NOT NULL,                              -- 담당 종료일
+    
+    -- 담당자 유형 및 역할
+    manager_type        VARCHAR(20)              DEFAULT 'PRIMARY',                     -- 담당자 유형
+    description      	TEXT,                                                  			-- 담당 업무/역할
+    
+    -- 추가 정보
+    notes               TEXT,                                                          	-- 비고/메모
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_customer_managers__customer_id    FOREIGN KEY (customer_id) 	REFERENCES adm.customers(id)	ON DELETE CASCADE,
+    CONSTRAINT fk_customer_managers__employee_id    FOREIGN KEY (employee_id) 	REFERENCES adm.employees(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_customer_managers__manager_type   CHECK (manager_type IN ('PRIMARY', 'SECONDARY', 'BACKUP', 'TECHNICAL', 'SALES', 'SUPPORT')),
+    CONSTRAINT ck_customer_managers__status         CHECK (status IN ('ACTIVE', 'INACTIVE', 'EXPIRED', 'TERMINATED')),
+    CONSTRAINT ck_customer_managers__date_range     CHECK (close_date >= start_date)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.customer_managers 				IS '고객 담당자 배정 관리 테이블';
+COMMENT ON COLUMN adm.customer_managers.id             	IS '담당자 배정 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.customer_managers.created_at     	IS '등록 일시';
+COMMENT ON COLUMN adm.customer_managers.created_by     	IS '등록자 UUID';
+COMMENT ON COLUMN adm.customer_managers.updated_at     	IS '수정 일시';
+COMMENT ON COLUMN adm.customer_managers.updated_by     	IS '수정자 UUID';
+COMMENT ON COLUMN adm.customer_managers.company_id     	IS '회사 식별자';
+COMMENT ON COLUMN adm.customer_managers.customer_id    	IS '고객 식별자';
+COMMENT ON COLUMN adm.customer_managers.employee_id    	IS '담당 사원 식별자';
+COMMENT ON COLUMN adm.customer_managers.start_date     	IS '담당 시작일';
+COMMENT ON COLUMN adm.customer_managers.close_date      IS '담당 종료일';
+COMMENT ON COLUMN adm.customer_managers.manager_type   	IS '담당자 유형 (PRIMARY/SECONDARY/BACKUP/TECHNICAL/SALES/SUPPORT)';
+COMMENT ON COLUMN adm.customer_managers.description 	IS '담당 업무/역할';
+COMMENT ON COLUMN adm.customer_managers.notes          	IS '비고/메모';
+COMMENT ON COLUMN adm.customer_managers.status         	IS '상태 (ACTIVE/INACTIVE/EXPIRED/TERMINATED)';
+COMMENT ON COLUMN adm.customer_managers.is_deleted        	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customer_managers__customer_id
+    ON adm.customer_managers (customer_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customer_managers__employee_id
+    ON adm.customer_managers (employee_id)
+ WHERE is_deleted = false;
+
+-- 현재 담당자 조회 인덱스 (가장 중요)
+-- CREATE INDEX IF NOT EXISTS ix_customer_managers__current_active
+    -- ON adm.customer_managers (customer_id, status, start_date, close_date)
+ -- WHERE status = 'ACTIVE' 
+   -- AND CURRENT_DATE BETWEEN start_date AND close_date
+   -- AND is_deleted = false;
+
+-- 담당 기간별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_managers__date_range
+    ON adm.customer_managers (start_date, close_date)
+ WHERE is_deleted = false;
+
+-- 담당자 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_managers__manager_type
+    ON adm.customer_managers (manager_type, customer_id)
+ WHERE is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_managers__status
+
+-- 사원별 담당 고객 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_managers__employee_customers
+    ON adm.customer_managers (employee_id, start_date DESC, close_date DESC)
+ WHERE is_deleted = false;
+
+-- 만료 예정 담당자 조회 인덱스 (관리용)
+-- CREATE INDEX IF NOT EXISTS ix_customer_managers__expiring_soon
+    -- ON adm.customer_managers (close_date, status)
+ -- WHERE status = 'ACTIVE' 
+   -- AND close_date >= CURRENT_DATE 
+   -- AND close_date <= CURRENT_DATE + INTERVAL '30 days'
+   -- AND is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 동일 기간 내 고객의 동일 유형 담당자는 하나만 허용
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_managers__customer_type_period
+    ON adm.customer_managers (customer_id, manager_type, start_date, close_date)
+ WHERE is_deleted = false;
+
+-- 고객별 주담당자는 겹치는 기간이 없어야 함 (추가 비즈니스 로직 필요)
+
+-- =====================================================================================
+-- 테이블: adm.customer_banks
+-- 설명: 거래처 계좌 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.customer_banks 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 계좌정보 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 계좌 기본 정보
+    customer_id         UUID                     NOT NULL,                              -- 거래처 식별자
+    account_type        VARCHAR(20)              NOT NULL,                              -- 계좌 유형
+    bank_code           VARCHAR(10)              NOT NULL,                              -- 은행 코드
+    bank_name           VARCHAR(100),                                                   -- 은행명
+    
+    -- 계좌 상세 정보
+    account_no      	VARCHAR(50)              NOT NULL,                              -- 계좌번호
+    account_holder      VARCHAR(100)             NOT NULL,                              -- 예금주명
+    account_name        VARCHAR(100),                                                  	-- 계좌별칭
+    
+    -- 계좌 설정
+    is_primary          BOOLEAN                  DEFAULT false,                        	-- 주계좌 여부
+    is_receive  		BOOLEAN                  DEFAULT false,                        	-- 기본 입금계좌 여부
+    is_payment  		BOOLEAN                  DEFAULT false,                        	-- 기본 지급계좌 여부
+    
+    -- 추가 정보
+    swift_code          VARCHAR(20),                                                   	-- SWIFT 코드 (해외송금용)
+    branch_code         VARCHAR(20),                                                   	-- 지점 코드
+    branch_name         VARCHAR(100),                                                  	-- 지점명
+    notes               TEXT,                                                          	-- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_customer_banks__customer_id   FOREIGN KEY (customer_id) 	REFERENCES adm.customers(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_customer_banks__account_type	CHECK (account_type IN ('CHECKING', 'SAVINGS', 'FOREIGN_CURRENCY', 'ESCROW', 'TRUST', 'OTHER')),
+    CONSTRAINT ck_customer_banks__bank_code     CHECK (bank_code ~ '^[A-Z0-9]{3,10}$'),
+    CONSTRAINT ck_customer_banks__account_no 	CHECK (account_no ~ '^[0-9\-]{5,50}$'),
+    CONSTRAINT ck_customer_banks__swift_code    CHECK (swift_code IS NULL OR swift_code ~ '^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$'),
+    CONSTRAINT ck_customer_banks__status        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'CLOSED'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.customer_banks 			    IS '거래처 계좌 정보 관리 테이블';
+COMMENT ON COLUMN adm.customer_banks.id            	IS '계좌정보 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.customer_banks.created_at    	IS '등록 일시';
+COMMENT ON COLUMN adm.customer_banks.created_by    	IS '등록자 UUID';
+COMMENT ON COLUMN adm.customer_banks.updated_at    	IS '수정 일시';
+COMMENT ON COLUMN adm.customer_banks.updated_by    	IS '수정자 UUID';
+COMMENT ON COLUMN adm.customer_banks.company_id    	IS '회사 식별자';
+COMMENT ON COLUMN adm.customer_banks.customer_id   	IS '거래처 식별자';
+COMMENT ON COLUMN adm.customer_banks.account_type  	IS '계좌 유형 (CHECKING/SAVINGS/FOREIGN_CURRENCY/ESCROW/TRUST/OTHER)';
+COMMENT ON COLUMN adm.customer_banks.bank_code     	IS '은행 코드';
+COMMENT ON COLUMN adm.customer_banks.bank_name     	IS '은행명';
+COMMENT ON COLUMN adm.customer_banks.account_no 	IS '계좌번호';
+COMMENT ON COLUMN adm.customer_banks.account_holder IS '예금주명';
+COMMENT ON COLUMN adm.customer_banks.account_name  	IS '계좌별칭';
+COMMENT ON COLUMN adm.customer_banks.is_primary    	IS '주계좌 여부';
+COMMENT ON COLUMN adm.customer_banks.is_receive 	IS '기본 입금계좌 여부';
+COMMENT ON COLUMN adm.customer_banks.is_payment 	IS '기본 지급계좌 여부';
+COMMENT ON COLUMN adm.customer_banks.swift_code    	IS 'SWIFT 코드 (해외송금용)';
+COMMENT ON COLUMN adm.customer_banks.branch_code   	IS '지점 코드';
+COMMENT ON COLUMN adm.customer_banks.branch_name   	IS '지점명';
+COMMENT ON COLUMN adm.customer_banks.notes         	IS '비고';
+COMMENT ON COLUMN adm.customer_banks.status        	IS '상태 (ACTIVE/INACTIVE/SUSPENDED/CLOSED)';
+COMMENT ON COLUMN adm.customer_banks.is_deleted       	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customer_banks__customer_id
+    ON adm.customer_banks (customer_id)
+ WHERE is_deleted = false;
+
+-- 계좌번호 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__account_no
+    ON adm.customer_banks (account_no)
+ WHERE is_deleted = false;
+
+-- 은행별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__bank_code
+    ON adm.customer_banks (bank_code)
+ WHERE is_deleted = false;
+
+-- 계좌 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__account_type
+    ON adm.customer_banks (account_type)
+ WHERE is_deleted = false;
+
+-- 주계좌 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__is_primary
+    ON adm.customer_banks (customer_id, is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 기본 입금계좌 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__default_receive
+    ON adm.customer_banks (customer_id, is_receive)
+ WHERE is_receive = true 
+   AND is_deleted = false;
+
+-- 기본 지급계좌 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__default_payment
+    ON adm.customer_banks (customer_id, is_payment)
+ WHERE is_payment = true 
+   AND is_deleted = false;
+
+-- 예금주명 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__account_holder
+    ON adm.customer_banks (account_holder)
+ WHERE is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_banks__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 거래처별 계좌번호 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_banks__customer_account
+    ON adm.customer_banks (customer_id, account_no)
+ WHERE is_deleted = false;
+
+-- 거래처별 주계좌는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_banks__customer_primary
+    ON adm.customer_banks (customer_id)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 거래처별 기본 입금계좌는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_banks__customer_default_receive
+    ON adm.customer_banks (customer_id)
+ WHERE is_receive = true 
+   AND is_deleted = false;
+
+-- 거래처별 기본 지급계좌는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_banks__customer_default_payment
+    ON adm.customer_banks (customer_id)
+ WHERE is_payment = true 
+   AND is_deleted = false;
+   
+-- =====================================================================================
+-- 테이블: adm.customer_addresses
+-- 설명	: 거래처 주소 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.customer_addresses 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 주소정보 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 주소 기본 정보
+    customer_id         UUID                     NOT NULL,                              -- 거래처 식별자
+    address_type        VARCHAR(20)              NOT NULL,                              -- 주소 유형
+    address_name        VARCHAR(100),                                                  	-- 주소 별칭
+    
+    -- 주소 정보
+    postcode         	VARCHAR(20),                                                   	-- 우편번호
+    address1            VARCHAR(200),                                                  	-- 기본 주소
+    address2            VARCHAR(200),                                                  	-- 상세 주소
+	
+    building       		VARCHAR(200),                                                  	-- 건물명
+    city                VARCHAR(100),                                                  	-- 도시
+    state_province      VARCHAR(100),                                                  	-- 주/도
+    country_code   		VARCHAR(3)               DEFAULT 'KOR',                       	-- 국가 코드
+    
+    -- 연락처 정보
+    contact_name        VARCHAR(100),                                                  	-- 연락처 담당자명
+    phone               VARCHAR(50),                                                   	-- 전화번호
+    mobile              VARCHAR(50),                                                   	-- 휴대폰 번호
+    fax                 VARCHAR(50),                                                   	-- 팩스번호
+    email               VARCHAR(255),                                                  	-- 이메일
+    
+    -- 설정 정보
+    is_primary          BOOLEAN                  DEFAULT false,                        	-- 주소지 여부
+    is_billing          BOOLEAN                  DEFAULT false,                        	-- 청구지 여부
+    is_shipping         BOOLEAN                  DEFAULT false,                        	-- 배송지 여부
+    
+    -- 배송 관련 정보
+    instruction 		TEXT,                                                         	-- 배송 지시사항
+    access_code         VARCHAR(20),                                                   	-- 출입코드
+    
+    -- 추가 정보
+    notes               TEXT,                                                          	-- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_customer_addresses__customer_id	FOREIGN KEY (customer_id) REFERENCES adm.customers(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_customer_addresses__address_type  CHECK (address_type IN ('MAIN', 'BILLING', 'SHIPPING', 'BRANCH', 'WAREHOUSE', 'FACTORY', 'OTHER')),
+    CONSTRAINT ck_customer_addresses__country_code  CHECK (country_code ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_customer_addresses__phone         CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customer_addresses__mobile        CHECK (mobile IS NULL OR mobile ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customer_addresses__fax           CHECK (fax IS NULL OR fax ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_customer_addresses__email         CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_customer_addresses__status        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.customer_addresses 				IS '거래처 주소 정보 관리 테이블';
+COMMENT ON COLUMN adm.customer_addresses.id            	IS '주소정보 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.customer_addresses.created_at    	IS '등록 일시';
+COMMENT ON COLUMN adm.customer_addresses.created_by    	IS '등록자 UUID';
+COMMENT ON COLUMN adm.customer_addresses.updated_at    	IS '수정 일시';
+COMMENT ON COLUMN adm.customer_addresses.updated_by    	IS '수정자 UUID';
+COMMENT ON COLUMN adm.customer_addresses.company_id    	IS '회사 식별자';
+COMMENT ON COLUMN adm.customer_addresses.customer_id   	IS '거래처 식별자';
+COMMENT ON COLUMN adm.customer_addresses.address_type  	IS '주소 유형 (MAIN/BILLING/SHIPPING/BRANCH/WAREHOUSE/FACTORY/OTHER)';
+COMMENT ON COLUMN adm.customer_addresses.address_name  	IS '주소 별칭';
+COMMENT ON COLUMN adm.customer_addresses.postcode   	IS '우편번호';
+COMMENT ON COLUMN adm.customer_addresses.address1      	IS '기본 주소';
+COMMENT ON COLUMN adm.customer_addresses.address2      	IS '상세 주소';
+COMMENT ON COLUMN adm.customer_addresses.building 		IS '건물명';
+COMMENT ON COLUMN adm.customer_addresses.city          	IS '도시';
+COMMENT ON COLUMN adm.customer_addresses.state_province IS '주/도';
+COMMENT ON COLUMN adm.customer_addresses.country_code  	IS '국가 코드 (ISO 3166-1 alpha-3)';
+COMMENT ON COLUMN adm.customer_addresses.contact_name  	IS '연락처 담당자명';
+COMMENT ON COLUMN adm.customer_addresses.phone         	IS '전화번호';
+COMMENT ON COLUMN adm.customer_addresses.mobile        	IS '휴대폰 번호';
+COMMENT ON COLUMN adm.customer_addresses.fax           	IS '팩스번호';
+COMMENT ON COLUMN adm.customer_addresses.email         	IS '이메일';
+COMMENT ON COLUMN adm.customer_addresses.is_primary    	IS '주소지 여부';
+COMMENT ON COLUMN adm.customer_addresses.is_billing    	IS '청구지 여부';
+COMMENT ON COLUMN adm.customer_addresses.is_shipping   	IS '배송지 여부';
+COMMENT ON COLUMN adm.customer_addresses.instruction 	IS '배송 지시사항';
+COMMENT ON COLUMN adm.customer_addresses.access_code   	IS '출입코드';
+COMMENT ON COLUMN adm.customer_addresses.notes         	IS '비고';
+COMMENT ON COLUMN adm.customer_addresses.status        	IS '상태 (ACTIVE/INACTIVE/SUSPENDED)';
+COMMENT ON COLUMN adm.customer_addresses.is_deleted       	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__customer_id
+    ON adm.customer_addresses (customer_id)
+ WHERE is_deleted = false;
+
+-- 주소 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__address_type
+    ON adm.customer_addresses (address_type, customer_id)
+ WHERE is_deleted = false;
+
+-- 우편번호 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__postcode
+    ON adm.customer_addresses (postcode)
+ WHERE postcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- 도시별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__city
+    ON adm.customer_addresses (city)
+ WHERE city IS NOT NULL 
+   AND is_deleted = false;
+
+-- 국가별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__country_code
+    ON adm.customer_addresses (country_code)
+ WHERE is_deleted = false;
+
+-- 주소지 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__is_primary
+    ON adm.customer_addresses (customer_id, is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 청구지 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__is_billing
+    ON adm.customer_addresses (customer_id, is_billing)
+ WHERE is_billing = true 
+   AND is_deleted = false;
+
+-- 배송지 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__is_shipping
+    ON adm.customer_addresses (customer_id, is_shipping)
+ WHERE is_shipping = true 
+   AND is_deleted = false;
+
+-- 연락처 담당자 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__contact_name
+    ON adm.customer_addresses (contact_name)
+ WHERE contact_name IS NOT NULL 
+   AND is_deleted = false;
+
+-- 전화번호 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__phone
+    ON adm.customer_addresses (phone)
+ WHERE phone IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_customer_addresses__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 거래처별 주소 별칭 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_addresses__customer_name
+    ON adm.customer_addresses (customer_id, address_name)
+ WHERE address_name IS NOT NULL 
+   AND is_deleted = false;
+
+-- 거래처별 주소지는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_customer_addresses__customer_primary
+    ON adm.customer_addresses (customer_id)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 제조사, 브랜드
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: adm.makers
+-- 설명	: 제조사 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.makers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 제조사 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 제조사 기본 정보
+	
+    maker_code   		VARCHAR(20)              NOT NULL,                              -- 제조사 코드
+    maker_name   		VARCHAR(200)             NOT NULL,                              -- 제조사명
+    
+    -- 제조사 상세 정보
+    english_name        VARCHAR(200),                                                  -- 영문 제조사명
+    country_code        VARCHAR(3),                                                    -- 본사 국가코드
+    
+    -- 주소 정보
+    postcode            VARCHAR(10),                                                    -- 우편번호
+    address1            VARCHAR(100),                                                   -- 주소1 (기본주소)
+    address2            VARCHAR(100),                                                   -- 주소2 (상세주소)
+	
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 거래처 전화번호
+    email               VARCHAR(255),                                                  	-- 거래처 이메일
+    website             VARCHAR(255),                                                  	-- 웹사이트 URL
+    
+    -- 정렬 및 표시 정보
+    display_order       INTEGER                  DEFAULT 0,                            -- 정렬 순서
+    logo_url            VARCHAR(500),                                                  -- 로고 이미지 URL
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 제조사 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    
+	-- 제약조건
+    CONSTRAINT ck_adm_makers__maker_code   		CHECK (maker_code ~ '^[A-Z0-9_\-]{1,20}$'),
+    CONSTRAINT ck_adm_makers__country_code      CHECK (country_code IS NULL OR country_code ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_adm_makers__phone             CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_adm_makers__email             CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_adm_makers__display_order     CHECK (display_order >= 0),
+    CONSTRAINT ck_adm_makers__status            CHECK (status IN ('ACTIVE', 'INACTIVE', 'DISCONTINUED', 'PENDING'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.makers 				IS '제조사 마스터 정보 관리 테이블';
+COMMENT ON COLUMN adm.makers.id             IS '제조사 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.makers.created_at     IS '등록 일시';
+COMMENT ON COLUMN adm.makers.created_by     IS '등록자 UUID';
+COMMENT ON COLUMN adm.makers.updated_at     IS '수정 일시';
+COMMENT ON COLUMN adm.makers.updated_by     IS '수정자 UUID';
+COMMENT ON COLUMN adm.makers.company_id     IS '회사 식별자';
+COMMENT ON COLUMN adm.makers.maker_code 	IS '제조사 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.makers.maker_name 	IS '제조사명';
+COMMENT ON COLUMN adm.makers.english_name   IS '영문 제조사명';
+COMMENT ON COLUMN adm.makers.country_code   IS '본사 국가 코드 (ISO 3166-1 alpha-3)';
+COMMENT ON COLUMN adm.makers.postcode       IS '우편번호';
+COMMENT ON COLUMN adm.makers.address1       IS '주소1';
+COMMENT ON COLUMN adm.makers.address2       IS '주소2';
+COMMENT ON COLUMN adm.makers.phone          IS '전화번호';
+COMMENT ON COLUMN adm.makers.email          IS '이메일';
+COMMENT ON COLUMN adm.makers.website        IS '웹사이트 URL';
+COMMENT ON COLUMN adm.makers.display_order  IS '정렬 순서';
+COMMENT ON COLUMN adm.makers.logo_url       IS '로고 이미지 URL';
+COMMENT ON COLUMN adm.makers.description    IS '제조사 설명';
+COMMENT ON COLUMN adm.makers.notes          IS '비고';
+COMMENT ON COLUMN adm.makers.status         IS '상태 (ACTIVE/INACTIVE/DISCONTINUED/PENDING)';
+COMMENT ON COLUMN adm.makers.is_deleted        IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_adm_makers__maker_code
+    ON adm.makers (maker_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_adm_makers__maker_name
+    ON adm.makers (maker_name)
+ WHERE is_deleted = false;
+
+-- 정렬 순서 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_makers__display_order
+    ON adm.makers (display_order, maker_name)
+ WHERE is_deleted = false;
+
+-- 국가별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_makers__country_code
+    ON adm.makers (country_code)
+ WHERE country_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_makers__status
+
+-- 영문명 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_makers__english_name
+    ON adm.makers (english_name)
+ WHERE english_name IS NOT NULL 
+   AND is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 제조사 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_adm_makers__company_code
+    ON adm.makers (maker_code)
+ WHERE is_deleted = false;
+
+-- 전체 제조사명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_adm_makers__company_name
+    ON adm.makers (maker_name)
+ WHERE is_deleted = false;
+ 
+
+-- =====================================================================================
+-- 테이블: adm.brands
+-- 설명	: 브랜드 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.brands 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 브랜드 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 브랜드 기본 정보
+    maker_id     		UUID                     NOT NULL,                              -- 제조사 식별자
+	
+    brand_code          VARCHAR(20)              NOT NULL,                              -- 브랜드 코드
+    brand_name          VARCHAR(200)             NOT NULL,                              -- 브랜드명
+    
+    -- 브랜드 상세 정보
+    english_name        VARCHAR(200),                                                  -- 영문 브랜드명
+    brand_type          VARCHAR(20)              DEFAULT 'PRODUCT',                    -- 브랜드 유형
+    brand_category      VARCHAR(50),                                                   -- 브랜드 카테고리
+    
+    -- 브랜딩 정보
+    logo_url            VARCHAR(500),                                                  -- 로고 이미지 URL
+    brand_color         VARCHAR(20),                                                   -- 브랜드 컬러 (hex)
+    tagline             VARCHAR(200),                                                  -- 브랜드 슬로건
+    
+    -- 시장 정보
+    market_segment      VARCHAR(50),                                                   -- 시장 세그먼트
+    price_range         VARCHAR(20),                                                   -- 가격대
+    target_market       VARCHAR(100),                                                  -- 타겟 시장
+    
+    -- 연결 정보
+    website             VARCHAR(255),                                                  -- 브랜드 웹사이트
+    country_code        VARCHAR(3),                                                    -- 브랜드 원산지
+    
+    -- 정렬 및 표시 정보
+    display_order       INTEGER                  DEFAULT 0,                            -- 정렬 순서
+    is_premium          BOOLEAN                  DEFAULT false,                        -- 프리미엄 브랜드 여부
+    is_private    		BOOLEAN                  DEFAULT false,                        -- 자체 브랜드 여부
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 브랜드 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_adm_brands__maker_id   		FOREIGN KEY (maker_id) 		REFERENCES adm.makers(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_adm_brands__brand_code         CHECK (brand_code ~ '^[A-Z0-9_\-]{1,20}$'),
+    CONSTRAINT ck_adm_brands__brand_type         CHECK (brand_type IN ('PRODUCT', 'SERVICE', 'CORPORATE', 'SUB_BRAND', 'PRIVATE_LABEL')),
+    CONSTRAINT ck_adm_brands__price_range        CHECK (price_range IS NULL OR price_range IN ('BUDGET', 'MID_RANGE', 'PREMIUM', 'LUXURY', 'ULTRA_LUXURY')),
+    CONSTRAINT ck_adm_brands__country_code       CHECK (country_code IS NULL OR country_code ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_adm_brands__display_order      CHECK (display_order >= 0),
+    CONSTRAINT ck_adm_brands__status             CHECK (status IN ('ACTIVE', 'INACTIVE', 'DISCONTINUED', 'PENDING')),
+    CONSTRAINT ck_adm_brands__brand_color        CHECK (brand_color IS NULL OR brand_color ~ '^#[0-9A-Fa-f]{6}$')
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.brands 				IS '브랜드 마스터 정보 관리 테이블';
+COMMENT ON COLUMN adm.brands.id            	IS '브랜드 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.brands.created_at    	IS '등록 일시';
+COMMENT ON COLUMN adm.brands.created_by    	IS '등록자 UUID';
+COMMENT ON COLUMN adm.brands.updated_at    	IS '수정 일시';
+COMMENT ON COLUMN adm.brands.updated_by    	IS '수정자 UUID';
+COMMENT ON COLUMN adm.brands.company_id    	IS '회사 식별자';
+COMMENT ON COLUMN adm.brands.maker_id 		IS '제조사 식별자';
+COMMENT ON COLUMN adm.brands.brand_code    	IS '브랜드 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.brands.brand_name    	IS '브랜드명';
+COMMENT ON COLUMN adm.brands.english_name  	IS '영문 브랜드명';
+COMMENT ON COLUMN adm.brands.brand_type    	IS '브랜드 유형 (PRODUCT/SERVICE/CORPORATE/SUB_BRAND/PRIVATE_LABEL)';
+COMMENT ON COLUMN adm.brands.brand_category IS '브랜드 카테고리';
+COMMENT ON COLUMN adm.brands.logo_url      	IS '로고 이미지 URL';
+COMMENT ON COLUMN adm.brands.brand_color   	IS '브랜드 컬러 (hex 코드)';
+COMMENT ON COLUMN adm.brands.tagline       	IS '브랜드 슬로건';
+COMMENT ON COLUMN adm.brands.market_segment IS '시장 세그먼트';
+COMMENT ON COLUMN adm.brands.price_range   	IS '가격대 (BUDGET/MID_RANGE/PREMIUM/LUXURY/ULTRA_LUXURY)';
+COMMENT ON COLUMN adm.brands.target_market 	IS '타겟 시장';
+COMMENT ON COLUMN adm.brands.website       	IS '브랜드 웹사이트';
+COMMENT ON COLUMN adm.brands.country_code  	IS '브랜드 원산지 (ISO 3166-1 alpha-3)';
+COMMENT ON COLUMN adm.brands.display_order  IS '정렬 순서';
+COMMENT ON COLUMN adm.brands.is_premium    	IS '프리미엄 브랜드 여부';
+COMMENT ON COLUMN adm.brands.is_private 	IS '자체 브랜드 여부';
+COMMENT ON COLUMN adm.brands.description   	IS '브랜드 설명';
+COMMENT ON COLUMN adm.brands.notes         	IS '비고';
+COMMENT ON COLUMN adm.brands.status        	IS '상태 (ACTIVE/INACTIVE/DISCONTINUED/PENDING)';
+COMMENT ON COLUMN adm.brands.is_deleted       	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_adm_brands__maker_id
+    ON adm.brands (maker_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_adm_brands__brand_code
+    ON adm.brands (brand_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_adm_brands__brand_name
+    ON adm.brands (brand_name)
+ WHERE is_deleted = false;
+
+-- 정렬 순서 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__display_order
+    ON adm.brands (maker_id, display_order, brand_name)
+ WHERE is_deleted = false;
+
+-- 브랜드 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__brand_type
+    ON adm.brands (brand_type)
+ WHERE is_deleted = false;
+
+-- 가격대별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__price_range
+    ON adm.brands (price_range)
+ WHERE price_range IS NOT NULL 
+   AND is_deleted = false;
+
+-- 시장 세그먼트별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__market_segment
+    ON adm.brands (market_segment)
+ WHERE market_segment IS NOT NULL 
+   AND is_deleted = false;
+
+-- 원산지별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__country_code
+    ON adm.brands (country_code)
+ WHERE country_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 프리미엄 브랜드 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__is_premium
+ WHERE is_premium = true 
+   AND is_deleted = false;
+
+-- 자체 브랜드 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__is_private
+ WHERE is_private = true 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_adm_brands__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 브랜드 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_adm_brands__company_code
+    ON adm.brands (brand_code)
+ WHERE is_deleted = false;
+
+-- 제조사별 브랜드명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_adm_brands__maker_name
+    ON adm.brands (maker_id, brand_name)
+ WHERE is_deleted = false;
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 제품
+-- ============================================================================
+
+/*
+
+*/
+
+-- =====================================================================================
+-- 테이블: adm.categories
+-- 설명	: 제품/품목 카테고리 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.categories  
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 카테고리 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 카테고리 기본 정보
+    parent_id           UUID,                                                          	-- 상위 카테고리 식별자
+    category_code       VARCHAR(50)              NOT NULL,                              -- 카테고리 코드
+    category_name       VARCHAR(100)             NOT NULL,                              -- 카테고리명
+    
+    -- 계층 정보
+    level_depth         INTEGER                  DEFAULT 1,                            -- 계층 깊이 (1=대분류, 2=중분류, 3=소분류)
+    full_path           VARCHAR(500),                                                  -- 전체 경로 (대분류>중분류>소분류)
+    
+    -- 카테고리 속성
+    category_type       VARCHAR(20)              DEFAULT 'PRODUCT',                    -- 카테고리 유형
+    display_order       INTEGER                  DEFAULT 0,                            -- 표시 순서
+    
+    -- 세무 및 회계 정보
+    tax_category        VARCHAR(20),                                                   -- 세금 분류
+    account_code     	VARCHAR(30),                                                   -- 회계 코드
+    
+    -- 관리 정보
+    manager_id          UUID,                                                          -- 카테고리 담당자
+    buyer_id            UUID,                                                          -- 구매 담당자
+    
+    -- 이미지 및 아이콘
+    icon_url            VARCHAR(500),                                                  -- 아이콘 URL
+    image_url           VARCHAR(500),                                                  -- 이미지 URL
+    
+    -- 외부 연동
+    external_code       VARCHAR(50),                                                   -- 외부 시스템 코드
+    marketplace 		VARCHAR(100),                                                 -- 마켓플레이스 카테고리
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 카테고리 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_categories__parent_id    FOREIGN KEY (parent_id) REFERENCES adm.categories(id),
+    CONSTRAINT fk_categories__manager_id   FOREIGN KEY (manager_id) REFERENCES adm.employees(id),
+    CONSTRAINT fk_categories__buyer_id     FOREIGN KEY (buyer_id) REFERENCES adm.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_categories__category_code     CHECK (category_code ~ '^[A-Z0-9_\-]{1,50}$'),
+    CONSTRAINT ck_categories__category_type     CHECK (category_type IN ('PRODUCT', 'SERVICE', 'BUNDLE', 'VIRTUAL', 'SUBSCRIPTION', 'DIGITAL', 'PHYSICAL')),
+    CONSTRAINT ck_categories__tax_category      CHECK (tax_category IS NULL OR tax_category IN ('TAXABLE', 'EXEMPT', 'ZERO_RATED', 'REVERSE_CHARGE', 'SPECIAL')),
+    CONSTRAINT ck_categories__level_depth_range        CHECK (level_depth BETWEEN 1 AND 10),
+    CONSTRAINT ck_categories__display_order   CHECK (display_order >= 0),
+    CONSTRAINT ck_categories__status            CHECK (status IN ('ACTIVE', 'INACTIVE', 'DISCONTINUED', 'PENDING')),
+    CONSTRAINT ck_categories__parent_not_self          CHECK (parent_id != id)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.categories  				IS '제품/품목 카테고리 정보 관리 테이블';
+COMMENT ON COLUMN adm.categories.id            	IS '카테고리 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.categories.created_at    	IS '등록 일시';
+COMMENT ON COLUMN adm.categories.created_by    	IS '등록자 UUID';
+COMMENT ON COLUMN adm.categories.updated_at    	IS '수정 일시';
+COMMENT ON COLUMN adm.categories.updated_by    	IS '수정자 UUID';
+COMMENT ON COLUMN adm.categories.company_id    	IS '회사 식별자';
+COMMENT ON COLUMN adm.categories.parent_id     	IS '상위 카테고리 식별자 (계층구조)';
+COMMENT ON COLUMN adm.categories.category_code 	IS '카테고리 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.categories.category_name 	IS '카테고리명';
+COMMENT ON COLUMN adm.categories.level_depth   	IS '계층 깊이 (1=대분류, 2=중분류, 3=소분류)';
+COMMENT ON COLUMN adm.categories.full_path     	IS '전체 경로 (대분류>중분류>소분류)';
+COMMENT ON COLUMN adm.categories.category_type 	IS '카테고리 유형 (PRODUCT/SERVICE/BUNDLE/VIRTUAL/SUBSCRIPTION/DIGITAL/PHYSICAL)';
+COMMENT ON COLUMN adm.categories.display_order 	IS '표시 순서';
+COMMENT ON COLUMN adm.categories.tax_category  	IS '세금 분류 (TAXABLE/EXEMPT/ZERO_RATED/REVERSE_CHARGE/SPECIAL)';
+COMMENT ON COLUMN adm.categories.account_code 	IS '회계 코드';
+COMMENT ON COLUMN adm.categories.manager_id    	IS '카테고리 담당자';
+COMMENT ON COLUMN adm.categories.buyer_id      	IS '구매 담당자';
+COMMENT ON COLUMN adm.categories.icon_url      	IS '아이콘 URL';
+COMMENT ON COLUMN adm.categories.image_url     	IS '이미지 URL';
+COMMENT ON COLUMN adm.categories.external_code 	IS '외부 시스템 코드';
+COMMENT ON COLUMN adm.categories.marketplace 	IS '마켓플레이스 카테고리';
+COMMENT ON COLUMN adm.categories.description   	IS '카테고리 설명';
+COMMENT ON COLUMN adm.categories.notes         	IS '비고';
+COMMENT ON COLUMN adm.categories.status        	IS '상태 (ACTIVE/INACTIVE/DISCONTINUED/PENDING)';
+COMMENT ON COLUMN adm.categories.is_deleted       	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_categories__category_code
+    ON adm.categories  (category_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_categories__category_name
+    ON adm.categories  (category_name)
+ WHERE is_deleted = false;
+
+-- 계층구조 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__parent_id
+    ON adm.categories  (parent_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_categories__level_depth
+    ON adm.categories  (level_depth, display_order)
+ WHERE is_deleted = false;
+
+-- 표시 순서 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__display_order
+    ON adm.categories  (parent_id, display_order, category_name)
+ WHERE is_deleted = false;
+
+-- 카테고리 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__category_type
+    ON adm.categories  (category_type)
+ WHERE is_deleted = false;
+
+-- 세금 분류별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__tax_category
+    ON adm.categories  (tax_category)
+ WHERE tax_category IS NOT NULL 
+   AND is_deleted = false;
+
+-- 담당자별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__manager_id
+    ON adm.categories  (manager_id)
+ WHERE manager_id IS NOT NULL 
+   AND is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_categories__buyer_id
+    ON adm.categories  (buyer_id)
+ WHERE buyer_id IS NOT NULL 
+   AND is_deleted = false;
+
+-- 외부 시스템 연동 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__external_code
+    ON adm.categories  (external_code)
+ WHERE external_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 회계 코드 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__account_code
+    ON adm.categories  (account_code)
+ WHERE account_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 전체 경로 검색 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__full_path
+    ON adm.categories  (full_path)
+ WHERE full_path IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_categories__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 카테고리 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_categories__company_code
+    ON adm.categories  (category_code)
+ WHERE is_deleted = false;
+
+-- 전체 동일 레벨의 카테고리명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_categories__company_parent_name
+    ON adm.categories  (COALESCE(parent_id, '00000000-0000-0000-0000-000000000000'::UUID), category_name)
+ WHERE is_deleted = false;
+
+-- 외부 코드 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_categories__external_code
+    ON adm.categories  (external_code)
+ WHERE external_code IS NOT NULL 
+   AND is_deleted = false;
+   
+
+-- =====================================================================================
+-- 테이블: adm.category_managers
+-- 설명	: 카테고리 담당자 이력을 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.category_managers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 담당자 이력 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 담당자 이력 기본 정보
+    category_id         UUID                     NOT NULL,                              -- 카테고리 식별자
+    employee_id         UUID                     NOT NULL,                              -- 담당자 식별자
+    -- 담당 기간
+    start_date          DATE                     NOT NULL,                              -- 담당 시작일
+    end_date          	DATE                     NOT NULL,                              -- 담당 종료일
+    
+    -- 담당자 역할 및 유형
+    manager_type        VARCHAR(20)              DEFAULT 'PRIMARY',                     -- 담당자 유형
+	
+    description      	TEXT,                                                  			-- 담당 업무/역할    
+    notes               TEXT,                                                          	-- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_category_managers__category_id    FOREIGN KEY (category_id) 	REFERENCES adm.categories(id),
+    CONSTRAINT fk_category_managers__employee_id    FOREIGN KEY (employee_id) 	REFERENCES adm.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_category_managers__manager_type   CHECK (manager_type IN ('PRIMARY', 'SECONDARY', 'SALES', 'TECHNICAL', 'PURCHASE', 'MARKETING', 'ANALYST')),
+    CONSTRAINT ck_category_managers__status         CHECK (status IN ('ACTIVE', 'INACTIVE', 'EXPIRED', 'TERMINATED')),
+    CONSTRAINT ck_category_managers__date_range     CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.category_managers 				IS '카테고리 담당자 이력 관리 테이블';
+COMMENT ON COLUMN adm.category_managers.id             	IS '담당자 이력 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.category_managers.created_at     	IS '등록 일시';
+COMMENT ON COLUMN adm.category_managers.created_by     	IS '등록자 UUID';
+COMMENT ON COLUMN adm.category_managers.updated_at     	IS '수정 일시';
+COMMENT ON COLUMN adm.category_managers.updated_by     	IS '수정자 UUID';
+COMMENT ON COLUMN adm.category_managers.company_id     	IS '회사 식별자';
+COMMENT ON COLUMN adm.category_managers.category_id    	IS '카테고리 식별자';
+COMMENT ON COLUMN adm.category_managers.employee_id    	IS '담당자 식별자';
+COMMENT ON COLUMN adm.category_managers.start_date     	IS '담당 시작일';
+COMMENT ON COLUMN adm.category_managers.end_date      IS '담당 종료일';
+COMMENT ON COLUMN adm.category_managers.manager_type   	IS '담당자 유형 (PRIMARY/SECONDARY/SALES/TECHNICAL/PURCHASE/MARKETING/ANALYST)';
+COMMENT ON COLUMN adm.category_managers.description 	IS '담당 업무/역할';
+COMMENT ON COLUMN adm.category_managers.notes          	IS '비고';
+COMMENT ON COLUMN adm.category_managers.status         	IS '상태 (ACTIVE/INACTIVE/EXPIRED/TERMINATED)';
+COMMENT ON COLUMN adm.category_managers.is_deleted        	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+ 
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_category_managers__category_id
+    ON adm.category_managers (category_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_category_managers__employee_id
+    ON adm.category_managers (employee_id)
+ WHERE is_deleted = false;
+
+-- 현재 담당자 조회 인덱스 (가장 중요)
+-- CREATE INDEX IF NOT EXISTS ix_category_managers__current_active
+    -- ON adm.category_managers (category_id, status, start_date, end_date)
+ -- WHERE status = 'ACTIVE' 
+   -- AND CURRENT_DATE BETWEEN start_date AND end_date
+   -- AND is_deleted = false;
+
+-- 담당 기간별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_category_managers__date_range
+    ON adm.category_managers (start_date, end_date)
+ WHERE is_deleted = false;
+
+-- 담당자 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_category_managers__manager_type
+    ON adm.category_managers (manager_type, category_id)
+ WHERE is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_category_managers__status
+
+-- 사원별 담당 카테고리 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_category_managers__employee_categories
+    ON adm.category_managers (employee_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+
+-- 이력 조회 인덱스 (카테고리별 담당자 변경 이력)
+CREATE INDEX IF NOT EXISTS ix_category_managers__category_history
+    ON adm.category_managers (category_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 동일 기간 내 카테고리의 동일 유형 담당자는 하나만 허용
+CREATE UNIQUE INDEX IF NOT EXISTS ux_category_managers__category_type_period
+    ON adm.category_managers (category_id, manager_type, start_date, end_date)
+ WHERE is_deleted = false;
+ 
+
+-- =====================================================================================
+-- 테이블: adm.products
+-- 설명: 제품/품목 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.products 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     	PRIMARY KEY DEFAULT gen_random_uuid(),	-- 제품 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE 	NOT NULL DEFAULT CURRENT_TIMESTAMP,    	-- 등록 일시
+    created_by          UUID,                                                           	-- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       	-- 수정 일시
+    updated_by          UUID,                                                           	-- 수정자 UUID
+    
+    -- 제품 기본 정보
+    product_code       	VARCHAR(20)              	NOT NULL,                              	-- 제품 코드
+    product_name        VARCHAR(200)             	NOT NULL,                              	-- 제품명
+    product_type        VARCHAR(10),                                                   		-- 제품 유형
+	product_no      	VARCHAR(10),                                                   		-- 제품 번호
+    
+    -- 분류 정보    
+    item_type           VARCHAR(10),                                                   		-- 품목 유형
+    category_id         UUID,                                                          		-- 카테고리 식별자
+	
+    maker_id     		UUID,                                                          		-- 제조사 식별자
+    brand_id            UUID,                                                          		-- 브랜드 식별자
+	model_name          VARCHAR(100),                                                  		-- 모델명
+    barcode             VARCHAR(50),                                                   		-- 바코드
+    
+    -- 세무 및 거래 정보
+    is_taxfree         	BOOLEAN                  	DEFAULT false,                        	-- 면세 여부
+    is_bigdeal         	BOOLEAN                  	DEFAULT false,                        	-- 거액 거래 여부
+    
+    -- 제품 속성
+    is_barcode         	BOOLEAN                  	DEFAULT false,                        	-- 바코드 보유 여부
+    is_checkno   		BOOLEAN                  	DEFAULT false,                        	-- 체크번호 필요 여부
+    is_serial       	BOOLEAN                  	DEFAULT false,                        	-- 시리얼 관리 여부
+    is_inventory 		BOOLEAN                 	DEFAULT true,                         	-- 재고 관리 여부
+    
+    -- 외부 시스템 연동
+    cto_id              VARCHAR(50),                                                   		-- CTO ID
+    eclipse_id          VARCHAR(20),                                                   		-- Eclipse ID
+    procure_id          VARCHAR(20),                                                   		-- 조달 ID
+    
+    -- 가격 정보
+	std_cost_price 		NUMERIC(18,4),                                             			-- 표준 판매가
+    std_sell_price 		NUMERIC(18,4),                                             			-- 표준 판매가
+    min_sell_price 		NUMERIC(18,4),                                              		-- 최소 판매가
+    currency            VARCHAR(3)               	DEFAULT 'KRW',                       	-- 통화
+    
+    -- 구매 정보
+	manager_id  		UUID,                                                  				-- 제품 담당자 식별자
+    
+    -- 이미지 및 미디어
+    image_url           VARCHAR(200),                                                  		-- 이미지 URL
+    
+    -- 추가 정보
+    description         TEXT,                                                         		-- 제품 설명
+    specifications      JSONB,                                                         		-- 제품 사양
+    notes               TEXT,                                                          		-- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)             	DEFAULT 'ACTIVE',                     	-- 상태
+    is_deleted             BOOLEAN                  	DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_products__category_id     FOREIGN KEY (category_id) 	REFERENCES adm.categories(id),
+    --CONSTRAINT fk_products__maker_id    	FOREIGN KEY (maker_id) 		REFERENCES adm.makers(id),
+    --CONSTRAINT fk_products__brand_id        FOREIGN KEY (brand_id) 		REFERENCES adm.brands(id),
+    CONSTRAINT fk_products__manager_id      FOREIGN KEY (manager_id) 	REFERENCES adm.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_products__product_code    CHECK (product_code ~ '^[A-Z0-9\-_]{1,20}$'),
+    CONSTRAINT ck_products__currency        CHECK (currency ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_products__price_valid     CHECK (std_sell_price IS NULL OR std_sell_price >= 0),
+    CONSTRAINT ck_products__min_price       CHECK (min_sell_price IS NULL OR min_sell_price >= 0),
+    CONSTRAINT ck_products__status          CHECK (status IN ('ACTIVE', 'INACTIVE', 'DISCONTINUED', 'PENDING', 'EOL'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.products 				    IS '제품/품목 마스터 정보 관리 테이블';
+COMMENT ON COLUMN adm.products.id               IS '제품 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.products.created_at		IS '등록 일시';
+COMMENT ON COLUMN adm.products.created_by       IS '등록자 UUID';
+COMMENT ON COLUMN adm.products.updated_at       IS '수정 일시';
+COMMENT ON COLUMN adm.products.updated_by       IS '수정자 UUID';
+COMMENT ON COLUMN adm.products.company_id       IS '회사 식별자';
+COMMENT ON COLUMN adm.products.product_code     IS '제품 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.products.product_name     IS '제품명';
+COMMENT ON COLUMN adm.products.product_no     	IS '제품 번호';
+COMMENT ON COLUMN adm.products.product_type     IS '제품 유형';
+COMMENT ON COLUMN adm.products.item_type        IS '품목 유형';
+COMMENT ON COLUMN adm.products.category_id      IS '카테고리 식별자';
+COMMENT ON COLUMN adm.products.maker_id    		IS '제조사 식별자';
+COMMENT ON COLUMN adm.products.brand_id         IS '브랜드 식별자';
+COMMENT ON COLUMN adm.products.manager_id       IS '제품 담당자 식별자';
+COMMENT ON COLUMN adm.products.model_name       IS '모델명';
+COMMENT ON COLUMN adm.products.barcode          IS '바코드';
+COMMENT ON COLUMN adm.products.is_taxfree       IS '면세 여부';
+COMMENT ON COLUMN adm.products.is_bigdeal       IS '거액 거래 여부';
+COMMENT ON COLUMN adm.products.is_barcode       IS '바코드 보유 여부';
+COMMENT ON COLUMN adm.products.is_checkno  		IS '체크번호 필요 여부';
+COMMENT ON COLUMN adm.products.is_serial      	IS '시리얼 관리 여부';
+COMMENT ON COLUMN adm.products.is_inventory 	IS '재고 관리 여부';
+COMMENT ON COLUMN adm.products.cto_id           IS 'CTO ID';
+COMMENT ON COLUMN adm.products.eclipse_id       IS 'Eclipse ID';
+COMMENT ON COLUMN adm.products.procure_id       IS '조달 ID';
+COMMENT ON COLUMN adm.products.std_sell_price 	IS '표준 판매가';
+COMMENT ON COLUMN adm.products.min_sell_price 	IS '최소 판매가';
+COMMENT ON COLUMN adm.products.currency         IS '통화 (ISO 4217)';
+COMMENT ON COLUMN adm.products.image_url        IS '이미지 URL';
+COMMENT ON COLUMN adm.products.description      IS '제품 설명';
+COMMENT ON COLUMN adm.products.specifications   IS '제품 사양 (JSON 형태: {"cpu": "Intel i7", "memory": "16GB", "storage": "512GB SSD"})';
+COMMENT ON COLUMN adm.products.notes            IS '비고';
+COMMENT ON COLUMN adm.products.status           IS '상태 (ACTIVE/INACTIVE/DISCONTINUED/PENDING/EOL)';
+COMMENT ON COLUMN adm.products.is_deleted          IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__product_code
+    ON adm.products (product_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__product_name
+    ON adm.products (product_name)
+ WHERE is_deleted = false;
+
+-- 분류별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__category_id
+    ON adm.products (category_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__maker_id
+    ON adm.products (maker_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__brand_id
+    ON adm.products (brand_id)
+ WHERE is_deleted = false;
+
+-- 제품 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__product_type
+    ON adm.products (product_type)
+ WHERE product_type IS NOT NULL 
+   AND is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__item_type
+    ON adm.products (item_type)
+ WHERE item_type IS NOT NULL 
+   AND is_deleted = false;
+
+-- 바코드 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__barcode
+    ON adm.products (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- 모델명 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__model_name
+    ON adm.products (model_name)
+ WHERE model_name IS NOT NULL 
+   AND is_deleted = false;
+
+-- 담당자별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__manager_id
+    ON adm.products (manager_id)
+ WHERE manager_id IS NOT NULL 
+   AND is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__procure_id
+    ON adm.products (procure_id)
+ WHERE procure_id IS NOT NULL 
+   AND is_deleted = false;
+
+-- 특성별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__is_serial
+ WHERE is_serial = true 
+   AND is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_products__is_taxfree
+ WHERE is_taxfree = true 
+   AND is_deleted = false;
+   
+CREATE INDEX IF NOT EXISTS ix_products__specifications
+    ON adm.products USING GIN (specifications)
+ WHERE specifications IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_products__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 제품 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_products__company_code
+    ON adm.products (product_code)
+ WHERE is_deleted = false;
+
+-- 바코드 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_products__barcode
+    ON adm.products (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+   
+   
+-- =====================================================================================
+-- 테이블: adm.product_managers
+-- 설명: 상품 담당자 이력을 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.product_managers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 담당자 이력 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 담당자 이력 기본 정보
+    product_id          UUID                     NOT NULL,                              -- 제품 식별자
+    employee_id         UUID                     NOT NULL,                              -- 담당자 식별자
+    
+    -- 담당 기간
+    start_date          DATE                     NOT NULL,                              -- 담당 시작일
+    end_date          	DATE                     NOT NULL,                              -- 담당 종료일
+    
+    -- 담당자 역할 및 유형
+    manager_type        VARCHAR(20)              DEFAULT 'PRIMARY',                     -- 담당자 유형
+    description      	VARCHAR(100),                                                   -- 담당 업무/역할
+    
+    -- 추가 정보
+    remarks             TEXT,                                                           -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_product_managers__product_id  	FOREIGN KEY (product_id) 	REFERENCES adm.products(id),
+    CONSTRAINT fk_product_managers__employee_id 	FOREIGN KEY (employee_id) 	REFERENCES adm.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_product_managers__manager_type    CHECK (manager_type IN ('PRIMARY', 'SECONDARY', 'SALES', 'TECHNICAL', 'PURCHASE', 'MARKETING')),
+    CONSTRAINT ck_product_managers__status          CHECK (status IN ('ACTIVE', 'INACTIVE', 'EXPIRED', 'TERMINATED')),
+    CONSTRAINT ck_product_managers__date_range      CHECK (end_date >= start_date)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.product_managers 					IS '상품 담당자 이력 관리 테이블';
+COMMENT ON COLUMN adm.product_managers.id              	IS '담당자 이력 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.product_managers.created_at      	IS '등록 일시';
+COMMENT ON COLUMN adm.product_managers.created_by      	IS '등록자 UUID';
+COMMENT ON COLUMN adm.product_managers.updated_at      	IS '수정 일시';
+COMMENT ON COLUMN adm.product_managers.updated_by      	IS '수정자 UUID';
+COMMENT ON COLUMN adm.product_managers.company_id      	IS '회사 식별자';
+COMMENT ON COLUMN adm.product_managers.product_id      	IS '제품 식별자';
+COMMENT ON COLUMN adm.product_managers.employee_id     	IS '담당자 식별자';
+COMMENT ON COLUMN adm.product_managers.start_date      	IS '담당 시작일';
+COMMENT ON COLUMN adm.product_managers.end_date       	IS '담당 종료일';
+COMMENT ON COLUMN adm.product_managers.manager_type    	IS '담당자 유형 (PRIMARY/SECONDARY/SALES/TECHNICAL/PURCHASE/MARKETING)';
+COMMENT ON COLUMN adm.product_managers.description  	IS '담당 업무/역할';
+COMMENT ON COLUMN adm.product_managers.remarks         	IS '비고';
+COMMENT ON COLUMN adm.product_managers.status          	IS '상태 (ACTIVE/INACTIVE/EXPIRED/TERMINATED)';
+COMMENT ON COLUMN adm.product_managers.is_deleted         	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_product_managers__product_id
+    ON adm.product_managers (product_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_product_managers__employee_id
+    ON adm.product_managers (employee_id)
+ WHERE is_deleted = false;
+
+-- 현재 담당자 조회 인덱스 (가장 중요)
+-- CREATE INDEX IF NOT EXISTS ix_product_managers__current_active
+    -- ON adm.product_managers (product_id, status, start_date, end_date)
+ -- WHERE status = 'ACTIVE' 
+   -- AND CURRENT_DATE BETWEEN start_date AND end_date
+   -- AND is_deleted = false;
+
+-- 담당 기간별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_product_managers__date_range
+    ON adm.product_managers (start_date, end_date)
+ WHERE is_deleted = false;
+
+-- 담당자 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_product_managers__manager_type
+    ON adm.product_managers (manager_type, product_id)
+ WHERE is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_product_managers__status
+
+-- 사원별 담당 제품 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_product_managers__employee_products
+    ON adm.product_managers (employee_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+
+-- 이력 조회 인덱스 (제품별 담당자 변경 이력)
+CREATE INDEX IF NOT EXISTS ix_product_managers__product_history
+    ON adm.product_managers (product_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 동일 기간 내 제품의 동일 유형 담당자는 하나만 허용
+CREATE UNIQUE INDEX IF NOT EXISTS ux_product_managers__product_type_period
+    ON adm.product_managers (product_id, manager_type, start_date, end_date)
+ WHERE is_deleted = false;
+
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 창고
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: adm.warehouses
+-- 설명	: 창고 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.warehouses 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 창고 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 창고 기본 정보
+    warehouse_code      VARCHAR(20)              NOT NULL,                              -- 창고 코드
+    warehouse_name      VARCHAR(100)             NOT NULL,                              -- 창고명
+    warehouse_type      VARCHAR(20)              NOT NULL,                              -- 창고 유형
+    
+    -- 창고 관리 정보
+    manager_id          UUID,                                                          	-- 창고 관리자 식별자
+    is_primary   		BOOLEAN                  DEFAULT false,                        	-- 본창고 여부
+    is_external         BOOLEAN                  DEFAULT false,                        	-- 외부창고 여부 (3PL 등)
+    
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 전화번호
+    fax                 VARCHAR(50),                                                   	-- 팩스번호
+    email               VARCHAR(255),                                                  	-- 이메일
+    
+    -- 주소 정보
+    postcode         	VARCHAR(20),                                                   	-- 우편번호
+    address1            VARCHAR(200),                                                  	-- 기본 주소
+    address2            VARCHAR(200),                                                  	-- 상세 주소
+	
+	building_name       VARCHAR(200),                                                  -- 건물명
+    city                VARCHAR(100),                                                  -- 도시
+    state_province      VARCHAR(100),                                                  -- 주/도
+    country_code        VARCHAR(3)               DEFAULT 'KOR',                       -- 국가 코드
+    
+    -- 창고 운영 정보
+    operating_hours     VARCHAR(100),                                                  	-- 운영 시간
+    capacity_sqm        NUMERIC(12,2),                                                	-- 면적 (제곱미터)
+    capacity_volume     NUMERIC(12,2),                                                	-- 용적 (세제곱미터)
+    max_weight          NUMERIC(12,2),                                                	-- 최대 중량 (kg)
+    
+    -- 시설 정보
+    has_dock            BOOLEAN                  DEFAULT false,                        	-- 도크 보유 여부
+    has_crane           BOOLEAN                  DEFAULT false,                        	-- 크레인 보유 여부
+    has_cold_storage    BOOLEAN                  DEFAULT false,                        	-- 냉장 시설 여부
+    has_freezer         BOOLEAN                  DEFAULT false,                        	-- 냉동 시설 여부
+    
+    -- 비용 정보
+    monthly_rent        NUMERIC(18,4),                                                	-- 월 임대료
+    storage_cost 		NUMERIC(18,4),                                             		-- 단위당 보관비
+    currency            VARCHAR(3)               DEFAULT 'KRW',                       	-- 통화
+    
+    -- 외부 창고 정보
+    external_provider   VARCHAR(100),                                                  -- 외부 업체명 (3PL 등)
+    contract_start_date DATE,                                                         -- 계약 시작일
+    contract_close_date DATE,                                                         -- 계약 종료일
+    
+    -- 추가 정보
+    description         TEXT,                                                         -- 창고 설명
+    notes               TEXT,                                                         -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                       -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouses__manager_id    FOREIGN KEY (manager_id) REFERENCES adm.employees(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouses__warehouse_code_format     CHECK (warehouse_code ~ '^[A-Z0-9_]{2,20}$'),
+    CONSTRAINT ck_warehouses__warehouse_type_format     CHECK (warehouse_type IN ('MAIN', 'BRANCH', 'DISTRIBUTION', 'COLD_STORAGE', 'FREEZER', 'EXTERNAL', 'VIRTUAL', 'QUARANTINE', 'RETURN')),
+    CONSTRAINT ck_warehouses__country_code_format       CHECK (country_code ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_warehouses__phone_format              CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouses__fax_format                CHECK (fax IS NULL OR fax ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouses__email_format              CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_warehouses__currency_format           CHECK (currency ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_warehouses__capacity_positive         CHECK (capacity_sqm IS NULL OR capacity_sqm > 0),
+    CONSTRAINT ck_warehouses__volume_positive           CHECK (capacity_volume IS NULL OR capacity_volume > 0),
+    CONSTRAINT ck_warehouses__weight_positive           CHECK (max_weight IS NULL OR max_weight > 0),
+    CONSTRAINT ck_warehouses__rent_positive             CHECK (monthly_rent IS NULL OR monthly_rent >= 0),
+    CONSTRAINT ck_warehouses__storage_cost_positive     CHECK (storage_cost IS NULL OR storage_cost >= 0),
+    CONSTRAINT ck_warehouses__contract_date_valid       CHECK (contract_close_date IS NULL OR contract_start_date IS NULL OR contract_close_date >= contract_start_date),
+    CONSTRAINT ck_warehouses__status_format             CHECK (status IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'SUSPENDED', 'CLOSED'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.warehouses 						IS '창고 마스터 정보 관리 테이블';
+COMMENT ON COLUMN adm.warehouses.id            			IS '창고 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.warehouses.created_at    			IS '등록 일시';
+COMMENT ON COLUMN adm.warehouses.created_by    			IS '등록자 UUID';
+COMMENT ON COLUMN adm.warehouses.updated_at    			IS '수정 일시';
+COMMENT ON COLUMN adm.warehouses.updated_by    			IS '수정자 UUID';
+COMMENT ON COLUMN adm.warehouses.company_id    			IS '회사 식별자';
+COMMENT ON COLUMN adm.warehouses.warehouse_code 		IS '창고 코드 (사내 규칙)';
+COMMENT ON COLUMN adm.warehouses.warehouse_name 		IS '창고명';
+COMMENT ON COLUMN adm.warehouses.warehouse_type 		IS '창고 유형 (MAIN/BRANCH/DISTRIBUTION/COLD_STORAGE/FREEZER/EXTERNAL/VIRTUAL/QUARANTINE/RETURN)';
+COMMENT ON COLUMN adm.warehouses.manager_id    			IS '창고 관리자 식별자';
+COMMENT ON COLUMN adm.warehouses.is_primary 			IS '주창고 여부';
+COMMENT ON COLUMN adm.warehouses.is_external   			IS '외부창고 여부 (3PL 등)';
+COMMENT ON COLUMN adm.warehouses.phone         			IS '전화번호';
+COMMENT ON COLUMN adm.warehouses.fax           			IS '팩스번호';
+COMMENT ON COLUMN adm.warehouses.email         			IS '이메일';
+COMMENT ON COLUMN adm.warehouses.postcode   			IS '우편번호';
+COMMENT ON COLUMN adm.warehouses.address1      			IS '기본 주소';
+COMMENT ON COLUMN adm.warehouses.address2      			IS '상세 주소';
+COMMENT ON COLUMN adm.warehouses.building_name 			IS '건물명';
+COMMENT ON COLUMN adm.warehouses.city          			IS '도시';
+COMMENT ON COLUMN adm.warehouses.state_province 		IS '주/도';
+COMMENT ON COLUMN adm.warehouses.country_code  			IS '국가 코드 (ISO 3166-1 alpha-3)';
+COMMENT ON COLUMN adm.warehouses.operating_hours 		IS '운영 시간';
+COMMENT ON COLUMN adm.warehouses.capacity_sqm  			IS '면적 (제곱미터)';
+COMMENT ON COLUMN adm.warehouses.capacity_volume 		IS '용적 (세제곱미터)';
+COMMENT ON COLUMN adm.warehouses.max_weight    			IS '최대 중량 (kg)';
+COMMENT ON COLUMN adm.warehouses.has_dock      			IS '도크 보유 여부';
+COMMENT ON COLUMN adm.warehouses.has_crane     			IS '크레인 보유 여부';
+COMMENT ON COLUMN adm.warehouses.has_cold_storage 		IS '냉장 시설 여부';
+COMMENT ON COLUMN adm.warehouses.has_freezer   			IS '냉동 시설 여부';
+COMMENT ON COLUMN adm.warehouses.monthly_rent  			IS '월 임대료';
+COMMENT ON COLUMN adm.warehouses.storage_cost 			IS '단위당 보관비';
+COMMENT ON COLUMN adm.warehouses.currency      			IS '통화 (ISO 4217)';
+COMMENT ON COLUMN adm.warehouses.external_provider 		IS '외부 업체명 (3PL 등)';
+COMMENT ON COLUMN adm.warehouses.contract_start_date 	IS '계약 시작일';
+COMMENT ON COLUMN adm.warehouses.contract_close_date 	IS '계약 종료일';
+COMMENT ON COLUMN adm.warehouses.description   			IS '창고 설명';
+COMMENT ON COLUMN adm.warehouses.notes         			IS '비고';
+COMMENT ON COLUMN adm.warehouses.status        			IS '상태 (ACTIVE/INACTIVE/MAINTENANCE/SUSPENDED/CLOSED)';
+COMMENT ON COLUMN adm.warehouses.is_deleted       			IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_code
+    ON adm.warehouses (warehouse_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_name
+    ON adm.warehouses (warehouse_name)
+ WHERE is_deleted = false;
+
+-- 창고 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_type
+    ON adm.warehouses (warehouse_type)
+ WHERE is_deleted = false;
+
+-- 관리자별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__manager_id
+    ON adm.warehouses (manager_id)
+ WHERE manager_id IS NOT NULL 
+   AND is_deleted = false;
+
+-- 본창고 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__is_primary
+    ON adm.warehouses (is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 외부창고 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__is_external
+    ON adm.warehouses (is_external, external_provider)
+ WHERE is_external = true 
+   AND is_deleted = false;
+
+-- 도시별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__city
+    ON adm.warehouses (city)
+ WHERE city IS NOT NULL 
+   AND is_deleted = false;
+
+-- 국가별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__country_code
+    ON adm.warehouses (country_code)
+ WHERE is_deleted = false;
+
+-- 시설별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__facilities
+    ON adm.warehouses (has_cold_storage, has_freezer, has_dock, has_crane)
+ WHERE is_deleted = false;
+
+-- 계약 만료 조회 인덱스 (관리용)
+-- CREATE INDEX IF NOT EXISTS ix_warehouses__contract_expiring
+    -- ON adm.warehouses (contract_close_date, external_provider)
+ -- WHERE contract_close_date IS NOT NULL 
+   -- AND contract_close_date >= CURRENT_DATE 
+   -- AND contract_close_date <= CURRENT_DATE + INTERVAL '90 days'
+   -- AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 창고 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__company_code
+    ON adm.warehouses (warehouse_code)
+ WHERE is_deleted = false;
+
+-- 전체 창고명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__company_name
+    ON adm.warehouses (warehouse_name)
+ WHERE is_deleted = false;
+
+-- 전체 본창고는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__company_main
+ WHERE is_primary = true 
+   AND is_deleted = false;
+   
+
+-- =====================================================================================
+-- 테이블: adm.warehouse_employees
+-- 설명: 창고별 사원 배정 및 알림 설정을 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.warehouse_employees 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 창고사원 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 배정 기본 정보
+    warehouse_id        UUID                     NOT NULL,                              -- 창고 식별자
+    employee_id         UUID                     NOT NULL,                              -- 사원 식별자
+    -- 역할 및 권한
+    role_type           VARCHAR(20)              DEFAULT 'OPERATOR',                    -- 역할 유형
+    is_primary          BOOLEAN                  DEFAULT false,                        -- 주담당자 여부
+    access_level        VARCHAR(20)              DEFAULT 'READ_write',                 -- 접근 권한
+    
+    -- 알림 설정
+    notify_receipt   	BOOLEAN                  DEFAULT true,                         -- 입고 알림 여부
+    notify_shipment  	BOOLEAN                  DEFAULT true,                         -- 출고 알림 여부
+    notify_cancel 		BOOLEAN              	 DEFAULT true,                         -- 취소 알림 여부
+    notify_adjust 		BOOLEAN                	 DEFAULT false,                        -- 재고조정 알림 여부
+    notify_emergency 	BOOLEAN                  DEFAULT true,                         -- 긴급상황 알림 여부
+    
+    -- 알림 방법
+    notify_method 		VARCHAR(20)              DEFAULT 'EMAIL',                      -- 알림 방법
+    notify_email  		VARCHAR(255),                                                 -- 알림용 이메일
+    notify_phone  		VARCHAR(50),                                                  -- 알림용 전화번호
+    
+    -- 근무 정보
+    work_shift          VARCHAR(20),                                                   -- 근무 시간대
+    start_date          DATE,                                                          -- 배정 시작일
+    close_date          DATE,                                                          -- 배정 종료일
+    
+    -- 추가 정보
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouse_employees__warehouse_id FOREIGN KEY (warehouse_id) REFERENCES adm.warehouses(id),
+    CONSTRAINT fk_warehouse_employees__employee_id  FOREIGN KEY (employee_id) REFERENCES adm.employees(id),
+    CONSTRAINT fk_warehouse_employees__created_by   FOREIGN KEY (created_by) REFERENCES adm.employees(id),
+    CONSTRAINT fk_warehouse_employees__updated_by   FOREIGN KEY (updated_by) REFERENCES adm.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouse_employees__role_type_format     CHECK (role_type IN ('MANAGER', 'SUPERVISOR', 'OPERATOR', 'PICKER', 'PACKER', 'LOADER', 'CHECKER', 'ADMIN')),
+    CONSTRAINT ck_warehouse_employees__access_level_format  CHECK (access_level IN ('read_only', 'read_write', 'admin', 'full_control')),
+    CONSTRAINT ck_warehouse_employees__notify_method      	CHECK (notify_method IN ('EMAIL', 'SMS', 'PHONE', 'PUSH', 'ALL')),
+    CONSTRAINT ck_warehouse_employees__work_shift_format    CHECK (work_shift IS NULL OR work_shift IN ('DAY', 'NIGHT', 'SWING', 'ROTATING', 'FLEXIBLE')),
+    CONSTRAINT ck_warehouse_employees__status_format        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'TERMINATED')),
+    CONSTRAINT ck_warehouse_employees__email_format         CHECK (notify_email IS NULL OR notify_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_warehouse_employees__phone_format         CHECK (notify_phone IS NULL OR notify_phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouse_employees__date_range_valid     CHECK (close_date IS NULL OR start_date IS NULL OR close_date >= start_date)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.warehouse_employees 					IS '창고별 사원 배정 및 알림 설정 관리 테이블';
+COMMENT ON COLUMN adm.warehouse_employees.id           		IS '창고사원 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.warehouse_employees.created_at   		IS '등록 일시';
+COMMENT ON COLUMN adm.warehouse_employees.created_by   		IS '등록자 UUID';
+COMMENT ON COLUMN adm.warehouse_employees.updated_at   		IS '수정 일시';
+COMMENT ON COLUMN adm.warehouse_employees.updated_by   		IS '수정자 UUID';
+COMMENT ON COLUMN adm.warehouse_employees.company_id   		IS '회사 식별자';
+COMMENT ON COLUMN adm.warehouse_employees.warehouse_id 		IS '창고 식별자';
+COMMENT ON COLUMN adm.warehouse_employees.employee_id  		IS '사원 식별자';
+COMMENT ON COLUMN adm.warehouse_employees.role_type    		IS '역할 유형 (MANAGER/SUPERVISOR/OPERATOR/PICKER/PACKER/LOADER/CHECKER/ADMIN)';
+COMMENT ON COLUMN adm.warehouse_employees.is_primary   		IS '주담당자 여부';
+COMMENT ON COLUMN adm.warehouse_employees.access_level 		IS '접근 권한 (read_only/read_write/admin/full_control)';
+COMMENT ON COLUMN adm.warehouse_employees.notify_receipt 	IS '입고 알림 여부';
+COMMENT ON COLUMN adm.warehouse_employees.notify_shipment 	IS '출고 알림 여부';
+COMMENT ON COLUMN adm.warehouse_employees.notify_cancel 	IS '취소 알림 여부';
+COMMENT ON COLUMN adm.warehouse_employees.notify_adjust 	IS '재고조정 알림 여부';
+COMMENT ON COLUMN adm.warehouse_employees.notify_emergency 	IS '긴급상황 알림 여부';
+COMMENT ON COLUMN adm.warehouse_employees.notify_method 	IS '알림 방법 (EMAIL/SMS/PHONE/PUSH/ALL)';
+COMMENT ON COLUMN adm.warehouse_employees.notify_email 		IS '알림용 이메일';
+COMMENT ON COLUMN adm.warehouse_employees.notify_phone 		IS '알림용 전화번호';
+COMMENT ON COLUMN adm.warehouse_employees.work_shift    	IS '근무 시간대 (DAY/NIGHT/SWING/ROTATING/FLEXIBLE)';
+COMMENT ON COLUMN adm.warehouse_employees.start_date   		IS '배정 시작일';
+COMMENT ON COLUMN adm.warehouse_employees.close_date     	IS '배정 종료일';
+COMMENT ON COLUMN adm.warehouse_employees.notes        		IS '비고';
+COMMENT ON COLUMN adm.warehouse_employees.status       		IS '상태 (ACTIVE/INACTIVE/SUSPENDED/TERMINATED)';
+COMMENT ON COLUMN adm.warehouse_employees.is_deleted      		IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__warehouse_id
+    ON adm.warehouse_employees (warehouse_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__employee_id
+    ON adm.warehouse_employees (employee_id)
+ WHERE is_deleted = false;
+
+-- 창고별 사원 목록 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__warehouse_active
+
+-- 사원별 창고 목록 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__employee_active
+
+-- 역할별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__role_type
+    ON adm.warehouse_employees (role_type, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 주담당자 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__primary
+    ON adm.warehouse_employees (warehouse_id, is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 접근 권한별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__access_level
+    ON adm.warehouse_employees (access_level, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 알림 설정별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__notifications
+    ON adm.warehouse_employees (warehouse_id, notify_method)
+ WHERE (notify_receipt = true OR notify_shipment = true OR notify_cancel = true OR notify_emergency = true)
+   AND is_deleted = false;
+
+-- 근무 시간대별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__work_shift
+    ON adm.warehouse_employees (work_shift, warehouse_id)
+ WHERE work_shift IS NOT NULL 
+   AND is_deleted = false;
+
+-- 배정 기간별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__date_range
+    ON adm.warehouse_employees (start_date, close_date, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 현재 활성 배정 조회 인덱스
+-- CREATE INDEX IF NOT EXISTS ix_warehouse_employees__current_active
+    -- ON adm.warehouse_employees (warehouse_id, employee_id)
+ -- WHERE status = 'ACTIVE' 
+   -- AND (start_date IS NULL OR start_date <= CURRENT_DATE)
+   -- AND (close_date IS NULL OR close_date >= CURRENT_DATE)
+   -- AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 창고별 사원 중복 배정 방지 (현재 활성 기간)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_employees__warehouse_employee_active
+    ON adm.warehouse_employees (warehouse_id, employee_id)
+ WHERE status = 'ACTIVE' 
+   AND is_deleted = false;
+
+-- 창고별 주담당자는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_employees__warehouse_primary
+    ON adm.warehouse_employees (warehouse_id)
+ WHERE is_primary = true 
+   AND status = 'ACTIVE'
+   AND is_deleted = false;
+
+   
+-- =====================================================================================
+-- 테이블: adm.warehouse_locations
+-- 설명	: 창고 로케이션 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS adm.warehouse_locations 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 로케이션 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 로케이션 기본 정보
+    warehouse_id        UUID                     NOT NULL,                              -- 창고 식별자
+    location_code       VARCHAR(50)              NOT NULL,                              -- 로케이션 코드
+    location_name       VARCHAR(100)             NOT NULL,                              -- 로케이션명
+    location_type       VARCHAR(20)              DEFAULT 'BIN',                        -- 로케이션 유형
+    
+    -- 계층 구조 정보
+    parent_id  			UUID,                                                          -- 상위 로케이션 식별자
+    level_depth         INTEGER                  DEFAULT 1,                            -- 계층 깊이
+    full_path           VARCHAR(500),                                                  -- 전체 경로 (예: ZONE-A/AISLE-01/RACK-001/BIN-A001)
+    
+    -- 물리적 정보
+    zone_code           VARCHAR(20),                                                   -- 구역 코드
+    aisle_code          VARCHAR(20),                                                   -- 통로 코드
+    rack_code           VARCHAR(20),                                                   -- 랙 코드
+    bin_code            VARCHAR(20),                                                   -- 빈 코드
+    
+    -- 위치 좌표 (선택적)
+    x_coordinate        NUMERIC(10,2),                                                 -- X 좌표
+    y_coordinate        NUMERIC(10,2),                                                 -- Y 좌표
+    z_coordinate        NUMERIC(10,2),                                                 -- Z 좌표 (높이)
+    
+    -- 용량 및 규격 정보
+    capacity_weight     NUMERIC(12,2),                                                 -- 중량 용량 (kg)
+    capacity_volume     NUMERIC(12,2),                                                 -- 부피 용량 (㎥)
+    capacity_units      INTEGER,                                                       -- 단위 용량 (개수)
+    width_cm            NUMERIC(8,2),                                                  -- 가로 (cm)
+    height_cm           NUMERIC(8,2),                                                  -- 세로 (cm)
+    depth_cm            NUMERIC(8,2),                                                  -- 깊이 (cm)
+    
+    -- 로케이션 속성
+    is_pickable         BOOLEAN                  DEFAULT true,                         -- 피킹 가능 여부
+    is_receivable       BOOLEAN                  DEFAULT true,                         -- 입고 가능 여부
+    is_virtual          BOOLEAN                  DEFAULT false,                        -- 가상 로케이션 여부
+    is_damaged_area     BOOLEAN                  DEFAULT false,                        -- 불량품 구역 여부
+    is_quarantine       BOOLEAN                  DEFAULT false,                        -- 격리 구역 여부
+    
+    -- 환경 조건
+    temperature_min     NUMERIC(5,2),                                                  -- 최저 온도 (℃)
+    temperature_max     NUMERIC(5,2),                                                  -- 최고 온도 (℃)
+    humidity_min        NUMERIC(5,2),                                                  -- 최저 습도 (%)
+    humidity_max        NUMERIC(5,2),                                                  -- 최고 습도 (%)
+    
+    -- 정렬 및 우선순위
+    sort_order          INTEGER                  DEFAULT 0,                            -- 정렬 순서
+    picking_priority    INTEGER                  DEFAULT 0,                            -- 피킹 우선순위
+    
+    -- 바코드 및 RFID
+    barcode             VARCHAR(100),                                                  -- 바코드
+    rfid_tag            VARCHAR(100),                                                  -- RFID 태그
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 로케이션 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouse_locations__warehouse_id     FOREIGN KEY (warehouse_id) 	REFERENCES adm.warehouses(id)			ON DELETE CASCADE,
+    CONSTRAINT fk_warehouse_locations__parent_id 		FOREIGN KEY (parent_id) 	REFERENCES adm.warehouse_locations(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouse_locations__location_code_format     CHECK (location_code ~ '^[A-Z0-9\-_]{1,50}$'),
+    CONSTRAINT ck_warehouse_locations__location_type_format     CHECK (location_type IN ('ZONE', 'AISLE', 'RACK', 'SHELF', 'BIN', 'PALLET', 'FLOOR', 'DOOR', 'STAGING', 'VIRTUAL')),
+    CONSTRAINT ck_warehouse_locations__level_depth_range        CHECK (level_depth BETWEEN 1 AND 10),
+    CONSTRAINT ck_warehouse_locations__capacity_positive        CHECK (capacity_weight IS NULL OR capacity_weight >= 0),
+    CONSTRAINT ck_warehouse_locations__volume_positive          CHECK (capacity_volume IS NULL OR capacity_volume >= 0),
+    CONSTRAINT ck_warehouse_locations__units_positive           CHECK (capacity_units IS NULL OR capacity_units >= 0),
+    CONSTRAINT ck_warehouse_locations__dimensions_positive      CHECK ((width_cm IS NULL OR width_cm > 0) AND (height_cm IS NULL OR height_cm > 0) AND (depth_cm IS NULL OR depth_cm > 0)),
+    CONSTRAINT ck_warehouse_locations__temperature_range        CHECK ((temperature_min IS NULL OR temperature_max IS NULL) OR temperature_min <= temperature_max),
+    CONSTRAINT ck_warehouse_locations__humidity_range           CHECK ((humidity_min IS NULL OR humidity_max IS NULL) OR (humidity_min <= humidity_max AND humidity_min >= 0 AND humidity_max <= 100)),
+    CONSTRAINT ck_warehouse_locations__sort_order_positive      CHECK (sort_order >= 0),
+    CONSTRAINT ck_warehouse_locations__picking_priority 		CHECK (picking_priority >= 0),
+    CONSTRAINT ck_warehouse_locations__status_format            CHECK (status IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'BLOCKED', 'DAMAGED', 'RESERVED')),
+    CONSTRAINT ck_warehouse_locations__parent_not_self          CHECK (parent_id != id)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  adm.warehouse_locations 					IS '창고 로케이션 정보 관리 테이블';
+COMMENT ON COLUMN adm.warehouse_locations.id           		IS '로케이션 고유 식별자 (UUID)';
+COMMENT ON COLUMN adm.warehouse_locations.created_at   		IS '등록 일시';
+COMMENT ON COLUMN adm.warehouse_locations.created_by   		IS '등록자 UUID';
+COMMENT ON COLUMN adm.warehouse_locations.updated_at   		IS '수정 일시';
+COMMENT ON COLUMN adm.warehouse_locations.updated_by   		IS '수정자 UUID';
+COMMENT ON COLUMN adm.warehouse_locations.company_id   		IS '회사 식별자';
+COMMENT ON COLUMN adm.warehouse_locations.warehouse_id 		IS '창고 식별자';
+COMMENT ON COLUMN adm.warehouse_locations.location_code 	IS '로케이션 코드';
+COMMENT ON COLUMN adm.warehouse_locations.location_name 	IS '로케이션명';
+COMMENT ON COLUMN adm.warehouse_locations.location_type 	IS '로케이션 유형 (ZONE/AISLE/RACK/SHELF/BIN/PALLET/FLOOR/DOOR/STAGING/VIRTUAL)';
+COMMENT ON COLUMN adm.warehouse_locations.parent_id 		IS '상위 로케이션 식별자 (계층구조)';
+COMMENT ON COLUMN adm.warehouse_locations.level_depth  		IS '계층 깊이 (1=ZONE, 2=AISLE, 3=RACK, 4=BIN)';
+COMMENT ON COLUMN adm.warehouse_locations.full_path    		IS '전체 경로 (ZONE-A/AISLE-01/RACK-001/BIN-A001)';
+COMMENT ON COLUMN adm.warehouse_locations.zone_code    		IS '구역 코드';
+COMMENT ON COLUMN adm.warehouse_locations.aisle_code   		IS '통로 코드';
+COMMENT ON COLUMN adm.warehouse_locations.rack_code    		IS '랙 코드';
+COMMENT ON COLUMN adm.warehouse_locations.bin_code     		IS '빈 코드';
+COMMENT ON COLUMN adm.warehouse_locations.x_coordinate 		IS 'X 좌표';
+COMMENT ON COLUMN adm.warehouse_locations.y_coordinate 		IS 'Y 좌표';
+COMMENT ON COLUMN adm.warehouse_locations.z_coordinate 		IS 'Z 좌표 (높이)';
+COMMENT ON COLUMN adm.warehouse_locations.capacity_weight 	IS '중량 용량 (kg)';
+COMMENT ON COLUMN adm.warehouse_locations.capacity_volume 	IS '부피 용량 (㎥)';
+COMMENT ON COLUMN adm.warehouse_locations.capacity_units 	IS '단위 용량 (개수)';
+COMMENT ON COLUMN adm.warehouse_locations.width_cm     		IS '가로 (cm)';
+COMMENT ON COLUMN adm.warehouse_locations.height_cm    		IS '세로 (cm)';
+COMMENT ON COLUMN adm.warehouse_locations.depth_cm     		IS '깊이 (cm)';
+COMMENT ON COLUMN adm.warehouse_locations.is_pickable  		IS '피킹 가능 여부';
+COMMENT ON COLUMN adm.warehouse_locations.is_receivable 	IS '입고 가능 여부';
+COMMENT ON COLUMN adm.warehouse_locations.is_virtual   		IS '가상 로케이션 여부';
+COMMENT ON COLUMN adm.warehouse_locations.is_damaged_area 	IS '불량품 구역 여부';
+COMMENT ON COLUMN adm.warehouse_locations.is_quarantine 	IS '격리 구역 여부';
+COMMENT ON COLUMN adm.warehouse_locations.temperature_min 	IS '최저 온도 (℃)';
+COMMENT ON COLUMN adm.warehouse_locations.temperature_max 	IS '최고 온도 (℃)';
+COMMENT ON COLUMN adm.warehouse_locations.humidity_min 		IS '최저 습도 (%)';
+COMMENT ON COLUMN adm.warehouse_locations.humidity_max 		IS '최고 습도 (%)';
+COMMENT ON COLUMN adm.warehouse_locations.sort_order   		IS '정렬 순서';
+COMMENT ON COLUMN adm.warehouse_locations.picking_priority 	IS '피킹 우선순위';
+COMMENT ON COLUMN adm.warehouse_locations.barcode      		IS '바코드';
+COMMENT ON COLUMN adm.warehouse_locations.rfid_tag     		IS 'RFID 태그';
+COMMENT ON COLUMN adm.warehouse_locations.description  		IS '로케이션 설명';
+COMMENT ON COLUMN adm.warehouse_locations.notes        		IS '비고';
+COMMENT ON COLUMN adm.warehouse_locations.status       		IS '상태 (ACTIVE/INACTIVE/MAINTENANCE/BLOCKED/DAMAGED/RESERVED)';
+COMMENT ON COLUMN adm.warehouse_locations.is_deleted      		IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+ WHERE is_deleted = false;
+
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__warehouse_id
+    ON adm.warehouse_locations (warehouse_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__location_code
+    ON adm.warehouse_locations (location_code)
+ WHERE is_deleted = false;
+
+-- 계층구조 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__parent_id
+    ON adm.warehouse_locations (parent_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__level_depth
+    ON adm.warehouse_locations (warehouse_id, level_depth, sort_order)
+ WHERE is_deleted = false;
+
+-- 로케이션 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__location_type
+    ON adm.warehouse_locations (location_type, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 구역별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__zone_code
+    ON adm.warehouse_locations (zone_code)
+ WHERE zone_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 피킹 최적화 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__picking
+    ON adm.warehouse_locations (warehouse_id, is_pickable, picking_priority, sort_order)
+ WHERE is_pickable = true 
+   AND is_deleted = false;
+
+-- 입고 가능 로케이션 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__receivable
+    ON adm.warehouse_locations (warehouse_id, is_receivable)
+ WHERE is_receivable = true 
+   AND is_deleted = false;
+
+-- 좌표 기반 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__coordinates
+    ON adm.warehouse_locations (warehouse_id, x_coordinate, y_coordinate, z_coordinate)
+ WHERE x_coordinate IS NOT NULL 
+   AND y_coordinate IS NOT NULL 
+   AND is_deleted = false;
+
+-- 바코드 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__barcode
+    ON adm.warehouse_locations (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- RFID 태그 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__rfid_tag
+    ON adm.warehouse_locations (rfid_tag)
+ WHERE rfid_tag IS NOT NULL 
+   AND is_deleted = false;
+
+-- 전체 경로 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__full_path
+    ON adm.warehouse_locations (full_path)
+ WHERE full_path IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 창고별 로케이션 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__warehouse_code
+    ON adm.warehouse_locations (warehouse_id, location_code)
+ WHERE is_deleted = false;
+
+-- 바코드 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__barcode
+    ON adm.warehouse_locations (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- RFID 태그 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__rfid_tag
+    ON adm.warehouse_locations (rfid_tag)
+ WHERE rfid_tag IS NOT NULL 
+   AND is_deleted = false;   
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- emp_map
+CREATE TABLE IF NOT EXISTS emp_map (
+  emp_no VARCHAR(8) NOT NULL,
+  beg_dt CHAR(8) NOT NULL,
+  end_dt CHAR(8),
+  emp_nm VARCHAR(50) NOT NULL,
+  dwgp_cd CHAR(3) NOT NULL,
+  dept_cd CHAR(10),
+  emp_posi CHAR(4),
+  emp_duty CHAR(2),
+  emp_purc_yn CHAR(1) NOT NULL,
+  emp_purc_supt_yn CHAR(1) NOT NULL,
+  emp_sale_yn CHAR(1) NOT NULL,
+  emp_sale_supt_yn CHAR(1) NOT NULL,
+  emp_delv_yn CHAR(1) NOT NULL,
+  emp_exp_yn CHAR(1),
+  emp_pcam_yn CHAR(1),
+  emp_dcam_yn CHAR(1),
+  exp_dcam_yn CHAR(1),
+  min_price_yn CHAR(1),
+  sort_seq INTEGER,
+  currency_tp CHAR(3),
+  use_yn CHAR(1) NOT NULL,
+  iu_emp_no VARCHAR(10),
+  biz_emp_no VARCHAR(8) NOT NULL,
+  biz_place_tp VARCHAR(4),
+  owner_tp CHAR(1),
+  note VARCHAR(500),
+  work_dscr TEXT,
+  reg_dtm TIMESTAMP NOT NULL,
+  reg_emp_no VARCHAR(8) NOT NULL,
+  upd_dtm TIMESTAMP,
+  upd_emp_no VARCHAR(8),
+  PRIMARY KEY (emp_no)
+);
+
+-- tbs_brnd_mst
+CREATE TABLE IF NOT EXISTS tbs_brnd_mst (
+  id SERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER NOT NULL,
+  create_by VARCHAR(100) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(100),
+  brnd_nm VARCHAR(200) NOT NULL,
+  makr_id INTEGER NOT NULL,
+  sort_seq INTEGER,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_corp_mst
+CREATE TABLE IF NOT EXISTS tbs_corp_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  corp_cd CHAR(3) NOT NULL,
+  corp_nm VARCHAR(100) NOT NULL,
+  dept_tp CHAR(1) NOT NULL,
+  notes TEXT,
+  acc_corp_cd VARCHAR(20),
+  tax_bill_tp CHAR(1),
+  logo_file VARCHAR(200),
+  noti_corp_nm VARCHAR(100),
+  noti_send_key VARCHAR(100),
+  noti_phne_no VARCHAR(100),
+  corp_nm_eng VARCHAR(100),
+  address_eng VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tbs_dept_hst
+CREATE TABLE IF NOT EXISTS tbs_dept_hst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  dept_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  dept_nm VARCHAR(100) NOT NULL,
+  dept_tp CHAR(1) NOT NULL,
+  parent_cd CHAR(10),
+  mngr_cd CHAR(10),
+  sort_seq INTEGER,
+  use_yn CHAR(1) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tbs_dept_mst
+CREATE TABLE IF NOT EXISTS tbs_dept_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  dept_cd CHAR(10) NOT NULL,
+  dept_nm VARCHAR(100) NOT NULL,
+  dept_tp CHAR(1) NOT NULL,
+  parent_cd CHAR(10),
+  mngr_cd CHAR(10),
+  sort_seq INTEGER NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  tel_no VARCHAR(20),
+  fax_no VARCHAR(20),
+  email VARCHAR(100),
+  post_cd VARCHAR(10),
+  address VARCHAR(200),
+  bldg_nm VARCHAR(200),
+  PRIMARY KEY (id)
+);
+
+-- tbs_empy_hst
+CREATE TABLE IF NOT EXISTS tbs_empy_hst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  empy_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  work_st CHAR(1),
+  empy_no VARCHAR(20),
+  dept_cd CHAR(10),
+  posi_tp CHAR(4),
+  duty_tp CHAR(2),
+  job_dscr TEXT,
+  erp_use_yn CHAR(1),
+  crm_use_yn CHAR(1),
+  eas_use_yn CHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tbs_empy_mst
+CREATE TABLE IF NOT EXISTS tbs_empy_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  empy_cd CHAR(10) NOT NULL,
+  empy_nm VARCHAR(50) NOT NULL,
+  empy_dt VARCHAR(8),
+  tel_no VARCHAR(20),
+  fax_no VARCHAR(20),
+  cel_no VARCHAR(20),
+  email VARCHAR(100),
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  erp_use_yn CHAR(1),
+  crm_use_yn CHAR(1),
+  eas_use_yn CHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tss_empy_ann_hist
+CREATE TABLE IF NOT EXISTS tss_empy_ann_hist (
+  id SERIAL,
+  empy_cd VARCHAR(10) NOT NULL,
+  hist_dt CHAR(8) NOT NULL,
+  base_ann_cnt DECIMAL(17, 2) NOT NULL,
+  add_ann_cnt DECIMAL(17, 2) NOT NULL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER,
+  create_by VARCHAR(20) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(20),
+  PRIMARY KEY (id)
+);
+
+-- tss_empy_ann_mst
+CREATE TABLE IF NOT EXISTS tss_empy_ann_mst (
+  id SERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER NOT NULL,
+  create_by VARCHAR(100) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(100),
+  empy_dt CHAR(8) NOT NULL,
+  empy_cd VARCHAR(10),
+  base_ann_cnt DECIMAL(17, 2) NOT NULL,
+  add_ann_cnt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tss_empy_rewd_ann_mst
+CREATE TABLE IF NOT EXISTS tss_empy_rewd_ann_mst (
+  id SERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER NOT NULL,
+  create_by VARCHAR(100) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(100),
+  empy_cd VARCHAR(10),
+  rewd_ann_cnt DECIMAL(17, 2) NOT NULL,
+  leave_tp CHAR(4),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_empy_subs_ann_mst
+CREATE TABLE IF NOT EXISTS tss_empy_subs_ann_mst (
+  id SERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER NOT NULL,
+  create_by VARCHAR(100) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(100),
+  empy_cd VARCHAR(10),
+  leave_tp CHAR(4),
+  prov_dt VARCHAR(8) NOT NULL,
+  subs_ann_cnt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_role
+CREATE TABLE IF NOT EXISTS tss_role (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  role_nm VARCHAR(50) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  description TEXT,
+  PRIMARY KEY (id)
+);

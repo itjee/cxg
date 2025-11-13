@@ -1,0 +1,47 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "executionEnvironments": [
+    {
+      "root": "src",
+      "pythonVersion": "3.12",
+      "pythonPlatform": "Linux",
+      "extraPaths": [
+        "src"
+      ]
+    }
+  ],
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "reportUnusedImport": false,
+  "reportUnusedClass": false,
+  "reportUnusedFunction": false,
+  "reportUnusedVariable": false,
+  "reportDuplicateImport": false,
+  "reportPrivateUsage": false,
+  "reportConstantRedefinition": false,
+  "reportIncompatibleMethodOverride": false,
+  "reportIncompatibleVariableOverride": false,
+  "reportUntypedFunctionDecorator": false,
+  "reportUntypedClassDecorator": false,
+  "reportUntypedBaseClass": false,
+  "reportUntypedNamedTuple": false,
+  "reportPrivateImportUsage": false,
+  "reportOptionalCall": false,
+  "reportOptionalIterable": false,
+  "reportOptionalContextManager": false,
+  "reportOptionalOperand": false,
+  "reportOptionalMemberAccess": false,
+  "reportOptionalSubscript": false,
+  "reportGeneralTypeIssues": false,
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "**/node_modules",
+    "**/.git"
+  ]
+}

@@ -1,0 +1,85 @@
+================================================================================
+MANAGER SCHEMA REORGANIZATION REPORT
+================================================================================
+
+Total Schemas Processed: 11
+Total Files Created: 51
+
+Breakdown by Schema:
+
+  01_tnnt/ - 7 files
+    - 00_schema_init.sql
+    - 01_tenants.sql
+    - 02_subscriptions.sql
+    - 03_onboardings.sql
+    - 04_tenant_users.sql
+    - 05_tenant_roles.sql
+    - 06_views_functions.sql
+
+  02_idam/ - 9 files
+    - 00_schema_init.sql
+    - 01_users.sql
+    - 02_permissions.sql
+    - 03_roles.sql
+    - 04_role_permissions.sql
+    - 05_user_roles.sql
+    - 06_api_keys.sql
+    - 07_sessions.sql
+    - 08_login_logs.sql
+
+  03_bill/ - 4 files
+    - 00_schema_init.sql
+    - 01_plans.sql
+    - 02_invoices.sql
+    - 03_transactions.sql
+
+  04_ifra/ - 3 files
+    - 00_schema_init.sql
+    - 01_resources.sql
+    - 02_resource_usages.sql
+
+  05_stat/ - 3 files
+    - 00_schema_init.sql
+    - 01_tenant_stats.sql
+    - 02_usage_stats.sql
+
+  06_mntr/ - 4 files
+    - 00_schema_init.sql
+    - 01_health_checks.sql
+    - 02_incidents.sql
+    - 03_system_metrics.sql
+
+  07_intg/ - 4 files
+    - 00_schema_init.sql
+    - 01_apis.sql
+    - 02_webhooks.sql
+    - 03_rate_limits.sql
+
+  08_supt/ - 4 files
+    - 00_schema_init.sql
+    - 01_tickets.sql
+    - 02_ticket_comments.sql
+    - 03_feedbacks.sql
+
+  09_audt/ - 4 files
+    - 00_schema_init.sql
+    - 01_audit_logs.sql
+    - 02_compliances.sql
+    - 03_policies.sql
+
+  10_auto/ - 4 files
+    - 00_schema_init.sql
+    - 01_workflows.sql
+    - 02_executions.sql
+    - 03_tasks.sql
+
+  11_cnfg/ - 5 files
+    - 00_schema_init.sql
+    - 01_configurations.sql
+    - 02_feature_flags.sql
+    - 03_tenant_features.sql
+    - 04_service_quotas.sql
+
+================================================================================
+Location: /packages/database/schemas/manager/
+================================================================================

@@ -1,0 +1,4 @@
+
+# GraphQL
+strawberry-graphql[fastapi]==0.235.0
+aiodataloader==0.4.0

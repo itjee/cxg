@@ -1,0 +1,1534 @@
+-- ============================================================================
+-- Workflow Management Schema (lwm)
+-- ============================================================================
+-- Description: 워크플로우/결재 관리 (결재선, 결재진행, 결재이력)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: lwm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS lwm;
+
+COMMENT ON SCHEMA lwm IS 'LWM: 워크플로우/결재 관리 스키마';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- LWM: 물류/창고 관리 (Logistics & WMS)
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: lwm.goods_receipts
+-- 설명: 입고 헤더 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS lwm.goods_receipts 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 입고 고유 식별자 (UUID)
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,        -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                           -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gr_code                 VARCHAR(50)              NOT NULL,                                  -- 입고 코드
+    doc_date                DATE                     NOT NULL,                                  -- 전표 일자
+    -- 참조 정보
+    po_id                   UUID,                                                               -- 구매발주 식별자
+    vendor_id               UUID,                                                               -- 공급업체 식별자
+    warehouse_id            UUID                     NOT NULL,                                  -- 창고 식별자
+    receiver_id             UUID,                                                               -- 입고 담당자 식별자
+    
+    -- 수량 정보
+    total_qty               INTEGER                  DEFAULT 0,                                 -- 총 수량
+    
+    -- 상태 관리
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',                           -- 상태
+    is_deleted                 BOOLEAN                  DEFAULT false,                             -- 논리 삭제 플래그
+    
+    -- 제약조건
+    CONSTRAINT ck_goods_receipts__status            CHECK (status IN ('DRAFT', 'CONFIRMED', 'COMPLETED', 'CANCELLED')),
+    CONSTRAINT ck_goods_receipts__total_qty         CHECK (total_qty >= 0)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_receipt_lines
+-- 설명: 입고 라인 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS lwm.goods_receipt_lines 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 입고 라인 고유 식별자 (UUID)
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,        -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                           -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gr_id                   UUID                     NOT NULL,                                  -- 입고 헤더 식별자
+    line_no                 INTEGER                  NOT NULL,                                  -- 라인 번호
+    po_line_id              UUID,                                                               -- 구매발주 라인 식별자
+    product_id                 UUID                     NOT NULL,                                  -- 제품 식별자
+    location_id             UUID,                                                               -- 로케이션 식별자
+    
+    -- 로트/시리얼 정보
+    lot_number              VARCHAR(100),                                                       -- 로트 번호
+    serial_number           VARCHAR(100),                                                       -- 시리얼 번호
+    
+    -- 수량 정보
+    ordered_qty             INTEGER                  DEFAULT 0,                                 -- 발주 수량
+    received_qty            INTEGER                  NOT NULL,                                  -- 입고 수량
+    rejected_qty            INTEGER                  DEFAULT 0,                                 -- 불량 수량
+    
+    -- 원가 정보
+    unit_cost               NUMERIC(18,4)            DEFAULT 0,                                 -- 단가
+    
+    -- 제약조건
+    CONSTRAINT ck_goods_receipt_lines__line_no      CHECK (line_no > 0),
+    CONSTRAINT ck_goods_receipt_lines__quantities   CHECK (ordered_qty >= 0 AND received_qty >= 0 AND rejected_qty >= 0),
+    CONSTRAINT ck_goods_receipt_lines__unit_cost    CHECK (unit_cost >= 0)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_issues
+-- 설명: 출고 헤더 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS lwm.goods_issues 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 출고 고유 식별자 (UUID)
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,        -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                           -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gi_code                 VARCHAR(50)              NOT NULL,                                  -- 출고 코드
+    doc_date                DATE                     NOT NULL,                                  -- 전표 일자
+    -- 참조 정보
+    so_id                   UUID,                                                               -- 판매주문 식별자
+    customer_id             UUID,                                                               -- 고객 식별자
+    warehouse_id            UUID                     NOT NULL,                                  -- 창고 식별자
+    picker_id               UUID,                                                               -- 피커 식별자
+    
+    -- 수량 정보
+    total_qty               INTEGER                  DEFAULT 0,                                 -- 총 수량
+    
+    -- 상태 관리
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',                           -- 상태
+    is_deleted                 BOOLEAN                  DEFAULT false,                             -- 논리 삭제 플래그
+    
+    -- 제약조건
+    CONSTRAINT ck_goods_issues__status              CHECK (status IN ('DRAFT', 'PICKING', 'PICKED', 'SHIPPED', 'CANCELLED')),
+    CONSTRAINT ck_goods_issues__total_qty           CHECK (total_qty >= 0)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_issue_lines
+-- 설명: 출고 라인 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS lwm.goods_issue_lines 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 출고 라인 고유 식별자 (UUID)
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,        -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                           -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gi_id                   UUID                     NOT NULL,                                  -- 출고 헤더 식별자
+    line_no                 INTEGER                  NOT NULL,                                  -- 라인 번호
+    so_line_id              UUID,                                                               -- 판매주문 라인 식별자
+    product_id                 UUID                     NOT NULL,                                  -- 제품 식별자
+    location_id             UUID,                                                               -- 로케이션 식별자
+    
+    -- 로트/시리얼 정보
+    lot_number              VARCHAR(100),                                                       -- 로트 번호
+    serial_number           VARCHAR(100),                                                       -- 시리얼 번호
+    
+    -- 수량 정보
+    requested_qty           INTEGER                  DEFAULT 0,                                 -- 요청 수량
+    picked_qty              INTEGER                  NOT NULL,                                  -- 피킹 수량
+    
+    -- 제약조건
+    CONSTRAINT ck_goods_issue_lines__line_no        CHECK (line_no > 0),
+    CONSTRAINT ck_goods_issue_lines__quantities     CHECK (requested_qty >= 0 AND picked_qty >= 0)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  lwm.goods_receipts            IS '입고 헤더 관리 테이블';
+COMMENT ON TABLE  lwm.goods_receipt_lines       IS '입고 라인 관리 테이블';
+COMMENT ON TABLE  lwm.goods_issues              IS '출고 헤더 관리 테이블';
+COMMENT ON TABLE  lwm.goods_issue_lines         IS '출고 라인 관리 테이블';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+
+CREATE INDEX IF NOT EXISTS ix_goods_receipts__gr_code       ON lwm.goods_receipts (gr_code) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS ix_goods_receipts__warehouse_id  ON lwm.goods_receipts (warehouse_id) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS ix_goods_receipts__status        ON lwm.goods_receipts (status) WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_goods_receipt_lines__gr_id    ON lwm.goods_receipt_lines (gr_id);
+CREATE INDEX IF NOT EXISTS ix_goods_receipt_lines__item_id  ON lwm.goods_receipt_lines (product_id);
+
+
+CREATE INDEX IF NOT EXISTS ix_goods_issues__gi_code         ON lwm.goods_issues (gi_code) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS ix_goods_issues__warehouse_id    ON lwm.goods_issues (warehouse_id) WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS ix_goods_issues__status          ON lwm.goods_issues (status) WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_goods_issue_lines__gi_id      ON lwm.goods_issue_lines (gi_id);
+CREATE INDEX IF NOT EXISTS ix_goods_issue_lines__item_id    ON lwm.goods_issue_lines (product_id);
+
+-- =====================================================================================
+-- 유니크 제약 조건
+-- =====================================================================================
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_goods_receipts__company_code   ON lwm.goods_receipts (gr_code) WHERE is_deleted = false;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_goods_receipt_lines__gr_line   ON lwm.goods_receipt_lines (gr_id, line_no);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_goods_issues__company_code     ON lwm.goods_issues (gi_code) WHERE is_deleted = false;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_goods_issue_lines__gi_line     ON lwm.goods_issue_lines (gi_id, line_no);
+
+-- =====================================================================================
+-- 외래키 제약 조건
+-- =====================================================================================
+
+ALTER TABLE lwm.goods_receipt_lines ADD CONSTRAINT fk_goods_receipt_lines__gr_id
+    FOREIGN KEY (gr_id) REFERENCES lwm.goods_receipts(id) ON DELETE CASCADE;
+
+ALTER TABLE lwm.goods_issue_lines ADD CONSTRAINT fk_goods_issue_lines__gi_id
+    FOREIGN KEY (gi_id) REFERENCES lwm.goods_issues(id) ON DELETE CASCADE;
+
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- tea_acct_mst
+CREATE TABLE IF NOT EXISTS tea_acct_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  acct_cd VARCHAR(10) NOT NULL,
+  acct_nm VARCHAR(50) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  remark TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_dec_arb
+CREATE TABLE IF NOT EXISTS tea_dec_arb (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  empy_cd CHAR(10) NOT NULL,
+  start_dt CHAR(8) NOT NULL,
+  close_dt CHAR(8) NOT NULL,
+  eas_form_id INTEGER,
+  dec_arb_tp CHAR(1) NOT NULL,
+  sub_empy_cd CHAR(10),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst
+CREATE TABLE IF NOT EXISTS tea_doc_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  eas_form_id INTEGER NOT NULL,
+  eas_pay_tp CHAR(1),
+  eas_acc_tp CHAR(4),
+  regi_dt CHAR(8) NOT NULL,
+  acct_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  subject VARCHAR(200) NOT NULL,
+  sub_txt VARCHAR(500),
+  content TEXT NOT NULL,
+  content_rtf TEXT,
+  proc_st CHAR(1) NOT NULL,
+  org_doc_no CHAR(14),
+  pay_req_dt CHAR(8),
+  notes VARCHAR(500),
+  acc_proc_yn CHAR(1) NOT NULL,
+  acc_proc_on TIMESTAMP,
+  acc_proc_by VARCHAR(50),
+  acc_proc_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1000
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1000 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  tmpl_id INTEGER NOT NULL,
+  subject VARCHAR(100) NOT NULL,
+  eas_rule TEXT,
+  contents TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1001
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1001 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  purc_tp CHAR(1) NOT NULL,
+  cur_unit CHAR(3),
+  purc_cust_cd CHAR(14) NOT NULL,
+  sale_cust_cd CHAR(14) NOT NULL,
+  cust_mgr_nm VARCHAR(50),
+  cust_mgr_tel VARCHAR(50),
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  purc_amt DECIMAL(17, 2) NOT NULL,
+  sal_due_dt VARCHAR(100),
+  sal_pay_dt CHAR(8),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10011
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10011 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  prdt_item VARCHAR(100) NOT NULL,
+  prdt_nm VARCHAR(100) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  purc_qty INTEGER NOT NULL,
+  purc_pr DECIMAL(17, 2) NOT NULL,
+  purc_amt DECIMAL(17, 2) NOT NULL,
+  prft_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1002
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1002 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  sale_dt CHAR(8) NOT NULL,
+  st_keep_dt CHAR(8) NOT NULL,
+  ed_keep_dt CHAR(8) NOT NULL,
+  reason TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10021
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10021 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1003
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1003 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  seal_tp CHAR(1) NOT NULL,
+  use_tp CHAR(1) NOT NULL,
+  purpose_tp CHAR(1) NOT NULL,
+  description VARCHAR(200),
+  submission VARCHAR(100),
+  return_dt VARCHAR(50),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1004
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1004 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  leave_tp1 CHAR(4) NOT NULL,
+  leave_tp2 CHAR(4),
+  leave_tp3 CHAR(4),
+  st_vac_dt CHAR(8) NOT NULL,
+  ed_vac_dt CHAR(8) NOT NULL,
+  vac_days DECIMAL(17, 2) NOT NULL,
+  reason TEXT,
+  trip_tp CHAR(1),
+  place VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1004_log
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1004_log (
+  log_id BIGSERIAL,
+  log_status CHAR(1) NOT NULL,
+  log_date TIMESTAMP NOT NULL,
+  doc_id INTEGER,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  leave_tp1 CHAR(4) NOT NULL,
+  leave_tp2 CHAR(4),
+  leave_tp3 CHAR(4),
+  st_vac_dt CHAR(8) NOT NULL,
+  ed_vac_dt CHAR(8) NOT NULL,
+  vac_days DECIMAL(17, 2) NOT NULL,
+  reason TEXT,
+  trip_tp CHAR(1),
+  place VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1005
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1005 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  trip_tp CHAR(1) NOT NULL,
+  cntr_nm VARCHAR(100),
+  st_trip_dt CHAR(8) NOT NULL,
+  ed_trip_dt CHAR(8) NOT NULL,
+  our_list VARCHAR(200),
+  etc_list VARCHAR(200),
+  cash_amt DECIMAL(17, 2) NOT NULL,
+  card_amt DECIMAL(17, 2) NOT NULL,
+  description TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10051
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10051 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  trip_dt CHAR(8) NOT NULL,
+  place VARCHAR(200),
+  contact VARCHAR(100),
+  task VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10052
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10052 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  exp_tp CHAR(2) NOT NULL,
+  exp_amt DECIMAL(17, 2) NOT NULL,
+  cust_nm VARCHAR(200),
+  cust_mgr VARCHAR(50),
+  corp_pay_yn CHAR(1),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10053
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10053 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  cust_nm VARCHAR(100) NOT NULL,
+  cust_mgr VARCHAR(50),
+  mgr_pos VARCHAR(50),
+  with_yn CHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1006
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1006 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  trip_tp CHAR(1) NOT NULL,
+  st_trip_dt CHAR(8) NOT NULL,
+  ed_trip_dt CHAR(8) NOT NULL,
+  trip_list VARCHAR(200),
+  description TEXT,
+  cash_amt DECIMAL(17, 2) NOT NULL,
+  card_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10061
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10061 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  trip_dt CHAR(8) NOT NULL,
+  purpose VARCHAR(300),
+  place VARCHAR(200),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10062
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10062 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  exp_tp CHAR(1) NOT NULL,
+  exp_amt DECIMAL(17, 2) NOT NULL,
+  biz_nm VARCHAR(100),
+  cust_nm VARCHAR(200),
+  acct_cd CHAR(4),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1007
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1007 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  req_tp CHAR(1) NOT NULL,
+  req_yn CHAR(1) NOT NULL,
+  reason VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10071
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10071 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  matr_item_id INTEGER NOT NULL,
+  min_pr DECIMAL(17, 2) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  purc_qty INTEGER NOT NULL,
+  purc_pr DECIMAL(17, 2) NOT NULL,
+  purc_amt DECIMAL(17, 2) NOT NULL,
+  prft_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1008
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1008 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  fulltime_cnt INTEGER NOT NULL,
+  dispatch_cnt INTEGER NOT NULL,
+  contract_cnt INTEGER NOT NULL,
+  parttime_cnt INTEGER NOT NULL,
+  st_work_dt CHAR(8),
+  ed_work_dt CHAR(8),
+  work_days INTEGER,
+  st_work_tm CHAR(4),
+  ed_work_tm CHAR(4),
+  man_cnt INTEGER NOT NULL,
+  woman_cnt INTEGER NOT NULL,
+  free_cnt INTEGER NOT NULL,
+  newcom_cnt INTEGER NOT NULL,
+  career_cnt INTEGER NOT NULL,
+  career_year INTEGER NOT NULL,
+  new_cnt INTEGER NOT NULL,
+  vac_cnt INTEGER NOT NULL,
+  vac_emp_nm VARCHAR(100),
+  assigned_task VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1009
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1009 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  fev_tp CHAR(1) NOT NULL,
+  rel_tp CHAR(2) NOT NULL,
+  fev_dscr TEXT,
+  fev_dt CHAR(8) NOT NULL,
+  addr VARCHAR(200),
+  contact VARCHAR(100),
+  notes VARCHAR(200),
+  fev_amt DECIMAL(17, 2) NOT NULL,
+  fev_item VARCHAR(100),
+  fev_etc VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1010
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1010 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  cust_nm VARCHAR(100) NOT NULL,
+  fev_tp CHAR(1),
+  fev_dscr TEXT,
+  fev_dt CHAR(8) NOT NULL,
+  fev_tm CHAR(4),
+  addr VARCHAR(200),
+  contact VARCHAR(100),
+  notes VARCHAR(200),
+  fev_amt_tp CHAR(2),
+  fev_amt DECIMAL(17, 2) NOT NULL,
+  fev_item_tp CHAR(2),
+  fev_item VARCHAR(100),
+  fev_tp_desc VARCHAR(200),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1011
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1011 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  biz_nm VARCHAR(100) NOT NULL,
+  biz_no VARCHAR(20) NOT NULL,
+  biz_item VARCHAR(50),
+  use_mon INTEGER NOT NULL,
+  pay_dt CHAR(8) NOT NULL,
+  pay_amt DECIMAL(17, 2) NOT NULL,
+  exp_amt DECIMAL(17, 2) NOT NULL,
+  st_exp_ym CHAR(6) NOT NULL,
+  ed_exp_ym CHAR(6) NOT NULL,
+  end_yn CHAR(1) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1012
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1012 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  pur_amt DECIMAL(17, 2) NOT NULL,
+  exp_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10121
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10121 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  book_nm VARCHAR(100) NOT NULL,
+  author VARCHAR(50) NOT NULL,
+  pur_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1013
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1013 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  edu_nm VARCHAR(100) NOT NULL,
+  edu_dscr VARCHAR(300),
+  purpose VARCHAR(100),
+  biz_nm VARCHAR(100) NOT NULL,
+  biz_no VARCHAR(20),
+  st_edu_dt CHAR(8) NOT NULL,
+  ed_edu_dt CHAR(8) NOT NULL,
+  place VARCHAR(200),
+  tax_yn CHAR(1) NOT NULL,
+  tax_dt CHAR(8) NOT NULL,
+  refund_yn CHAR(1) NOT NULL,
+  pay_tp CHAR(1) NOT NULL,
+  sup_amt DECIMAL(17, 2) NOT NULL,
+  tax_amt DECIMAL(17, 2) NOT NULL,
+  sum_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1014
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1014 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  st_off_dt CHAR(8) NOT NULL,
+  ed_off_dt CHAR(8) NOT NULL,
+  place VARCHAR(200),
+  holiday_tp CHAR(4),
+  holiday_st CHAR(4),
+  task TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1015
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1015 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  st_wks_dt CHAR(8) NOT NULL,
+  ed_wks_dt CHAR(8) NOT NULL,
+  place VARCHAR(200),
+  contact VARCHAR(100),
+  attendance VARCHAR(200),
+  attendance_cnt INTEGER,
+  purpose VARCHAR(100),
+  schedule TEXT,
+  equip_tp CHAR(1),
+  equipment VARCHAR(100),
+  min_exp_amt DECIMAL(17, 2) NOT NULL,
+  max_exp_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_1016
+CREATE TABLE IF NOT EXISTS tea_doc_mst_1016 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  st_wks_dt CHAR(8) NOT NULL,
+  ed_wks_dt CHAR(8) NOT NULL,
+  place VARCHAR(200),
+  contact VARCHAR(100),
+  attendance VARCHAR(200),
+  attendance_cnt INTEGER NOT NULL,
+  schedule TEXT,
+  min_exp_amt DECIMAL(17, 2) NOT NULL,
+  max_exp_amt DECIMAL(17, 2) NOT NULL,
+  cash_amt DECIMAL(17, 2) NOT NULL,
+  card_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_10161
+CREATE TABLE IF NOT EXISTS tea_doc_mst_10161 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  exp_tp CHAR(1) NOT NULL,
+  biz_nm VARCHAR(100) NOT NULL,
+  exp_amt DECIMAL(17, 2) NOT NULL,
+  acct_cd VARCHAR(10) NOT NULL,
+  notes VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_2001
+CREATE TABLE IF NOT EXISTS tea_doc_mst_2001 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  purc_tp CHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_20011
+CREATE TABLE IF NOT EXISTS tea_doc_mst_20011 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  cost_pr DECIMAL(17, 2) NOT NULL,
+  qty INTEGER NOT NULL,
+  amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(100),
+  user_nm VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_3001
+CREATE TABLE IF NOT EXISTS tea_doc_mst_3001 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10),
+  crdt_id INTEGER,
+  crdt_tp CHAR(4),
+  cday_tp CHAR(3),
+  chg_tp CHAR(1),
+  chg_base_dt CHAR(8),
+  chg_cday_tp CHAR(3),
+  chg_dept_cd CHAR(10),
+  chg_paym_dt CHAR(8),
+  reason VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_30011
+CREATE TABLE IF NOT EXISTS tea_doc_mst_30011 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  rcbl_id INTEGER,
+  rcbl_no CHAR(18) NOT NULL,
+  crdt_dt CHAR(8),
+  paym_dt CHAR(8),
+  rcbl_amt DECIMAL(17, 2),
+  dpst_amt DECIMAL(17, 2),
+  blnc_amt DECIMAL(17, 2),
+  div_rcbl_amt DECIMAL(17, 2),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_3003
+CREATE TABLE IF NOT EXISTS tea_doc_mst_3003 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  dept_cd CHAR(10),
+  crdt_tp CHAR(4),
+  cday_tp CHAR(3),
+  clmt_tot_amt DECIMAL(17, 2),
+  clmt_can_amt DECIMAL(17, 2),
+  clmt_tp CHAR(3) NOT NULL,
+  clmt_amt DECIMAL(17, 2) NOT NULL,
+  clmt_new_amt DECIMAL(17, 2),
+  bend_dt CHAR(8) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_5001
+CREATE TABLE IF NOT EXISTS tea_doc_mst_5001 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  card_cd VARCHAR(20) NOT NULL,
+  card_no VARCHAR(20) NOT NULL,
+  st_use_dt CHAR(8) NOT NULL,
+  ed_use_dt CHAR(8) NOT NULL,
+  sett_amt DECIMAL(17, 2) NOT NULL,
+  aprv_amt DECIMAL(17, 2) NOT NULL,
+  sett_bank_cd VARCHAR(50),
+  sett_bank_acct_no VARCHAR(20),
+  sett_bank_dept_nm VARCHAR(50),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_50011
+CREATE TABLE IF NOT EXISTS tea_doc_mst_50011 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  chk_yn CHAR(1),
+  use_dt CHAR(8) NOT NULL,
+  emp_nm VARCHAR(50) NOT NULL,
+  biz_nm VARCHAR(100),
+  biz_no VARCHAR(20),
+  aprv_amt DECIMAL(17, 2) NOT NULL,
+  sett_amt DECIMAL(17, 2) NOT NULL,
+  cust_nm VARCHAR(100),
+  cust_mgr_nm VARCHAR(100),
+  acct_cd CHAR(3) NOT NULL,
+  notes VARCHAR(100),
+  aprv_no VARCHAR(50),
+  aprv_seq INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_5002
+CREATE TABLE IF NOT EXISTS tea_doc_mst_5002 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  month INTEGER,
+  month_sum_amt DECIMAL(17, 2),
+  week1_sum_amt DECIMAL(17, 2),
+  week2_sum_amt DECIMAL(17, 2),
+  week3_sum_amt DECIMAL(17, 2),
+  week4_sum_amt DECIMAL(17, 2),
+  week5_sum_amt DECIMAL(17, 2),
+  tot_sum_amt DECIMAL(17, 2),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_50021
+CREATE TABLE IF NOT EXISTS tea_doc_mst_50021 (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  acct_cd CHAR(3),
+  month_amt DECIMAL(17, 2),
+  week1_amt DECIMAL(17, 2),
+  week2_amt DECIMAL(17, 2),
+  week3_amt DECIMAL(17, 2),
+  week4_amt DECIMAL(17, 2),
+  week5_amt DECIMAL(17, 2),
+  week_sum_amt DECIMAL(17, 2),
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_50021_log
+CREATE TABLE IF NOT EXISTS tea_doc_mst_50021_log (
+  log_id BIGSERIAL,
+  log_status CHAR(1) NOT NULL,
+  log_date TIMESTAMP NOT NULL,
+  doc_id INTEGER,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  acct_cd CHAR(3),
+  month_amt DECIMAL(17, 2),
+  week1_amt DECIMAL(17, 2),
+  week2_amt DECIMAL(17, 2),
+  week3_amt DECIMAL(17, 2),
+  week4_amt DECIMAL(17, 2),
+  week5_amt DECIMAL(17, 2),
+  week_sum_amt DECIMAL(17, 2),
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_5002_log
+CREATE TABLE IF NOT EXISTS tea_doc_mst_5002_log (
+  log_id BIGSERIAL,
+  log_status CHAR(1) NOT NULL,
+  log_date TIMESTAMP NOT NULL,
+  doc_id INTEGER,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  month INTEGER,
+  month_sum_amt DECIMAL(17, 2),
+  week1_sum_amt DECIMAL(17, 2),
+  week2_sum_amt DECIMAL(17, 2),
+  week3_sum_amt DECIMAL(17, 2),
+  week4_sum_amt DECIMAL(17, 2),
+  week5_sum_amt DECIMAL(17, 2),
+  tot_sum_amt DECIMAL(17, 2),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_back
+CREATE TABLE IF NOT EXISTS tea_doc_mst_back (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_exp
+CREATE TABLE IF NOT EXISTS tea_doc_mst_exp (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  acct_cd VARCHAR(10) NOT NULL,
+  remark VARCHAR(200) NOT NULL,
+  sup_amt DECIMAL(17, 2) NOT NULL,
+  tax_amt DECIMAL(17, 2) NOT NULL,
+  sum_amt DECIMAL(17, 2) NOT NULL,
+  prepaid_yn CHAR(1),
+  autotrn_yn CHAR(1),
+  tax_yn CHAR(1) NOT NULL,
+  tax_no VARCHAR(50),
+  tax_dt CHAR(8),
+  brn_no CHAR(10),
+  biz_nm VARCHAR(100),
+  acc_cust_cd VARCHAR(10),
+  exp_dept_cd CHAR(10),
+  exp_empy_cd CHAR(10),
+  bank_cd VARCHAR(10) NOT NULL,
+  bank_acct_no VARCHAR(50) NOT NULL,
+  bank_ownr_nm VARCHAR(50) NOT NULL,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_file
+CREATE TABLE IF NOT EXISTS tea_doc_mst_file (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  file_seq INTEGER NOT NULL,
+  file_id INTEGER NOT NULL,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_line
+CREATE TABLE IF NOT EXISTS tea_doc_mst_line (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  line_seq INTEGER NOT NULL,
+  line_tp CHAR(1) NOT NULL,
+  dec_arb_tp CHAR(1),
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10),
+  proc_tp CHAR(1),
+  proc_on TIMESTAMP,
+  proc_by VARCHAR(10),
+  notes VARCHAR(500),
+  org_dept_cd VARCHAR(10),
+  org_empy_cd VARCHAR(10),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_line_temp
+CREATE TABLE IF NOT EXISTS tea_doc_mst_line_temp (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_cd CHAR(4) NOT NULL,
+  line_tp CHAR(1) NOT NULL,
+  line_seq INTEGER NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_line_to_title
+CREATE TABLE IF NOT EXISTS tea_doc_mst_line_to_title (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  tea_form_mst_key CHAR(19) NOT NULL,
+  eas_form_cd CHAR(4) NOT NULL,
+  line_tp CHAR(1) NOT NULL,
+  line_seq INTEGER NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_link
+CREATE TABLE IF NOT EXISTS tea_doc_mst_link (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  eas_doc_link_no CHAR(14) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_pay
+CREATE TABLE IF NOT EXISTS tea_doc_mst_pay (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  pay_seq INTEGER,
+  cust_cd CHAR(14),
+  sup_amt DECIMAL(17, 2) NOT NULL,
+  tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_amt DECIMAL(17, 2) NOT NULL,
+  tax_iss_dt CHAR(8),
+  tax_no VARCHAR(50),
+  tax_file_id INTEGER,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_print
+CREATE TABLE IF NOT EXISTS tea_doc_mst_print (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  empy_cd CHAR(10),
+  print_on TIMESTAMP NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_read
+CREATE TABLE IF NOT EXISTS tea_doc_mst_read (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  read_on TIMESTAMP NOT NULL,
+  view_tp CHAR(2),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_remit
+CREATE TABLE IF NOT EXISTS tea_doc_mst_remit (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  remit_seq INTEGER NOT NULL,
+  cust_cd CHAR(14),
+  bank_cd VARCHAR(10),
+  bank_nm VARCHAR(50),
+  bank_ownr_nm VARCHAR(50),
+  bank_acct_no VARCHAR(50),
+  remit_amt DECIMAL(17, 2),
+  remit_exp_dt CHAR(8),
+  remit_dt CHAR(8),
+  notes VARCHAR(500),
+  remit_yn CHAR(1),
+  remit_on TIMESTAMP,
+  remit_by VARCHAR(50),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_rev
+CREATE TABLE IF NOT EXISTS tea_doc_mst_rev (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14) NOT NULL,
+  rev_tp CHAR(1) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14),
+  ctgr_cd CHAR(10),
+  rev_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_tmpl
+CREATE TABLE IF NOT EXISTS tea_doc_mst_tmpl (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  subject VARCHAR(200),
+  eas_rule TEXT,
+  sub_text VARCHAR(2000),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_mst_web_log
+CREATE TABLE IF NOT EXISTS tea_doc_mst_web_log (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_doc_no CHAR(14),
+  line_tp CHAR(1),
+  line_seq INTEGER,
+  dept_cd CHAR(10),
+  empy_cd CHAR(10),
+  dec_arb_tp CHAR(1),
+  proc_tp CHAR(1),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_set_line
+CREATE TABLE IF NOT EXISTS tea_doc_set_line (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  form_dept_cd CHAR(10) NOT NULL,
+  line_tp CHAR(1) NOT NULL,
+  line_seq INTEGER NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd VARCHAR(10),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_doc_set_tmpl
+CREATE TABLE IF NOT EXISTS tea_doc_set_tmpl (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  subject VARCHAR(200),
+  eas_rule TEXT,
+  sub_text VARCHAR(2000),
+  PRIMARY KEY (id)
+);
+
+-- tea_form_mst
+CREATE TABLE IF NOT EXISTS tea_form_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_nm VARCHAR(100) NOT NULL,
+  eas_form_cd CHAR(4) NOT NULL,
+  eas_form_tp CHAR(4) NOT NULL,
+  description VARCHAR(500),
+  use_yn CHAR(1) NOT NULL,
+  eas_pay_yn CHAR(1) NOT NULL,
+  eas_rev_yn CHAR(1) NOT NULL,
+  eas_acc_yn CHAR(1) NOT NULL,
+  detail_yn CHAR(1) NOT NULL,
+  secret_yn CHAR(1) NOT NULL,
+  cancel_yn CHAR(1) NOT NULL,
+  reject_yn CHAR(1) NOT NULL,
+  change_yn CHAR(1) NOT NULL,
+  notice_yn CHAR(1) NOT NULL,
+  proc_dept_yn CHAR(1),
+  sort_seq INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tea_form_mst_acc
+CREATE TABLE IF NOT EXISTS tea_form_mst_acc (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  eas_acc_tp CHAR(4) NOT NULL,
+  acct_cd VARCHAR(10),
+  ban_acct_cd VARCHAR(10),
+  use_yn CHAR(1) NOT NULL,
+  notes VARCHAR(500),
+  eas_pset_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tea_form_mst_acc_acctcode
+CREATE TABLE IF NOT EXISTS tea_form_mst_acc_acctcode (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_acc_id INTEGER NOT NULL,
+  acct_cd VARCHAR(10) NOT NULL,
+  ban_acct_cd VARCHAR(10),
+  PRIMARY KEY (id)
+);
+
+-- tea_form_mst_pay
+CREATE TABLE IF NOT EXISTS tea_form_mst_pay (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  eas_pay_tp CHAR(1) NOT NULL,
+  eas_pset_id INTEGER,
+  tax_yn CHAR(1) NOT NULL,
+  acc_proc_yn CHAR(1) NOT NULL,
+  cms_if_yn CHAR(1) NOT NULL,
+  cust_reg_yn CHAR(1) NOT NULL,
+  item_reg_yn CHAR(1) NOT NULL,
+  one_cust_yn CHAR(1) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  acc_yn CHAR(1) NOT NULL,
+  rev_yn CHAR(1) NOT NULL,
+  pay_yn CHAR(1) NOT NULL,
+  rmt_yn CHAR(1) NOT NULL,
+  pur_yn CHAR(1) NOT NULL,
+  ref_yn CHAR(1) NOT NULL,
+  cle_yn CHAR(1) NOT NULL,
+  exp_yn CHAR(1) NOT NULL,
+  cfs_yn CHAR(1) NOT NULL,
+  oil_yn CHAR(1) NOT NULL,
+  st_day INTEGER,
+  ed_day INTEGER,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tea_form_mst_rev
+CREATE TABLE IF NOT EXISTS tea_form_mst_rev (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  eas_form_id INTEGER NOT NULL,
+  rev_tp CHAR(1) NOT NULL,
+  acct_cd VARCHAR(20),
+  use_yn CHAR(1) NOT NULL,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);

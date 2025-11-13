@@ -1,0 +1,301 @@
+-- ============================================================================
+-- Asset Management Schema (asm)
+-- ============================================================================
+-- Description: 자산 관리 (고정자산, 자산등록, 감가상각, 유지보수 등)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: asm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS asm;
+
+COMMENT ON SCHEMA asm IS 'ASM: 자산 관리 스키마 (고정자산, 감가상각, 유지보수)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- ASM: A/S 관리 (After Sales Service)
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: asm.service_requests
+-- 설명: A/S 요청 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS asm.service_requests 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),  -- A/S 요청 고유 식별자
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,     -- 등록 일시
+    created_by              UUID,                                                            -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                        -- 수정 일시
+    updated_by              UUID,                                                            -- 수정자 UUID
+    
+    -- 기본 정보
+    sr_code                 VARCHAR(50)              NOT NULL,                               -- A/S 요청 코드
+    customer_id             UUID                     NOT NULL,                               -- 고객 식별자
+    product_id              UUID                     NOT NULL,                               -- 제품 식별자
+    serial_number           VARCHAR(100),                                                    -- 시리얼 번호
+    purchase_date           DATE,                                                            -- 구매 일자
+    warranty_end_date       DATE,                                                            -- 보증 종료일
+    issue_description       TEXT                     NOT NULL,                               -- 문제 설명
+    
+    -- A/S 정보
+    service_type            VARCHAR(20)              DEFAULT 'REPAIR',                       -- A/S 유형 (REPAIR/REPLACE/MAINTENANCE/INSPECTION)
+    priority                VARCHAR(20)              DEFAULT 'MEDIUM',                       -- 우선순위 (LOW/MEDIUM/HIGH/URGENT)
+    status                  VARCHAR(20)              DEFAULT 'RECEIVED',                     -- 상태 (RECEIVED/DIAGNOSED/IN_PROGRESS/COMPLETED/CLOSED/CANCELLED)
+    assigned_technician_id  UUID,                                                            -- 배정된 기술자 식별자
+    
+    -- 비용 정보
+    estimated_cost          NUMERIC(18,4)            DEFAULT 0,                              -- 예상 비용
+    actual_cost             NUMERIC(18,4)            DEFAULT 0,                              -- 실제 비용
+    currency                VARCHAR(3)               DEFAULT 'KRW',                          -- 통화 (ISO 4217)
+    
+    -- 완료 정보
+    completed_at            TIMESTAMP WITH TIME ZONE,                                        -- 완료 일시
+    is_warranty             BOOLEAN                  DEFAULT false,                          -- 보증기간 내 여부
+    
+    -- 상태 관리
+    is_deleted              BOOLEAN                  DEFAULT false,                          -- 논리 삭제 플래그
+    
+    -- 제약조건
+    CONSTRAINT ck_service_requests__service_type    CHECK (service_type IN ('REPAIR', 'REPLACE', 'MAINTENANCE', 'INSPECTION')),  -- A/S 유형 체크
+    CONSTRAINT ck_service_requests__priority        CHECK (priority IN ('LOW', 'MEDIUM', 'HIGH', 'URGENT')),                     -- 우선순위 체크
+    CONSTRAINT ck_service_requests__status          CHECK (status IN ('RECEIVED', 'DIAGNOSED', 'IN_PROGRESS', 'COMPLETED', 'CLOSED', 'CANCELLED')),  -- 상태 체크
+    CONSTRAINT ck_service_requests__costs           CHECK (estimated_cost >= 0 AND actual_cost >= 0)                             -- 비용 양수 체크
+);
+
+COMMENT ON TABLE  asm.service_requests                          IS 'A/S 요청 관리 테이블';
+COMMENT ON COLUMN asm.service_requests.id                       IS 'A/S 요청 고유 식별자';
+COMMENT ON COLUMN asm.service_requests.created_at               IS '등록 일시';
+COMMENT ON COLUMN asm.service_requests.created_by               IS '등록자 UUID';
+COMMENT ON COLUMN asm.service_requests.updated_at               IS '수정 일시';
+COMMENT ON COLUMN asm.service_requests.updated_by               IS '수정자 UUID';
+COMMENT ON COLUMN asm.service_requests.sr_code                  IS 'A/S 요청 코드';
+COMMENT ON COLUMN asm.service_requests.customer_id              IS '고객 식별자';
+COMMENT ON COLUMN asm.service_requests.product_id               IS '제품 식별자';
+COMMENT ON COLUMN asm.service_requests.serial_number            IS '시리얼 번호';
+COMMENT ON COLUMN asm.service_requests.purchase_date            IS '구매 일자';
+COMMENT ON COLUMN asm.service_requests.warranty_end_date        IS '보증 종료일';
+COMMENT ON COLUMN asm.service_requests.issue_description        IS '문제 설명';
+COMMENT ON COLUMN asm.service_requests.service_type             IS 'A/S 유형 (REPAIR/REPLACE/MAINTENANCE/INSPECTION)';
+COMMENT ON COLUMN asm.service_requests.priority                 IS '우선순위 (LOW/MEDIUM/HIGH/URGENT)';
+COMMENT ON COLUMN asm.service_requests.status                   IS '상태 (RECEIVED/DIAGNOSED/IN_PROGRESS/COMPLETED/CLOSED/CANCELLED)';
+COMMENT ON COLUMN asm.service_requests.assigned_technician_id   IS '배정된 기술자 식별자';
+COMMENT ON COLUMN asm.service_requests.estimated_cost           IS '예상 비용';
+COMMENT ON COLUMN asm.service_requests.actual_cost              IS '실제 비용';
+COMMENT ON COLUMN asm.service_requests.currency                 IS '통화 (ISO 4217)';
+COMMENT ON COLUMN asm.service_requests.completed_at             IS '완료 일시';
+COMMENT ON COLUMN asm.service_requests.is_warranty              IS '보증기간 내 여부';
+COMMENT ON COLUMN asm.service_requests.is_deleted               IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 테이블: asm.service_works
+-- 설명: A/S 작업 내역 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS asm.service_works 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),  -- 작업 고유 식별자
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,     -- 등록 일시
+    created_by              UUID,                                                            -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                        -- 수정 일시
+    updated_by              UUID,                                                            -- 수정자 UUID
+    
+    -- 작업 정보
+    service_request_id      UUID                     NOT NULL,                               -- A/S 요청 식별자
+    work_date               DATE                     NOT NULL,                               -- 작업 일자
+    technician_id           UUID                     NOT NULL,                               -- 기술자 식별자
+    work_description        TEXT                     NOT NULL,                               -- 작업 내용 설명
+    
+    -- 비용 정보
+    labor_hours             NUMERIC(5,2)             DEFAULT 0,                              -- 작업 시간 (시간)
+    labor_cost              NUMERIC(18,4)            DEFAULT 0,                              -- 인건비
+    parts_cost              NUMERIC(18,4)            DEFAULT 0,                              -- 부품비
+    total_cost              NUMERIC(18,4)            DEFAULT 0,                              -- 총 비용
+    
+    -- 상태 관리
+    status                  VARCHAR(20)              DEFAULT 'COMPLETED',                    -- 작업 상태 (IN_PROGRESS/COMPLETED/CANCELLED)
+    
+    -- 제약조건
+    CONSTRAINT ck_service_works__costs              CHECK (labor_cost >= 0 AND parts_cost >= 0 AND total_cost >= 0),  -- 비용 양수 체크
+    CONSTRAINT ck_service_works__labor_hours        CHECK (labor_hours >= 0 AND labor_hours <= 24),                   -- 작업시간 범위 체크 (0~24시간)
+    CONSTRAINT ck_service_works__status             CHECK (status IN ('IN_PROGRESS', 'COMPLETED', 'CANCELLED'))       -- 작업 상태 체크
+);
+
+COMMENT ON TABLE  asm.service_works                             IS 'A/S 작업 내역 관리 테이블';
+COMMENT ON COLUMN asm.service_works.id                          IS '작업 고유 식별자';
+COMMENT ON COLUMN asm.service_works.created_at                  IS '등록 일시';
+COMMENT ON COLUMN asm.service_works.created_by                  IS '등록자 UUID';
+COMMENT ON COLUMN asm.service_works.updated_at                  IS '수정 일시';
+COMMENT ON COLUMN asm.service_works.updated_by                  IS '수정자 UUID';
+COMMENT ON COLUMN asm.service_works.service_request_id          IS 'A/S 요청 식별자';
+COMMENT ON COLUMN asm.service_works.work_date                   IS '작업 일자';
+COMMENT ON COLUMN asm.service_works.technician_id               IS '기술자 식별자';
+COMMENT ON COLUMN asm.service_works.work_description            IS '작업 내용 설명';
+COMMENT ON COLUMN asm.service_works.labor_hours                 IS '작업 시간 (시간)';
+COMMENT ON COLUMN asm.service_works.labor_cost                  IS '인건비';
+COMMENT ON COLUMN asm.service_works.parts_cost                  IS '부품비';
+COMMENT ON COLUMN asm.service_works.total_cost                  IS '총 비용';
+COMMENT ON COLUMN asm.service_works.status                      IS '작업 상태 (IN_PROGRESS/COMPLETED/CANCELLED)';
+
+-- =====================================================================================
+-- 테이블: asm.service_parts
+-- 설명: A/S 부품 사용 이력 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS asm.service_parts 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),  -- 부품 사용 고유 식별자
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,     -- 등록 일시
+    created_by              UUID,                                                            -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                        -- 수정 일시
+    updated_by              UUID,                                                            -- 수정자 UUID
+    
+    -- 부품 정보
+    service_request_id      UUID                     NOT NULL,                               -- A/S 요청 식별자
+    product_id              UUID                     NOT NULL,                               -- 부품 식별자
+    qty                     INTEGER                  NOT NULL,                               -- 수량
+    unit_cost               NUMERIC(18,4)            NOT NULL,                               -- 단가
+    total_cost              NUMERIC(18,4)            NOT NULL,                               -- 총 비용
+    
+    -- 제약조건
+    CONSTRAINT ck_service_parts__qty                CHECK (qty > 0),                                         -- 수량 양수 체크
+    CONSTRAINT ck_service_parts__costs              CHECK (unit_cost >= 0 AND total_cost >= 0)              -- 비용 양수 체크
+);
+
+COMMENT ON TABLE  asm.service_parts                             IS 'A/S 부품 사용 이력 관리 테이블';
+COMMENT ON COLUMN asm.service_parts.id                          IS '부품 사용 고유 식별자';
+COMMENT ON COLUMN asm.service_parts.created_at                  IS '등록 일시';
+COMMENT ON COLUMN asm.service_parts.created_by                  IS '등록자 UUID';
+COMMENT ON COLUMN asm.service_parts.updated_at                  IS '수정 일시';
+COMMENT ON COLUMN asm.service_parts.updated_by                  IS '수정자 UUID';
+COMMENT ON COLUMN asm.service_parts.service_request_id          IS 'A/S 요청 식별자';
+COMMENT ON COLUMN asm.service_parts.product_id                  IS '부품 식별자';
+COMMENT ON COLUMN asm.service_parts.qty                         IS '수량';
+COMMENT ON COLUMN asm.service_parts.unit_cost                   IS '단가';
+COMMENT ON COLUMN asm.service_parts.total_cost                  IS '총 비용';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- service_requests 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_requests__sr_code
+    ON asm.service_requests (sr_code)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__sr_code IS 'A/S 요청 코드 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__customer_id
+    ON asm.service_requests (customer_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__customer_id IS '고객별 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__product_id
+    ON asm.service_requests (product_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__product_id IS '제품별 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__assigned_technician_id
+    ON asm.service_requests (assigned_technician_id)
+ WHERE assigned_technician_id IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX ix_service_requests__assigned_technician_id IS '기술자별 배정된 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__status
+    ON asm.service_requests (status)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__status IS 'A/S 요청 상태별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__service_type
+    ON asm.service_requests (service_type)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__service_type IS 'A/S 유형별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__priority
+    ON asm.service_requests (priority)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__priority IS 'A/S 우선순위별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__is_warranty
+    ON asm.service_requests (is_warranty)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__is_warranty IS '보증기간 여부별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__created_at
+    ON asm.service_requests (created_at)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ix_service_requests__created_at IS 'A/S 요청 등록일시 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__completed_at
+    ON asm.service_requests (completed_at)
+ WHERE completed_at IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX ix_service_requests__completed_at IS 'A/S 요청 완료일시 조회 인덱스';
+
+-- service_works 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_works__service_request_id
+    ON asm.service_works (service_request_id);
+COMMENT ON INDEX ix_service_works__service_request_id IS 'A/S 요청별 작업 내역 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__technician_id
+    ON asm.service_works (technician_id);
+COMMENT ON INDEX ix_service_works__technician_id IS '기술자별 작업 내역 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__work_date
+    ON asm.service_works (work_date);
+COMMENT ON INDEX ix_service_works__work_date IS '작업일자별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__status
+    ON asm.service_works (status);
+COMMENT ON INDEX ix_service_works__status IS '작업 상태별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__created_at
+    ON asm.service_works (created_at);
+COMMENT ON INDEX ix_service_works__created_at IS '작업 등록일시 조회 인덱스';
+
+-- service_parts 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_parts__service_request_id
+    ON asm.service_parts (service_request_id);
+COMMENT ON INDEX ix_service_parts__service_request_id IS 'A/S 요청별 사용 부품 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_parts__product_id
+    ON asm.service_parts (product_id);
+COMMENT ON INDEX ix_service_parts__product_id IS '부품별 사용 이력 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_parts__created_at
+    ON asm.service_parts (created_at);
+COMMENT ON INDEX ix_service_parts__created_at IS '부품 사용 등록일시 조회 인덱스';
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 A/S 요청 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_service_requests__code
+    ON asm.service_requests (sr_code)
+ WHERE is_deleted = false;
+COMMENT ON INDEX ux_service_requests__code IS 'A/S 요청 코드 유니크 제약 (삭제되지 않은 데이터만)';
+
+-- =====================================================================================
+-- 외래키 제약 조건
+-- =====================================================================================
+
+-- service_works 테이블 외래키
+ALTER TABLE asm.service_works ADD CONSTRAINT fk_service_works__service_request_id
+    FOREIGN KEY (service_request_id) REFERENCES asm.service_requests(id) ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_service_works__service_request_id ON asm.service_works IS 'A/S 요청 참조 외래키 (CASCADE 삭제)';
+
+-- service_parts 테이블 외래키
+ALTER TABLE asm.service_parts ADD CONSTRAINT fk_service_parts__service_request_id
+    FOREIGN KEY (service_request_id) REFERENCES asm.service_requests(id) ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_service_parts__service_request_id ON asm.service_parts IS 'A/S 요청 참조 외래키 (CASCADE 삭제)';

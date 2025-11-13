@@ -1,0 +1,603 @@
+-- ============================================================================
+-- Communication Schema (com)
+-- ============================================================================
+-- Description: 커뮤니케이션/메시징 (알림, 메시지, 캘린더, 이메일)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: com
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS com;
+
+COMMENT ON SCHEMA com IS 'COM: 커뮤니케이션/메시징 스키마 (알림, 메시지, 캘린더)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- COM: 공통/지원 모듈 (Enterprise Services)
+-- 전사 공통으로 사용되는 기능들을 관리하는 스키마
+-- ============================================================================
+
+-- 공통 코드 그룹
+-- 시스템에서 사용하는 공통 코드의 그룹을 정의하는 테이블
+CREATE TABLE com.code_groups (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 코드 그룹 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    
+    -- 그룹 정보
+    group_code VARCHAR(50) NOT NULL,  -- 그룹 코드 (테넌트 내 유니크)
+    group_name VARCHAR(100) NOT NULL,  -- 그룹명
+    description TEXT,  -- 그룹 설명
+    is_system_group BOOLEAN DEFAULT false,  -- 시스템 기본 그룹 여부
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태
+    is_deleted BOOLEAN DEFAULT false,  -- 삭제 상태
+    
+    CONSTRAINT uk_com_code_groups__tenant_code UNIQUE (tenant_id, group_code)
+);
+
+COMMENT ON TABLE com.code_groups IS '공통 코드 그룹을 관리하는 테이블. 코드의 카테고리별 분류를 위한 그룹 정의';
+COMMENT ON COLUMN com.code_groups.group_code IS '그룹 코드 - 코드 그룹을 식별하는 코드 (예: CURRENCY, PAYMENT_TERMS, STATUS)';
+COMMENT ON COLUMN com.code_groups.is_system_group IS '시스템 기본 그룹 여부 - true: 시스템 필수 그룹(삭제 불가), false: 사용자 정의 그룹';
+
+-- 공통 코드
+-- 시스템에서 사용하는 모든 공통 코드를 관리하는 테이블
+CREATE TABLE com.codes (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 코드 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    
+    -- 코드 정보
+    group_id UUID NOT NULL,  -- 코드 그룹 ID (com.code_groups.id 참조)
+    code VARCHAR(50) NOT NULL,  -- 코드값
+    name VARCHAR(100) NOT NULL,  -- 코드명
+    description TEXT,  -- 코드 설명
+    sort_order INTEGER DEFAULT 0,  -- 정렬 순서
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태
+    is_deleted BOOLEAN DEFAULT false,  -- 삭제 상태
+    
+    CONSTRAINT uk_com_codes__group_code UNIQUE (group_id, code)
+);
+
+COMMENT ON TABLE com.codes IS '시스템에서 사용하는 모든 공통 코드를 관리하는 테이블. 드롭다운, 선택 옵션 등에 사용';
+COMMENT ON COLUMN com.codes.code IS '코드값 - 시스템에서 실제 사용하는 코드 (예: KRW, USD, EUR)';
+COMMENT ON COLUMN com.codes.name IS '코드명 - 사용자에게 표시되는 코드 이름 (예: 한국원, 미국달러, 유로)';
+COMMENT ON COLUMN com.codes.sort_order IS '정렬 순서 - 화면 표시 시 정렬 기준 (작은 값이 우선)';
+
+-- 전자결재 워크플로우 정의
+-- 전자결재 프로세스의 워크플로우를 정의하는 테이블
+CREATE TABLE com.workflows (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 워크플로우 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트/회사 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    company_id UUID,  -- 회사 ID (adm.companies.id 참조)
+    
+    -- 워크플로우 정보
+    workflow_code VARCHAR(50) NOT NULL,  -- 워크플로우 코드 (테넌트 내 유니크)
+    workflow_name VARCHAR(100) NOT NULL,  -- 워크플로우명
+    module_code VARCHAR(50) NOT NULL,  -- 모듈 코드 (PSM, SRM 등)
+    document_type VARCHAR(50) NOT NULL,  -- 문서 유형 (PURCHASE_ORDER, SALES_ORDER 등)
+    description TEXT,  -- 워크플로우 설명
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태
+    is_deleted BOOLEAN DEFAULT false,  -- 삭제 상태
+    
+    CONSTRAINT uk_com_workflows__tenant_code UNIQUE (tenant_id, workflow_code)
+);
+
+COMMENT ON TABLE com.workflows IS '전자결재 워크플로우 정의 테이블. 문서별 결재 프로세스 설정';
+COMMENT ON COLUMN com.workflows.workflow_code IS '워크플로우 코드 - 워크플로우를 식별하는 유니크 코드';
+COMMENT ON COLUMN com.workflows.module_code IS '모듈 코드 - 워크플로우가 적용되는 모듈';
+COMMENT ON COLUMN com.workflows.document_type IS '문서 유형 - 워크플로우가 적용되는 문서 타입 (PURCHASE_ORDER, SALES_ORDER, EXPENSE_REPORT 등)';
+
+-- 워크플로우 단계
+-- 워크플로우의 각 결재 단계를 정의하는 테이블
+CREATE TABLE com.workflow_steps (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 워크플로우 단계 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 워크플로우 정보
+    workflow_id UUID NOT NULL,  -- 워크플로우 ID (com.workflows.id 참조)
+    
+    -- 단계 정보
+    step_order INTEGER NOT NULL,  -- 단계 순서 (1, 2, 3...)
+    step_name VARCHAR(100) NOT NULL,  -- 단계명
+    approver_type VARCHAR(20) NOT NULL,  -- 승인자 유형 (USER: 특정사용자, ROLE: 역할, DEPARTMENT: 부서)
+    approver_id UUID,  -- 승인자 ID (유형에 따라 users.id, roles.id, departments.id 참조)
+    is_parallel BOOLEAN DEFAULT false,  -- 병렬 처리 여부 (true: 병렬, false: 순차)
+    is_required BOOLEAN DEFAULT true,  -- 필수 단계 여부
+    
+    CONSTRAINT uk_com_workflow_steps__workflow_order UNIQUE (workflow_id, step_order)
+);
+
+COMMENT ON TABLE com.workflow_steps IS '워크플로우의 각 결재 단계를 정의하는 테이블. 단계별 승인자 및 처리 방식 설정';
+COMMENT ON COLUMN com.workflow_steps.step_order IS '단계 순서 - 결재 진행 순서 (1부터 시작)';
+COMMENT ON COLUMN com.workflow_steps.approver_type IS '승인자 유형 - USER(특정사용자), ROLE(역할), DEPARTMENT(부서)';
+COMMENT ON COLUMN com.workflow_steps.is_parallel IS '병렬 처리 여부 - true: 동시 결재 가능, false: 순차 결재';
+COMMENT ON COLUMN com.workflow_steps.is_required IS '필수 단계 여부 - false인 경우 건너뛸 수 있음';
+
+-- 결재 인스턴스
+-- 실제 문서의 결재 진행 상황을 관리하는 테이블
+CREATE TABLE com.approval_instances (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 결재 인스턴스 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트/회사 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    company_id UUID,  -- 회사 ID
+    
+    -- 결재 정보
+    workflow_id UUID NOT NULL,  -- 워크플로우 ID (com.workflows.id 참조)
+    document_id UUID NOT NULL,  -- 문서 ID (결재 대상 문서의 ID)
+    document_type VARCHAR(50) NOT NULL,  -- 문서 유형
+    request_user_id UUID NOT NULL,  -- 결재 요청자 ID (sys.users.id 참조)
+    request_date TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- 결재 요청 일시
+    status VARCHAR(20) DEFAULT 'PENDING',  -- 결재 상태 (PENDING: 진행중, APPROVED: 승인완료, REJECTED: 반려, CANCELED: 취소)
+    completed_at TIMESTAMPTZ,  -- 결재 완료 일시
+    
+    CONSTRAINT uk_com_approval_instances__doc UNIQUE (document_id, document_type)
+);
+
+COMMENT ON TABLE com.approval_instances IS '실제 문서의 결재 인스턴스를 관리하는 테이블. 문서별 결재 진행 상황 추적';
+COMMENT ON COLUMN com.approval_instances.document_id IS '문서 ID - 결재 대상 문서의 고유 식별자';
+COMMENT ON COLUMN com.approval_instances.document_type IS '문서 유형 - 결재 대상 문서의 타입';
+COMMENT ON COLUMN com.approval_instances.status IS '결재 상태 - PENDING(진행중), APPROVED(승인완료), REJECTED(반려), CANCELED(취소)';
+
+-- 결재 단계별 승인 내역
+-- 각 결재 단계별 승인 결과를 기록하는 테이블
+CREATE TABLE com.approval_steps (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 승인 단계 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 승인 정보
+    approval_instance_id UUID NOT NULL,  -- 결재 인스턴스 ID (com.approval_instances.id 참조)
+    step_order INTEGER NOT NULL,  -- 단계 순서
+    approver_id UUID NOT NULL,  -- 실제 승인자 ID (sys.users.id 참조)
+    status VARCHAR(20) DEFAULT 'PENDING',  -- 승인 상태 (PENDING: 대기, APPROVED: 승인, REJECTED: 반려, SKIPPED: 건너뜀)
+    approved_at TIMESTAMPTZ,  -- 승인 일시
+    comments TEXT,  -- 승인 의견
+    
+    CONSTRAINT uk_com_approval_steps__instance_order UNIQUE (approval_instance_id, step_order)
+);
+
+COMMENT ON TABLE com.approval_steps IS '각 결재 단계별 승인 결과를 기록하는 테이블. 단계별 승인자와 승인 결과 관리';
+COMMENT ON COLUMN com.approval_steps.approver_id IS '실제 승인자 ID - 해당 단계에서 실제로 승인한 사용자';
+COMMENT ON COLUMN com.approval_steps.status IS '승인 상태 - PENDING(대기), APPROVED(승인), REJECTED(반려), SKIPPED(건너뜀)';
+COMMENT ON COLUMN com.approval_steps.comments IS '승인 의견 - 승인자가 입력한 의견이나 반려 사유';
+
+-- 첨부파일
+-- 각 문서에 첨부된 파일 정보를 관리하는 테이블
+CREATE TABLE com.attachments (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 첨부파일 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    
+    -- 문서 연결 정보
+    document_id UUID NOT NULL,  -- 연결된 문서 ID
+    document_type VARCHAR(50) NOT NULL,  -- 연결된 문서 타입
+    
+    -- 파일 정보
+    file_name VARCHAR(255) NOT NULL,  -- 저장된 파일명 (UUID 등으로 변경된 이름)
+    original_name VARCHAR(255) NOT NULL,  -- 원본 파일명
+    file_path VARCHAR(500) NOT NULL,  -- 파일 저장 경로
+    file_size BIGINT,  -- 파일 크기 (bytes)
+    mime_type VARCHAR(100),  -- MIME 타입 (image/jpeg, application/pdf 등)
+    is_deleted BOOLEAN DEFAULT false  -- 삭제 상태
+);
+
+COMMENT ON TABLE com.attachments IS '문서별 첨부파일 정보를 관리하는 테이블. 모든 모듈의 문서에 공통으로 사용';
+COMMENT ON COLUMN com.attachments.file_name IS '저장된 파일명 - 서버에 실제 저장된 파일명 (보안을 위해 UUID 등 사용)';
+COMMENT ON COLUMN com.attachments.original_name IS '원본 파일명 - 사용자가 업로드한 원본 파일명';
+COMMENT ON COLUMN com.attachments.file_path IS '파일 저장 경로 - 서버 또는 클라우드 스토리지의 파일 경로';
+COMMENT ON COLUMN com.attachments.mime_type IS 'MIME 타입 - 파일의 형식을 나타내는 타입 (image/jpeg, application/pdf 등)';
+
+-- ============================================================================
+-- ADM: 기준정보 (Master Data Management)
+-- 캘린더, 휴일
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: com.calendars
+-- 설명: 캘린더 및 휴일 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS com.calendars 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 캘린더 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 캘린더 기본 정보
+    tenant_id           UUID                     NOT NULL,                              -- 테넌트 식별자
+    company_id          UUID                     NOT NULL,                              -- 회사 식별자
+	
+    calendar_date       DATE                     NOT NULL,                              -- 날짜
+    
+    -- 날짜 분해 정보
+    calendar_year       INTEGER                  NOT NULL,                              -- 연도 (YYYY)
+    calendar_month      INTEGER                  NOT NULL,                              -- 월 (1-12)
+    calendar_day        INTEGER                  NOT NULL,                              -- 일 (1-31)
+    day_of_week         INTEGER                  NOT NULL,                              -- 요일 (1=일요일, 7=토요일)
+    day_of_week_name    VARCHAR(10)              NOT NULL,                              -- 요일명 (SUN, MON, TUE, WED, THU, FRI, SAT)
+    
+    -- 주차 정보
+    week_of_year        INTEGER                  NOT NULL,                              -- 연간 주차 (1-53)
+    week_of_month       INTEGER                  NOT NULL,                              -- 월간 주차 (1-6)
+    
+    -- 분기 정보
+    quarter             INTEGER                  NOT NULL,                              -- 분기 (1-4)
+    quarter_name        VARCHAR(10)              NOT NULL,                              -- 분기명 (Q1, Q2, Q3, Q4)
+    
+    -- 휴일 정보
+    is_holiday          BOOLEAN                  DEFAULT false,                        -- 휴일 여부
+    holiday_name        VARCHAR(100),                                                  -- 휴일명
+    holiday_type        VARCHAR(20),                                                   -- 휴일 유형
+    
+    -- 업무일 정보
+    is_weekend          BOOLEAN                  DEFAULT false,                        -- 주말 여부
+    is_workday          BOOLEAN                  DEFAULT true,                         -- 업무일 여부
+    
+    -- 특별일 정보
+    is_fiscal_year_end  BOOLEAN                  DEFAULT false,                        -- 회계연도말 여부
+    is_month_end        BOOLEAN                  DEFAULT false,                        -- 월말 여부
+    is_quarter_end      BOOLEAN                  DEFAULT false,                        -- 분기말 여부
+    
+    -- 추가 정보
+    lunar_date          VARCHAR(10),                                                   -- 음력 날짜 (MMDD)
+    special_note        TEXT,                                                          -- 특별 메모
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_calendars__company_id     FOREIGN KEY (company_id) REFERENCES adm.companies(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_calendars__calendar_year_range        CHECK (calendar_year BETWEEN 1900 AND 2199),
+    CONSTRAINT ck_calendars__calendar_month_range       CHECK (calendar_month BETWEEN 1 AND 12),
+    CONSTRAINT ck_calendars__calendar_day_range         CHECK (calendar_day BETWEEN 1 AND 31),
+    CONSTRAINT ck_calendars__day_of_week_range          CHECK (day_of_week BETWEEN 1 AND 7),
+    CONSTRAINT ck_calendars__day_of_week_name_format    CHECK (day_of_week_name IN ('SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT')),
+    CONSTRAINT ck_calendars__week_of_year_range         CHECK (week_of_year BETWEEN 1 AND 53),
+    CONSTRAINT ck_calendars__week_of_month_range        CHECK (week_of_month BETWEEN 1 AND 6),
+    CONSTRAINT ck_calendars__quarter_range              CHECK (quarter BETWEEN 1 AND 4),
+    CONSTRAINT ck_calendars__quarter_name_format        CHECK (quarter_name IN ('Q1', 'Q2', 'Q3', 'Q4')),
+    CONSTRAINT ck_calendars__holiday_type_format        CHECK (holiday_type IS NULL OR holiday_type IN ('NATIONAL', 'RELIGIOUS', 'COMPANY', 'OBSERVANCE', 'OTHER')),
+    CONSTRAINT ck_calendars__status_format              CHECK (status IN ('ACTIVE', 'INACTIVE', 'ARCHIVED')),
+    CONSTRAINT ck_calendars__date_consistency           CHECK (calendar_date = make_date(calendar_year, calendar_month, calendar_day))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  com.calendars 					IS '캘린더 및 휴일 정보 관리 테이블';
+COMMENT ON COLUMN com.calendars.id              	IS '캘린더 고유 식별자 (UUID)';
+COMMENT ON COLUMN com.calendars.created_at      	IS '등록 일시';
+COMMENT ON COLUMN com.calendars.created_by      	IS '등록자 UUID';
+COMMENT ON COLUMN com.calendars.updated_at      	IS '수정 일시';
+COMMENT ON COLUMN com.calendars.updated_by      	IS '수정자 UUID';
+COMMENT ON COLUMN com.calendars.tenant_id       	IS '테넌트 식별자';
+COMMENT ON COLUMN com.calendars.company_id      	IS '회사 식별자';
+COMMENT ON COLUMN com.calendars.calendar_date   	IS '날짜';
+COMMENT ON COLUMN com.calendars.calendar_year   	IS '연도 (YYYY)';
+COMMENT ON COLUMN com.calendars.calendar_month  	IS '월 (1-12)';
+COMMENT ON COLUMN com.calendars.calendar_day    	IS '일 (1-31)';
+COMMENT ON COLUMN com.calendars.day_of_week     	IS '요일 (1=일요일, 7=토요일)';
+COMMENT ON COLUMN com.calendars.day_of_week_name 	IS '요일명 (SUN/MON/TUE/WED/THU/FRI/SAT)';
+COMMENT ON COLUMN com.calendars.week_of_year    	IS '연간 주차 (1-53)';
+COMMENT ON COLUMN com.calendars.week_of_month   	IS '월간 주차 (1-6)';
+COMMENT ON COLUMN com.calendars.quarter         	IS '분기 (1-4)';
+COMMENT ON COLUMN com.calendars.quarter_name    	IS '분기명 (Q1/Q2/Q3/Q4)';
+COMMENT ON COLUMN com.calendars.is_holiday      	IS '휴일 여부';
+COMMENT ON COLUMN com.calendars.holiday_name    	IS '휴일명';
+COMMENT ON COLUMN com.calendars.holiday_type    	IS '휴일 유형 (NATIONAL/RELIGIOUS/COMPANY/OBSERVANCE/OTHER)';
+COMMENT ON COLUMN com.calendars.is_weekend      	IS '주말 여부';
+COMMENT ON COLUMN com.calendars.is_workday      	IS '업무일 여부';
+COMMENT ON COLUMN com.calendars.is_fiscal_year_end 	IS '회계연도말 여부';
+COMMENT ON COLUMN com.calendars.is_month_end    	IS '월말 여부';
+COMMENT ON COLUMN com.calendars.is_quarter_end  	IS '분기말 여부';
+COMMENT ON COLUMN com.calendars.lunar_date      	IS '음력 날짜 (MMDD)';
+COMMENT ON COLUMN com.calendars.special_note    	IS '특별 메모';
+COMMENT ON COLUMN com.calendars.status          	IS '상태 (ACTIVE/INACTIVE/ARCHIVED)';
+COMMENT ON COLUMN com.calendars.deleted         	IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__tenant_id
+    ON com.calendars (tenant_id)
+ WHERE deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_calendars__company_id
+    ON com.calendars (company_id)
+ WHERE deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_calendars__calendar_date
+    ON com.calendars (calendar_date)
+ WHERE deleted = false;
+
+-- 연도별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__calendar_year
+    ON com.calendars (calendar_year, calendar_month)
+ WHERE deleted = false;
+
+-- 월별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__year_month
+    ON com.calendars (calendar_year, calendar_month, calendar_day)
+ WHERE deleted = false;
+
+-- 요일별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__day_of_week
+    ON com.calendars (day_of_week)
+ WHERE deleted = false;
+
+-- 주차별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__week_of_year
+    ON com.calendars (calendar_year, week_of_year)
+ WHERE deleted = false;
+
+-- 분기별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__quarter
+    ON com.calendars (calendar_year, quarter)
+ WHERE deleted = false;
+
+-- 휴일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__is_holiday
+    ON com.calendars (calendar_year, is_holiday)
+ WHERE is_holiday = true 
+   AND deleted = false;
+
+-- 업무일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__is_workday
+    ON com.calendars (calendar_date, is_workday)
+ WHERE is_workday = true 
+   AND deleted = false;
+
+-- 주말 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__is_weekend
+    ON com.calendars (calendar_date, is_weekend)
+ WHERE is_weekend = true 
+   AND deleted = false;
+
+-- 특별일 조회 인덱스 (월말, 분기말, 회계연도말)
+CREATE INDEX IF NOT EXISTS ix_calendars__special_dates
+    ON com.calendars (calendar_date)
+ WHERE (is_month_end = true OR is_quarter_end = true OR is_fiscal_year_end = true)
+   AND deleted = false;
+
+-- 휴일 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__holiday_type
+    ON com.calendars (holiday_type, calendar_year)
+ WHERE holiday_type IS NOT NULL 
+   AND deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_calendars__status
+    ON com.calendars (status, company_id)
+ WHERE deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 회사별 날짜 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_calendars__company_date
+    ON com.calendars (company_id, calendar_date)
+ WHERE deleted = false;
+ 
+-- =====================================================================================
+-- 테이블: com.holidays
+-- 설명: 휴일 마스터 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS com.holidays 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 휴일 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 휴일 기본 정보
+    tenant_id           UUID                     NOT NULL,                              -- 테넌트 식별자
+    company_id          UUID                     NOT NULL,                              -- 회사 식별자
+	
+    holiday_date        DATE                     NOT NULL,                              -- 휴일 날짜
+    holiday_name        VARCHAR(100)             NOT NULL,                              -- 휴일명
+    
+    -- 휴일 상세 정보
+    holiday_type        VARCHAR(20)              DEFAULT 'COMPANY',                     -- 휴일 유형
+    holiday_category    VARCHAR(30),                                                   	-- 휴일 분류
+    is_recurring        BOOLEAN                  DEFAULT false,                        	-- 매년 반복 여부
+    
+    -- 반복 설정 (매년 반복 휴일용)
+    recurring_month     INTEGER,                                                       -- 반복 월 (1-12)
+    recurring_day       INTEGER,                                                       -- 반복 일 (1-31)
+    
+    -- 대체휴일 정보
+    is_substitute       BOOLEAN                  DEFAULT false,                        -- 대체휴일 여부
+    original_date       DATE,                                                          -- 원래 휴일 날짜
+    substitute_reason   VARCHAR(200),                                                  -- 대체 사유
+    
+    -- 휴일 적용 범위
+    applies_to_all      BOOLEAN                  DEFAULT true,                         -- 전체 적용 여부
+    department_ids      UUID[],                                                        -- 적용 부서 목록 (부분 적용시)
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 휴일 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    deleted             BOOLEAN                  DEFAULT false,                        	-- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_holidays__company_id      FOREIGN KEY (company_id) REFERENCES adm.companies(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_holidays__holiday_type_format         CHECK (holiday_type IN ('NATIONAL', 'RELIGIOUS', 'COMPANY', 'MEMORIAL', 'OBSERVANCE', 'OTHER')),
+    CONSTRAINT ck_holidays__holiday_category_format     CHECK (holiday_category IS NULL OR holiday_category IN ('LEGAL', 'TRADITIONAL', 'RELIGIOUS', 'COMPANY_ANNIVERSARY', 'FOUNDER_DAY', 'TRAINING_DAY', 'CUSTOM')),
+    CONSTRAINT ck_holidays__recurring_month_range       CHECK (recurring_month IS NULL OR (recurring_month BETWEEN 1 AND 12)),
+    CONSTRAINT ck_holidays__recurring_day_range         CHECK (recurring_day IS NULL OR (recurring_day BETWEEN 1 AND 31)),
+    CONSTRAINT ck_holidays__status_format               CHECK (status IN ('ACTIVE', 'INACTIVE', 'ARCHIVED')),
+    CONSTRAINT ck_holidays__recurring_consistency       CHECK ((is_recurring = true AND recurring_month IS NOT NULL AND recurring_day IS NOT NULL) OR is_recurring = false),
+    CONSTRAINT ck_holidays__substitute_consistency      CHECK ((is_substitute = true AND original_date IS NOT NULL) OR is_substitute = false)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  com.holidays 						IS '휴일 마스터 정보 관리 테이블';
+COMMENT ON COLUMN com.holidays.id              		IS '휴일 고유 식별자 (UUID)';
+COMMENT ON COLUMN com.holidays.created_at      		IS '등록 일시';
+COMMENT ON COLUMN com.holidays.created_by      		IS '등록자 UUID';
+COMMENT ON COLUMN com.holidays.updated_at      		IS '수정 일시';
+COMMENT ON COLUMN com.holidays.updated_by      		IS '수정자 UUID';
+COMMENT ON COLUMN com.holidays.tenant_id       		IS '테넌트 식별자';
+COMMENT ON COLUMN com.holidays.company_id      		IS '회사 식별자';
+COMMENT ON COLUMN com.holidays.holiday_date    		IS '휴일 날짜';
+COMMENT ON COLUMN com.holidays.holiday_name    		IS '휴일명';
+COMMENT ON COLUMN com.holidays.holiday_type    		IS '휴일 유형 (NATIONAL/RELIGIOUS/COMPANY/MEMORIAL/OBSERVANCE/OTHER)';
+COMMENT ON COLUMN com.holidays.holiday_category 	IS '휴일 분류 (LEGAL/TRADITIONAL/RELIGIOUS/COMPANY_ANNIVERSARY/FOUNDER_DAY/TRAINING_DAY/CUSTOM)';
+COMMENT ON COLUMN com.holidays.is_recurring    		IS '매년 반복 여부';
+COMMENT ON COLUMN com.holidays.recurring_month 		IS '반복 월 (1-12, 매년 반복시)';
+COMMENT ON COLUMN com.holidays.recurring_day   		IS '반복 일 (1-31, 매년 반복시)';
+COMMENT ON COLUMN com.holidays.is_substitute   		IS '대체휴일 여부';
+COMMENT ON COLUMN com.holidays.original_date   		IS '원래 휴일 날짜 (대체휴일인 경우)';
+COMMENT ON COLUMN com.holidays.substitute_reason 	IS '대체 사유';
+COMMENT ON COLUMN com.holidays.applies_to_all  		IS '전체 적용 여부';
+COMMENT ON COLUMN com.holidays.department_ids  		IS '적용 부서 목록 (부분 적용시)';
+COMMENT ON COLUMN com.holidays.description     		IS '휴일 설명';
+COMMENT ON COLUMN com.holidays.notes           		IS '비고';
+COMMENT ON COLUMN com.holidays.status          		IS '상태 (ACTIVE/INACTIVE/ARCHIVED)';
+COMMENT ON COLUMN com.holidays.deleted         		IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__tenant_id
+    ON com.holidays (tenant_id)
+ WHERE deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_holidays__company_id
+    ON com.holidays (company_id)
+ WHERE deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_holidays__holiday_date
+    ON com.holidays (holiday_date)
+ WHERE deleted = false;
+
+-- 연도별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__year
+    ON com.holidays (EXTRACT(YEAR FROM holiday_date), company_id)
+ WHERE deleted = false;
+
+-- 월별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__month
+    ON com.holidays (EXTRACT(MONTH FROM holiday_date), company_id)
+ WHERE deleted = false;
+
+-- 휴일 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__holiday_type
+    ON com.holidays (holiday_type, company_id)
+ WHERE deleted = false;
+
+-- 휴일 분류별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__holiday_category
+    ON com.holidays (holiday_category)
+ WHERE holiday_category IS NOT NULL 
+   AND deleted = false;
+
+-- 반복 휴일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__recurring
+    ON com.holidays (is_recurring, recurring_month, recurring_day)
+ WHERE is_recurring = true 
+   AND deleted = false;
+
+-- 대체휴일 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__substitute
+    ON com.holidays (is_substitute, original_date)
+ WHERE is_substitute = true 
+   AND deleted = false;
+
+-- 기간별 조회 인덱스 (휴일 범위 검색)
+CREATE INDEX IF NOT EXISTS ix_holidays__date_range
+    ON com.holidays (company_id, holiday_date, status)
+ WHERE deleted = false;
+
+-- 부서별 적용 조회 인덱스 (GIN 인덱스 사용)
+CREATE INDEX IF NOT EXISTS ix_holidays__department_ids
+    ON com.holidays USING GIN (department_ids)
+ WHERE department_ids IS NOT NULL 
+   AND deleted = false;
+
+-- 상태별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_holidays__status
+    ON com.holidays (status, company_id)
+ WHERE deleted = false;
+
+-- 다음 휴일 조회 인덱스 (업무용)
+-- CREATE INDEX IF NOT EXISTS ix_holidays__upcoming
+    -- ON com.holidays (company_id, holiday_date)
+ -- WHERE holiday_date >= CURRENT_DATE 
+   -- AND status = 'ACTIVE'
+   -- AND deleted = false;
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 회사별 날짜+휴일명 유니크 (같은 날 동일한 휴일명 중복 방지)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_holidays__company_date_name
+    ON com.holidays (company_id, holiday_date, holiday_name)
+ WHERE deleted = false;

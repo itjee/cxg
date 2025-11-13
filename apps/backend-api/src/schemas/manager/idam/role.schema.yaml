@@ -1,0 +1,108 @@
+# Manager IDAM Role 스키마 정의 (단순 CRUD)
+
+entity:
+  name: Role
+  database: manager
+  schema: idam
+  table: roles
+  model_class: src.models.manager.idam.role.Role
+  
+  graphql:
+    type_name: ManagerRole
+    description: "Manager 역할"
+    
+  fields:
+    - name: id
+      type: uuid
+      graphql_type: ID!
+      
+    - name: code
+      type: string
+      graphql_type: String!
+      unique: true
+      
+    - name: name
+      type: string
+      graphql_type: String!
+      
+    - name: description
+      type: string
+      graphql_type: String
+      
+    - name: category
+      type: string
+      graphql_type: String!
+      
+    - name: level
+      type: integer
+      graphql_type: Int!
+      
+    - name: scope
+      type: string
+      graphql_type: String!
+      
+    - name: priority
+      type: integer
+      graphql_type: Int!
+      default: 0
+      
+    - name: status
+      type: string
+      graphql_type: String!
+      default: "ACTIVE"
+      
+    - name: created_at
+      type: datetime
+      graphql_type: DateTime!
+      
+    - name: updated_at
+      type: datetime
+      graphql_type: DateTime
+
+  operations:
+    queries:
+      - name: get_by_id
+        enabled: true
+        
+      - name: list
+        enabled: true
+        pagination: true
+        filters:
+          - category
+          - status
+        order_by: priority
+          
+      - name: get_by_code
+        enabled: true
+        description: "코드로 역할 조회"
+        
+    mutations:
+      - name: create
+        enabled: true
+        required_fields:
+          - code
+          - name
+          - category
+          - level
+          - scope
+          
+      - name: update
+        enabled: true
+        updatable_fields:
+          - name
+          - description
+          - level
+          - priority
+          - status
+          
+      - name: delete
+        enabled: false  # 역할은 삭제 불가
+        
+  permissions:
+    view: CanViewManagerRoles
+    create: CanManageManagerRoles
+    update: CanManageManagerRoles
+    
+  # 단순 CRUD이므로 custom 불필요
+  custom:
+    enabled: false

@@ -1,0 +1,164 @@
+"""관리자 API v1 라우터 - 완전판 (한글 태그)"""
+
+from fastapi import APIRouter
+
+# Auth
+from src.modules.manager.auth.router import router as auth_router
+
+# IDAM(Identity & Access Management)
+from src.modules.manager.idam.users.router import router as users_router
+from src.modules.manager.idam.roles.router import router as roles_router
+from src.modules.manager.idam.permissions.router import router as permissions_router
+from src.modules.manager.idam.user_roles.router import router as user_roles_router
+from src.modules.manager.idam.role_permissions.router import router as role_permissions_router
+from src.modules.manager.idam.sessions.router import router as sessions_router
+from src.modules.manager.idam.login_logs.router import router as login_logs_router
+from src.modules.manager.idam.api_keys.router import router as api_keys_router
+
+# TNNT(Tenant Management)
+from src.modules.manager.tnnt.tenants.router import router as tenants_router
+from src.modules.manager.tnnt.subscriptions.router import router as subscriptions_router
+
+# BILL(Billing)
+from src.modules.manager.bill.plans.router import router as plans_router
+from src.modules.manager.bill.invoices.router import router as invoices_router
+from src.modules.manager.bill.transactions.router import router as transactions_router
+
+# IFRA(Infrastructure)
+from src.modules.manager.ifra.resources.router import router as resources_router
+from src.modules.manager.ifra.resource_usages.router import router as resource_usages_router
+
+# MNTR(Monitoring)
+from src.modules.manager.mntr.system_metrics.router import router as system_metrics_router
+from src.modules.manager.mntr.health_checks.router import router as health_checks_router
+from src.modules.manager.mntr.incidents.router import router as incidents_router
+
+# AUDT(Audit)
+from src.modules.manager.audt.audit_logs.router import router as audit_logs_router
+from src.modules.manager.audt.policies.router import router as policies_router
+from src.modules.manager.audt.compliances.router import router as compliances_router
+
+# BKUP(Backup)
+from src.modules.manager.bkup.schedules.router import router as backup_schedules_router
+from src.modules.manager.bkup.executions.router import router as backup_executions_router
+from src.modules.manager.bkup.recovery_plans.router import router as recovery_plans_router
+
+# CNFG(Configuration)
+from src.modules.manager.cnfg.configurations.router import router as configurations_router
+from src.modules.manager.cnfg.feature_flags.router import router as feature_flags_router
+from src.modules.manager.cnfg.service_quotas.router import router as service_quotas_router
+from src.modules.manager.cnfg.tenant_features.router import router as tenant_features_router
+
+# INTG(Integration)
+from src.modules.manager.intg.apis.router import router as external_apis_router
+from src.modules.manager.intg.webhooks.router import router as webhooks_router
+from src.modules.manager.intg.rate_limits.router import router as rate_limits_router
+
+# NOTI(Notification)
+from src.modules.manager.noti.notifications.router import router as notifications_router
+from src.modules.manager.noti.templates.router import router as templates_router
+from src.modules.manager.noti.campaigns.router import router as campaigns_router
+
+# SUPT(Support)
+from src.modules.manager.supt.tickets.router import router as tickets_router
+from src.modules.manager.supt.ticket_comments.router import router as ticket_comments_router
+from src.modules.manager.supt.feedbacks.router import router as feedbacks_router
+
+# STAT(Statistics)
+from src.modules.manager.stat.usage_stats.router import router as usage_stats_router
+from src.modules.manager.stat.tenant_stats.router import router as tenant_stats_router
+
+# AUTO(Automation)
+from src.modules.manager.auto.workflows.router import router as auto_workflows_router
+from src.modules.manager.auto.tasks.router import router as auto_tasks_router
+from src.modules.manager.auto.executions.router import router as auto_executions_router
+
+
+router = APIRouter()
+
+# ==================== 대:관리자 ====================
+
+# 중:인증
+router.include_router(auth_router, prefix="/auth", tags=["관리자 > 인증 > 로그인"])
+
+# 중:사용자권한 > 소:사용자
+router.include_router(users_router, prefix="/idam/users", tags=["관리자 > 사용자권한 > 사용자"])
+
+# 중:사용자권한 > 소:역할
+router.include_router(roles_router, prefix="/idam/roles", tags=["관리자 > 사용자권한 > 역할"])
+
+# 중:사용자권한 > 소:권한
+router.include_router(permissions_router, prefix="/idam/permissions", tags=["관리자 > 사용자권한 > 권한"])
+
+# 중:사용자권한 > 소:매핑
+router.include_router(user_roles_router, prefix="/idam/user-roles", tags=["관리자 > 사용자권한 > 매핑"])
+router.include_router(role_permissions_router, prefix="/idam/role-permissions", tags=["관리자 > 사용자권한 > 매핑"])
+
+# 중:사용자권한 > 소:세션
+router.include_router(sessions_router, prefix="/idam/sessions", tags=["관리자 > 사용자권한 > 세션"])
+router.include_router(login_logs_router, prefix="/idam/login-logs", tags=["관리자 > 사용자권한 > 세션"])
+router.include_router(api_keys_router, prefix="/idam/api-keys", tags=["관리자 > 사용자권한 > 세션"])
+
+# 중:테넌트 > 소:테넌트관리
+router.include_router(tenants_router, prefix="/tnnt/tenants", tags=["관리자 > 테넌트 > 테넌트관리"])
+
+# 중:테넌트 > 소:구독관리
+router.include_router(subscriptions_router, prefix="/tnnt/subscriptions", tags=["관리자 > 테넌트 > 구독관리"])
+
+# 중:청구 > 소:요금제
+router.include_router(plans_router, prefix="/bill/plans", tags=["관리자 > 청구 > 요금제"])
+
+# 중:청구 > 소:청구서
+router.include_router(invoices_router, prefix="/bill/invoices", tags=["관리자 > 청구 > 청구서"])
+
+# 중:청구 > 소:거래내역
+router.include_router(transactions_router, prefix="/bill/transactions", tags=["관리자 > 청구 > 거래내역"])
+
+# 중:시스템운영 > 소:인프라
+router.include_router(resources_router, prefix="/ifra/resources", tags=["관리자 > 시스템운영 > 인프라"])
+router.include_router(resource_usages_router, prefix="/ifra/resource-usages", tags=["관리자 > 시스템운영 > 인프라"])
+
+# 중:시스템운영 > 소:모니터링
+router.include_router(system_metrics_router, prefix="/mntr/system-metrics", tags=["관리자 > 시스템운영 > 모니터링"])
+router.include_router(health_checks_router, prefix="/mntr/health-checks", tags=["관리자 > 시스템운영 > 모니터링"])
+router.include_router(incidents_router, prefix="/mntr/incidents", tags=["관리자 > 시스템운영 > 모니터링"])
+
+# 중:시스템운영 > 소:감사
+router.include_router(audit_logs_router, prefix="/audt/audit-logs", tags=["관리자 > 시스템운영 > 감사"])
+router.include_router(policies_router, prefix="/audt/policies", tags=["관리자 > 시스템운영 > 감사"])
+router.include_router(compliances_router, prefix="/audt/compliances", tags=["관리자 > 시스템운영 > 감사"])
+
+# 중:시스템운영 > 소:백업
+router.include_router(backup_schedules_router, prefix="/bkup/schedules", tags=["관리자 > 시스템운영 > 백업"])
+router.include_router(backup_executions_router, prefix="/bkup/executions", tags=["관리자 > 시스템운영 > 백업"])
+router.include_router(recovery_plans_router, prefix="/bkup/recovery-plans", tags=["관리자 > 시스템운영 > 백업"])
+
+# 중:시스템운영 > 소:설정
+router.include_router(configurations_router, prefix="/cnfg/configurations", tags=["관리자 > 시스템운영 > 설정"])
+router.include_router(feature_flags_router, prefix="/cnfg/feature-flags", tags=["관리자 > 시스템운영 > 설정"])
+router.include_router(service_quotas_router, prefix="/cnfg/service-quotas", tags=["관리자 > 시스템운영 > 설정"])
+router.include_router(tenant_features_router, prefix="/cnfg/tenant-features", tags=["관리자 > 시스템운영 > 설정"])
+
+# 중:시스템운영 > 소:통합
+router.include_router(external_apis_router, prefix="/intg/apis", tags=["관리자 > 시스템운영 > 통합"])
+router.include_router(webhooks_router, prefix="/intg/webhooks", tags=["관리자 > 시스템운영 > 통합"])
+router.include_router(rate_limits_router, prefix="/intg/rate-limits", tags=["관리자 > 시스템운영 > 통합"])
+
+# 중:시스템운영 > 소:알림
+router.include_router(notifications_router, prefix="/noti/notifications", tags=["관리자 > 시스템운영 > 알림"])
+router.include_router(templates_router, prefix="/noti/templates", tags=["관리자 > 시스템운영 > 알림"])
+router.include_router(campaigns_router, prefix="/noti/campaigns", tags=["관리자 > 시스템운영 > 알림"])
+
+# 중:시스템운영 > 소:지원
+router.include_router(tickets_router, prefix="/supt/tickets", tags=["관리자 > 시스템운영 > 지원"])
+router.include_router(ticket_comments_router, prefix="/supt/ticket-comments", tags=["관리자 > 시스템운영 > 지원"])
+router.include_router(feedbacks_router, prefix="/supt/feedbacks", tags=["관리자 > 시스템운영 > 지원"])
+
+# 중:시스템운영 > 소:통계
+router.include_router(usage_stats_router, prefix="/stat/usage-stats", tags=["관리자 > 시스템운영 > 통계"])
+router.include_router(tenant_stats_router, prefix="/stat/tenant-stats", tags=["관리자 > 시스템운영 > 통계"])
+
+# 중:시스템운영 > 소:자동화
+router.include_router(auto_workflows_router, prefix="/auto/workflows", tags=["관리자 > 시스템운영 > 자동화"])
+router.include_router(auto_tasks_router, prefix="/auto/tasks", tags=["관리자 > 시스템운영 > 자동화"])
+router.include_router(auto_executions_router, prefix="/auto/executions", tags=["관리자 > 시스템운영 > 자동화"])

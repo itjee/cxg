@@ -1,0 +1,23 @@
+04_pim 스키마 파일 수동 수정 필요
+
+원본 파일(04_pim.sql)에 다수의 문법 오류가 있습니다:
+1. CREATE TABLE 내부의 모든 컬럼 정의에서 콤마 누락
+2. 중복된 WHERE 조건 (AND is_deleted = false가 두 번)
+
+수정 방법:
+1. 각 테이블 파일을 열어서 CREATE TABLE 구문을 확인
+2. 모든 컬럼 정의 라인 끝에 콤마(,) 추가 (마지막 컬럼 제외)
+3. 제약조건(CONSTRAINT) 라인 앞의 콤마도 확인
+4. 중복된 "AND is_deleted = false" 제거
+
+또는:
+- PostgreSQL에서 직접 실행하여 오류 메시지 확인 후 수정
+- DDL 표준 프롬프트(/docs/prompts/ddl_standard_prompt.md) 참고하여 재작성
+
+파일 목록:
+- 01_makers.sql
+- 02_brands.sql
+- 03_categories.sql
+- 04_category_managers.sql
+- 05_products.sql
+- 06_product_managers.sql

@@ -1,0 +1,357 @@
+"""CXG Platform API Main Application"""
+
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from src.core.api_docs import OPENAPI_CONFIG
+from src.core.config import settings
+from src.core.custom_docs import SWAGGER_UI_PARAMETERS
+from src.core.database import close_db, init_db
+from src.core.exceptions import CXGError
+from src.core.middleware import RequestIDMiddleware, TimingMiddleware
+from src.core.modern_docs import setup_scalar_docs
+from src.modules.shareds.schemas import EnvelopeResponse
+from src.routers.manager.v1 import router as manager_v1_router
+from src.routers.tenants.v1 import router as tenants_v1_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """애플리케이션 생명주기 관리"""
+    # 시작 시
+    await init_db()
+    yield
+    # 종료 시
+    await close_db()
+
+
+# API 메타데이터
+API_DESCRIPTION = """
+## CXG Platform API
+
+AI 기반 중소기업 업무지원 플랫폼 API
+
+### 시스템 구성
+
+#### 관리자 시스템(Manager System)
+- **Auth**: 사용자 인증 및 토큰 관리
+- **IDAM**: Identity & Access Management(사용자, 역할, 권한)
+- **TNNT**: Tenant Management(테넌트, 구독)
+- **BILL**: Billing(요금제, 청구서, 거래)
+- **IFRA**: Infrastructure(리소스, 사용량)
+- **MNTR**: Monitoring(메트릭, 헬스체크, 인시던트)
+- **AUDT**: Audit(감사로그, 정책, 컴플라이언스)
+- **BKUP**: Backup(스케줄, 실행, 복구계획)
+- **CNFG**: Configuration(설정, 기능플래그, 할당량)
+- **INTG**: Integration(외부API, 웹훅, 제한)
+- **NOTI**: Notification(알림, 템플릿, 캠페인)
+- **SUPT**: Support(티켓, 댓글, 피드백)
+- **STAT**: Statistics(사용통계, 테넌트통계)
+- **AUTO**: Automation(워크플로우, 작업, 실행)
+
+#### 테넌트 시스템(Tenant System)
+- **ADM**: Administration(사용자, 조직)
+- **CSM**: Customer/CRM(고객, 연락처, 기회, 활동)
+- **FIM**: Finance(계정, 거래, 예산, 청구서)
+- **IVM**: Inventory(제품, 창고, 재고이동, 조정)
+- **PSM**: Procurement(발주, 공급업체, 구매요청, 입고)
+- **SRM**: Sales(주문, 견적, 고객, 판매활동)
+- **LWM**: Workflow(워크플로우, 승인, 작업, 단계)
+
+### API 경로 패턴
+- 관리자 시스템: `/api/v1/manager/{schema}/{entity}`
+  - 예: `/api/v1/manager/bill/invoices`
+- 테넌트 시스템: `/api/v1/tenants/{schema}/{entity}`
+  - 예: `/api/v1/tenants/fim/accounts`
+
+### 인증
+대부분의 API는 Bearer 토큰 인증이 필요합니다.
+1. `/api/v1/manager/auth/signin`으로 로그인
+2. 응답에서 `access_token` 획득
+3. 헤더에 `Authorization: Bearer {access_token}` 추가
+"""
+
+# OpenAPI 태그 정의(형식: {시스템명}-{스키마명}-{엔티티명}({시스템영문}>{스키마영문}>{엔티티영문}))
+tags_metadata = [
+    # 기본
+    {"name": "기본", "description": "헬스체크, 버전 정보"},
+    
+    # ==================== Manager System ====================
+    # Manager System - Auth
+    {"name": "관리자시스템-인증-인증(Manager>Auth>Auth)", 
+     "description": "사용자 인증 및 토큰 관리"},
+    
+    # Manager System - IDAM
+    {"name": "관리자시스템-인증관리-사용자(Manager>IDAM>Users)", 
+     "description": "관리자 사용자 계정 관리"},
+    {"name": "관리자시스템-인증관리-역할(Manager>IDAM>Roles)", 
+     "description": "역할 정의 및 관리"},
+    {"name": "관리자시스템-인증관리-권한(Manager>IDAM>Permissions)", 
+     "description": "권한 정의 및 관리"},
+    {"name": "관리자시스템-인증관리-사용자역할(Manager>IDAM>UserRoles)", 
+     "description": "사용자-역할 매핑 관리"},
+    {"name": "관리자시스템-인증관리-역할권한(Manager>IDAM>RolePermissions)", 
+     "description": "역할-권한 매핑 관리"},
+    {"name": "관리자시스템-인증관리-세션(Manager>IDAM>Sessions)", 
+     "description": "사용자 세션 관리"},
+    {"name": "관리자시스템-인증관리-로그인로그(Manager>IDAM>LoginLogs)", 
+     "description": "로그인 이력 조회"},
+    {"name": "관리자시스템-인증관리-API키(Manager>IDAM>APIKeys)", 
+     "description": "API 접근 키 관리"},
+    
+    # Manager System - TNNT
+    {"name": "관리자시스템-테넌트관리-테넌트(Manager>TNNT>Tenants)", 
+     "description": "테넌트 생성, 조회, 수정, 삭제"},
+    {"name": "관리자시스템-테넌트관리-구독(Manager>TNNT>Subscriptions)", 
+     "description": "테넌트 구독 플랜 관리"},
+    
+    # Manager System - BILL
+    {"name": "관리자시스템-청구관리-요금제(Manager>BILL>Plans)", 
+     "description": "서비스 요금제 정의 및 관리"},
+    {"name": "관리자시스템-청구관리-청구서(Manager>BILL>Invoices)", 
+     "description": "청구서 발행 및 관리"},
+    {"name": "관리자시스템-청구관리-거래내역(Manager>BILL>Transactions)", 
+     "description": "결제 거래 내역 추적"},
+    
+    # Manager System - IFRA
+    {"name": "관리자시스템-인프라관리-리소스(Manager>IFRA>Resources)", 
+     "description": "인프라 리소스 할당 및 관리"},
+    {"name": "관리자시스템-인프라관리-사용량(Manager>IFRA>ResourceUsages)", 
+     "description": "리소스 사용량 모니터링"},
+    
+    # Manager System - MNTR
+    {"name": "관리자시스템-모니터링-시스템메트릭(Manager>MNTR>SystemMetrics)", 
+     "description": "시스템 성능 지표 수집"},
+    {"name": "관리자시스템-모니터링-헬스체크(Manager>MNTR>HealthChecks)", 
+     "description": "서비스 상태 점검"},
+    {"name": "관리자시스템-모니터링-인시던트(Manager>MNTR>Incidents)", 
+     "description": "장애 및 인시던트 관리"},
+    
+    # Manager System - AUDT
+    {"name": "관리자시스템-감사관리-감사로그(Manager>AUDT>AuditLogs)", 
+     "description": "시스템 활동 감사 로그"},
+    {"name": "관리자시스템-감사관리-정책(Manager>AUDT>Policies)", 
+     "description": "감사 정책 설정 및 관리"},
+    {"name": "관리자시스템-감사관리-컴플라이언스(Manager>AUDT>Compliances)", 
+     "description": "컴플라이언스 준수 관리"},
+    
+    # Manager System - BKUP
+    {"name": "관리자시스템-백업관리-스케줄(Manager>BKUP>Schedules)", 
+     "description": "백업 스케줄 설정"},
+    {"name": "관리자시스템-백업관리-실행내역(Manager>BKUP>Executions)", 
+     "description": "백업 실행 이력"},
+    {"name": "관리자시스템-백업관리-복구계획(Manager>BKUP>RecoveryPlans)", 
+     "description": "재해 복구 계획 관리"},
+    
+    # Manager System - CNFG
+    {"name": "관리자시스템-설정관리-설정(Manager>CNFG>Configurations)", 
+     "description": "시스템 전역 설정"},
+    {"name": "관리자시스템-설정관리-기능플래그(Manager>CNFG>FeatureFlags)", 
+     "description": "기능 토글 관리"},
+    {"name": "관리자시스템-설정관리-테넌트기능(Manager>CNFG>TenantFeatures)", 
+     "description": "테넌트별 기능 할당"},
+    {"name": "관리자시스템-설정관리-서비스할당량(Manager>CNFG>ServiceQuotas)", 
+     "description": "테넌트별 서비스 제한"},
+    
+    # Manager System - INTG
+    {"name": "관리자시스템-통합관리-외부API(Manager>INTG>APIs)", 
+     "description": "외부 서비스 API 연동"},
+    {"name": "관리자시스템-통합관리-웹훅(Manager>INTG>Webhooks)", 
+     "description": "이벤트 웹훅 설정"},
+    {"name": "관리자시스템-통합관리-API제한(Manager>INTG>RateLimits)", 
+     "description": "API 호출 속도 제한"},
+    
+    # Manager System - NOTI
+    {"name": "관리자시스템-알림관리-알림(Manager>NOTI>Notifications)", 
+     "description": "알림 발송 및 관리"},
+    {"name": "관리자시스템-알림관리-템플릿(Manager>NOTI>Templates)", 
+     "description": "알림 메시지 템플릿"},
+    {"name": "관리자시스템-알림관리-캠페인(Manager>NOTI>Campaigns)", 
+     "description": "알림 캠페인 관리"},
+    
+    # Manager System - SUPT
+    {"name": "관리자시스템-지원관리-티켓(Manager>SUPT>Tickets)", 
+     "description": "고객 지원 티켓"},
+    {"name": "관리자시스템-지원관리-댓글(Manager>SUPT>TicketComments)", 
+     "description": "티켓 댓글 및 대화"},
+    {"name": "관리자시스템-지원관리-피드백(Manager>SUPT>Feedbacks)", 
+     "description": "사용자 피드백 수집"},
+    
+    # Manager System - STAT
+    {"name": "관리자시스템-통계관리-사용통계(Manager>STAT>UsageStats)", 
+     "description": "플랫폼 사용 통계"},
+    {"name": "관리자시스템-통계관리-테넌트통계(Manager>STAT>TenantStats)", 
+     "description": "테넌트별 활동 통계"},
+    
+    # Manager System - AUTO
+    {"name": "관리자시스템-자동화관리-워크플로우(Manager>AUTO>Workflows)", 
+     "description": "자동화 워크플로우 정의"},
+    {"name": "관리자시스템-자동화관리-작업(Manager>AUTO>Tasks)", 
+     "description": "자동화 작업 실행"},
+    {"name": "관리자시스템-자동화관리-실행내역(Manager>AUTO>Executions)", 
+     "description": "자동화 실행 로그"},
+    
+    # ==================== Tenant System ====================
+    # Tenant System - ADM(Administration / 관리)
+    {"name": "테넌트시스템-관리-통화(Tenant>ADM>Currencies)", 
+     "description": "통화 코드 및 환율 기준 설정"},
+    {"name": "테넌트시스템-관리-공통코드그룹(Tenant>ADM>CodeGroups)", 
+     "description": "공통코드 분류 그룹 관리"},
+    {"name": "테넌트시스템-관리-공통코드(Tenant>ADM>Codes)", 
+     "description": "시스템 전반에 사용되는 공통코드"},
+    {"name": "테넌트시스템-관리-단위(Tenant>ADM>Units)", 
+     "description": "수량, 무게, 길이 등의 측정 단위"},
+    {"name": "테넌트시스템-관리-환율(Tenant>ADM>ExchangeRates)", 
+     "description": "통화간 환율 정보"},
+    {"name": "테넌트시스템-관리-결제조건(Tenant>ADM>PaymentTerms)", 
+     "description": "결제 기간 및 조건 설정"},
+    {"name": "테넌트시스템-관리-설정(Tenant>ADM>Settings)", 
+     "description": "테넌트별 시스템 설정"},
+    {"name": "테넌트시스템-관리-사용자(Tenant>ADM>Users)", 
+     "description": "테넌트 사용자 계정 관리"},
+    
+    # Tenant System - CRM(고객관계관리)
+    {"name": "테넌트시스템-고객관리-거래처(Tenant>CRM>Partners)", 
+     "description": "고객 및 공급업체 정보 관리"},
+    {"name": "테넌트시스템-고객관리-활동(Tenant>CRM>Activities)", 
+     "description": "고객 미팅, 통화 등 활동 기록"},
+    {"name": "테넌트시스템-고객관리-영업기회(Tenant>CRM>Opportunities)", 
+     "description": "잠재 영업 기회 추적"},
+    {"name": "테넌트시스템-고객관리-계약(Tenant>CRM>Contracts)", 
+     "description": "고객 계약 문서 관리"},
+    
+    # Tenant System - FIM(재무관리)
+    {"name": "테넌트시스템-재무관리-계정(Tenant>FIM>Accounts)", 
+     "description": "회계 계정과목 관리"},
+    {"name": "테넌트시스템-재무관리-분개(Tenant>FIM>JournalEntries)", 
+     "description": "회계 분개 입력 및 조회"},
+    {"name": "테넌트시스템-재무관리-결제거래(Tenant>FIM>PaymentTransactions)", 
+     "description": "입출금 거래 내역 관리"},
+    
+    # Tenant System - PSM(구매관리)
+    {"name": "테넌트시스템-구매관리-발주(Tenant>PSM>PurchaseOrders)", 
+     "description": "구매 발주서 생성 및 관리"},
+    
+    # Tenant System - SRM(판매관리)
+    {"name": "테넌트시스템-판매관리-주문(Tenant>SRM>SalesOrders)", 
+     "description": "판매 주문서 처리"},
+    {"name": "테넌트시스템-판매관리-송장(Tenant>SRM>SalesInvoices)", 
+     "description": "판매 송장 발행 및 관리"},
+    
+    # Tenant System - LWM(워크플로우관리)
+    {"name": "테넌트시스템-워크플로우관리-워크플로우(Tenant>LWM>Workflows)", 
+     "description": "업무 프로세스 워크플로우 정의"},
+    {"name": "테넌트시스템-워크플로우관리-작업(Tenant>LWM>Tasks)", 
+     "description": "할당된 작업 관리"},
+    {"name": "테넌트시스템-워크플로우관리-단계(Tenant>LWM>Steps)", 
+     "description": "워크플로우 단계 설정"},
+]
+
+# FastAPI 앱 생성 - 권장 프로덕션 설정 (간소화된 태그 + Swagger UI 커스터마이징 + Scalar)
+app = FastAPI(
+    **OPENAPI_CONFIG,
+    swagger_ui_parameters=SWAGGER_UI_PARAMETERS,
+    lifespan=lifespan,
+    contact={
+        "name": "CXG Platform Support",
+        "email": "support@cxg.example.com",
+    },
+    license_info={
+        "name": "Proprietary",
+    },
+)
+
+# Scalar 문서 추가 (모던한 API 문서)
+setup_scalar_docs(app)
+
+# CORS 미들웨어
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# 커스텀 미들웨어
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(TimingMiddleware)
+
+
+# 예외 핸들러
+@app.exception_handler(CXGError)
+async def cxg_exception_handler(request: Request, exc: CXGError):
+    """CXG 예외 핸들러"""
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=EnvelopeResponse.error_response(
+            code=exc.code,
+            message=exc.message,
+            detail=exc.detail,
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """검증 예외 핸들러"""
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=EnvelopeResponse.error_response(
+            code="VALIDATION_ERROR",
+            message="입력 데이터 검증 실패",
+            detail={"errors": exc.errors()},
+        ).model_dump(),
+    )
+
+
+@app.exception_handler(Exception)
+async def general_exception_handler(request: Request, exc: Exception):
+    """일반 예외 핸들러"""
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=EnvelopeResponse.error_response(
+            code="INTERNAL_ERROR",
+            message="서버 내부 오류가 발생했습니다",
+            detail={"error": str(exc)} if settings.debug else {},
+        ).model_dump(),
+    )
+
+
+# 루트 엔드포인트
+@app.get("/", tags=["기본"])
+async def root():
+    """루트 엔드포인트"""
+    return EnvelopeResponse.success_response(
+        {
+            "message": "CXG Platform API",
+            "version": settings.api_version,
+            "status": "running",
+        }
+    )
+
+
+@app.get("/health", tags=["기본"])
+async def health():
+    """헬스 체크"""
+    return EnvelopeResponse.success_response({"status": "healthy"})
+
+
+# API 라우터 등록
+app.include_router(manager_v1_router, prefix="/api/v1/manager")
+app.include_router(tenants_v1_router, prefix="/api/v1/tenants")
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run(
+        "main:app",
+        host=settings.api_host,
+        port=settings.api_port,
+        reload=settings.debug,
+    )

@@ -1,0 +1,150 @@
+"""관리자 API v1 라우터"""
+
+from fastapi import APIRouter
+
+# Auth
+from src.modules.manager.auth.router import router as auth_router
+
+# IDAM(Identity & Access Management)
+from src.modules.manager.idam.users.router import router as users_router
+from src.modules.manager.idam.roles.router import router as roles_router
+from src.modules.manager.idam.permissions.router import router as permissions_router
+from src.modules.manager.idam.user_roles.router import router as user_roles_router
+from src.modules.manager.idam.role_permissions.router import router as role_permissions_router
+from src.modules.manager.idam.sessions.router import router as sessions_router
+from src.modules.manager.idam.login_logs.router import router as login_logs_router
+from src.modules.manager.idam.api_keys.router import router as api_keys_router
+
+# TNNT(Tenant Management)
+from src.modules.manager.tnnt.tenants.router import router as tenants_router
+from src.modules.manager.tnnt.subscriptions.router import router as subscriptions_router
+
+# BILL(Billing)
+from src.modules.manager.bill.plans.router import router as plans_router
+from src.modules.manager.bill.invoices.router import router as invoices_router
+from src.modules.manager.bill.transactions.router import router as transactions_router
+
+# IFRA(Infrastructure)
+from src.modules.manager.ifra.resources.router import router as resources_router
+from src.modules.manager.ifra.resource_usages.router import router as resource_usages_router
+
+# MNTR(Monitoring)
+from src.modules.manager.mntr.system_metrics.router import router as system_metrics_router
+from src.modules.manager.mntr.health_checks.router import router as health_checks_router
+from src.modules.manager.mntr.incidents.router import router as incidents_router
+
+# AUDT(Audit)
+from src.modules.manager.audt.audit_logs.router import router as audit_logs_router
+from src.modules.manager.audt.policies.router import router as policies_router
+from src.modules.manager.audt.compliances.router import router as compliances_router
+
+# BKUP(Backup)
+from src.modules.manager.bkup.schedules.router import router as backup_schedules_router
+from src.modules.manager.bkup.executions.router import router as backup_executions_router
+from src.modules.manager.bkup.recovery_plans.router import router as recovery_plans_router
+
+# CNFG(Configuration)
+from src.modules.manager.cnfg.configurations.router import router as configurations_router
+from src.modules.manager.cnfg.feature_flags.router import router as feature_flags_router
+from src.modules.manager.cnfg.tenant_features.router import router as tenant_features_router
+from src.modules.manager.cnfg.service_quotas.router import router as service_quotas_router
+
+# INTG(Integration)
+from src.modules.manager.intg.apis.router import router as apis_router
+from src.modules.manager.intg.webhooks.router import router as webhooks_router
+from src.modules.manager.intg.rate_limits.router import router as rate_limits_router
+
+# NOTI(Notification)
+from src.modules.manager.noti.notifications.router import router as notifications_router
+from src.modules.manager.noti.templates.router import router as templates_router
+from src.modules.manager.noti.campaigns.router import router as campaigns_router
+
+# SUPT(Support)
+from src.modules.manager.supt.tickets.router import router as tickets_router
+from src.modules.manager.supt.ticket_comments.router import router as ticket_comments_router
+from src.modules.manager.supt.feedbacks.router import router as feedbacks_router
+
+# STAT(Statistics)
+from src.modules.manager.stat.usage_stats.router import router as usage_stats_router
+from src.modules.manager.stat.tenant_stats.router import router as tenant_stats_router
+
+# AUTO(Automation)
+from src.modules.manager.auto.workflows.router import router as workflows_router
+from src.modules.manager.auto.tasks.router import router as tasks_router
+from src.modules.manager.auto.executions.router import router as auto_executions_router
+
+
+router = APIRouter()
+
+# AUTH-인증
+router.include_router(auth_router, prefix="/auth", tags=["👤 Manager-Auth"])
+
+# IDAM-Identity & Access Management
+router.include_router(users_router, prefix="/idam/users", tags=["👥 Manager-IDAM"])
+router.include_router(roles_router, prefix="/idam/roles", tags=["👥 Manager-IDAM"])
+router.include_router(permissions_router, prefix="/idam/permissions", tags=["👥 Manager-IDAM"])
+router.include_router(user_roles_router, prefix="/idam/user-roles", tags=["👥 Manager-IDAM"])
+router.include_router(role_permissions_router, prefix="/idam/role-permissions", tags=["👥 Manager-IDAM"])
+router.include_router(sessions_router, prefix="/idam/sessions", tags=["👥 Manager-IDAM"])
+router.include_router(login_logs_router, prefix="/idam/login-logs", tags=["👥 Manager-IDAM"])
+router.include_router(api_keys_router, prefix="/idam/api-keys", tags=["👥 Manager-IDAM"])
+
+# TNNT-Tenant Management
+router.include_router(tenants_router, prefix="/tnnt/tenants", tags=["🏢 Manager-Tenant"])
+router.include_router(subscriptions_router, prefix="/tnnt/subscriptions", tags=["🏢 Manager-Tenant"])
+
+# BILL-Billing
+router.include_router(plans_router, prefix="/bill/plans", tags=["💳 Manager-Billing"])
+router.include_router(invoices_router, prefix="/bill/invoices", tags=["💳 Manager-Billing"])
+router.include_router(transactions_router, prefix="/bill/transactions", tags=["💳 Manager-Billing"])
+
+# IFRA-Infrastructure
+router.include_router(resources_router, prefix="/ifra/resources", tags=["📊 Manager-Monitoring"])
+router.include_router(resource_usages_router, prefix="/ifra/resource-usages", tags=["📊 Manager-Monitoring"])
+
+# MNTR-Monitoring
+router.include_router(system_metrics_router, prefix="/mntr/system-metrics", tags=["📊 Manager-Monitoring"])
+router.include_router(health_checks_router, prefix="/mntr/health-checks", tags=["📊 Manager-Monitoring"])
+router.include_router(incidents_router, prefix="/mntr/incidents", tags=["📊 Manager-Monitoring"])
+
+# AUDT-Audit
+router.include_router(audit_logs_router, prefix="/audt/audit-logs", tags=["📊 Manager-Monitoring"])
+router.include_router(policies_router, prefix="/audt/policies", tags=["📊 Manager-Monitoring"])
+router.include_router(compliances_router, prefix="/audt/compliances", tags=["📊 Manager-Monitoring"])
+
+# BKUP-Backup
+router.include_router(backup_schedules_router, prefix="/bkup/schedules", tags=["📊 Manager-Monitoring"])
+router.include_router(backup_executions_router, prefix="/bkup/executions", tags=["📊 Manager-Monitoring"])
+router.include_router(recovery_plans_router, prefix="/bkup/recovery-plans", tags=["📊 Manager-Monitoring"])
+
+# CNFG-Configuration
+router.include_router(configurations_router, prefix="/cnfg/configurations", tags=["📊 Manager-Monitoring"])
+router.include_router(feature_flags_router, prefix="/cnfg/feature-flags", tags=["📊 Manager-Monitoring"])
+router.include_router(tenant_features_router, prefix="/cnfg/tenant-features", tags=["📊 Manager-Monitoring"])
+router.include_router(service_quotas_router, prefix="/cnfg/service-quotas", tags=["📊 Manager-Monitoring"])
+
+# INTG-Integration
+router.include_router(apis_router, prefix="/intg/apis", tags=["📊 Manager-Monitoring"])
+router.include_router(webhooks_router, prefix="/intg/webhooks", tags=["📊 Manager-Monitoring"])
+router.include_router(rate_limits_router, prefix="/intg/rate-limits", tags=["📊 Manager-Monitoring"])
+
+# NOTI-Notification
+router.include_router(notifications_router, prefix="/noti/notifications", tags=["📊 Manager-Monitoring"])
+router.include_router(templates_router, prefix="/noti/templates", tags=["📊 Manager-Monitoring"])
+router.include_router(campaigns_router, prefix="/noti/campaigns", tags=["📊 Manager-Monitoring"])
+
+# SUPT-Support
+router.include_router(tickets_router, prefix="/supt/tickets", tags=["📊 Manager-Monitoring"])
+router.include_router(ticket_comments_router, prefix="/supt/ticket-comments", tags=["📊 Manager-Monitoring"])
+router.include_router(feedbacks_router, prefix="/supt/feedbacks", tags=["📊 Manager-Monitoring"])
+
+# STAT-Statistics
+router.include_router(usage_stats_router, prefix="/stat/usage-stats", tags=["📊 Manager-Monitoring"])
+router.include_router(tenant_stats_router, prefix="/stat/tenant-stats", tags=["📊 Manager-Monitoring"])
+
+# AUTO-Automation
+router.include_router(workflows_router, prefix="/auto/workflows", tags=["📊 Manager-Monitoring"])
+router.include_router(tasks_router, prefix="/auto/tasks", tags=["📊 Manager-Monitoring"])
+router.include_router(auto_executions_router, prefix="/auto/executions", tags=["📊 Manager-Monitoring"])
+
+__all__ = ["router"]

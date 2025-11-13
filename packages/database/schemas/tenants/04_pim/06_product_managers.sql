@@ -1,0 +1,117 @@
+-- =====================================================================================
+-- 테이블: pim.product_managers
+-- 설명: 제품 담당자 이력 관리 테이블
+-- 작성일: 2024-12-19
+-- 수정일: 2025-10-24
+-- =====================================================================================
+
+CREATE TABLE IF NOT EXISTS pim.product_managers 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),  -- 담당자 이력 고유 식별자 (UUID)
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,     -- 등록 일시
+    created_by              UUID,                                                            -- 등록자 UUID
+    updated_at              TIMESTAMP WITH TIME ZONE,                                        -- 수정 일시
+    updated_by              UUID,                                                            -- 수정자 UUID
+    
+    -- 담당자 이력 기본 정보
+    product_id              UUID                     NOT NULL,                               -- 제품 식별자
+    employee_id             UUID                     NOT NULL,                               -- 담당자 식별자
+    
+    -- 담당 기간
+    start_date              DATE                     NOT NULL,                               -- 담당 시작일
+    end_date                DATE,                                                            -- 담당 종료일
+    
+    -- 담당자 역할 및 유형
+    manager_type            VARCHAR(20)              DEFAULT 'PRIMARY',                      -- 담당자 유형
+    description             TEXT,                                                            -- 담당 업무/역할
+    
+    -- 상태 관리
+    notes                   TEXT,                                                            -- 비고
+    status                  VARCHAR(20)              DEFAULT 'ACTIVE',                       -- 상태
+    is_deleted              BOOLEAN                  DEFAULT false,                          -- 논리 삭제 플래그
+    
+    -- 담당자 유형 체크 (PRIMARY: 주담당, SECONDARY: 부담당, SALES: 영업, TECHNICAL: 기술, PURCHASE: 구매, MARKETING: 마케팅)
+    CONSTRAINT ck_product_managers__manager_type    CHECK (manager_type IN ('PRIMARY', 'SECONDARY', 'SALES', 'TECHNICAL', 'PURCHASE', 'MARKETING')),
+    
+    -- 상태 체크 (ACTIVE: 활성, INACTIVE: 비활성, EXPIRED: 만료, TERMINATED: 해지)
+    CONSTRAINT ck_product_managers__status          CHECK (status IN ('ACTIVE', 'INACTIVE', 'EXPIRED', 'TERMINATED')),
+    
+    -- 날짜 범위 체크 (종료일이 시작일보다 이후여야 함)
+    CONSTRAINT ck_product_managers__date_range      CHECK (end_date IS NULL OR end_date >= start_date)
+);
+
+-- =====================================================================================
+-- 테이블 및 컬럼 COMMENT
+-- =====================================================================================
+
+COMMENT ON TABLE  pim.product_managers                   IS '제품 담당자 이력 관리 테이블';
+COMMENT ON COLUMN pim.product_managers.id               IS '담당자 이력 고유 식별자 (UUID)';
+COMMENT ON COLUMN pim.product_managers.created_at       IS '등록 일시';
+COMMENT ON COLUMN pim.product_managers.created_by       IS '등록자 UUID';
+COMMENT ON COLUMN pim.product_managers.updated_at       IS '수정 일시';
+COMMENT ON COLUMN pim.product_managers.updated_by       IS '수정자 UUID';
+COMMENT ON COLUMN pim.product_managers.product_id       IS '제품 식별자';
+COMMENT ON COLUMN pim.product_managers.employee_id      IS '담당자 식별자';
+COMMENT ON COLUMN pim.product_managers.start_date       IS '담당 시작일';
+COMMENT ON COLUMN pim.product_managers.end_date         IS '담당 종료일';
+COMMENT ON COLUMN pim.product_managers.manager_type     IS '담당자 유형 (PRIMARY/SECONDARY/SALES/TECHNICAL/PURCHASE/MARKETING)';
+COMMENT ON COLUMN pim.product_managers.description      IS '담당 업무/역할';
+COMMENT ON COLUMN pim.product_managers.notes            IS '비고';
+COMMENT ON COLUMN pim.product_managers.status           IS '상태 (ACTIVE/INACTIVE/EXPIRED/TERMINATED)';
+COMMENT ON COLUMN pim.product_managers.is_deleted     IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 유니크 인덱스 (UNIQUE INDEX)
+-- =====================================================================================
+
+CREATE UNIQUE INDEX ux_product_managers__product_type_period
+    ON pim.product_managers (product_id, manager_type, start_date, end_date)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ux_product_managers__product_type_period IS '제품별 담당자 유형 및 기간 유니크 제약';
+
+-- =====================================================================================
+-- 인덱스 (INDEX)
+-- =====================================================================================
+
+CREATE INDEX ix_product_managers__product_id
+    ON pim.product_managers (product_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__product_id IS '제품별 담당자 조회 인덱스';
+
+CREATE INDEX ix_product_managers__employee_id
+    ON pim.product_managers (employee_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__employee_id IS '사원별 담당 제품 조회 인덱스';
+
+CREATE INDEX ix_product_managers__date_range
+    ON pim.product_managers (start_date, end_date)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__date_range IS '담당 기간별 조회 인덱스';
+
+CREATE INDEX ix_product_managers__manager_type
+    ON pim.product_managers (manager_type, product_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__manager_type IS '담당자 유형별 조회 인덱스';
+
+CREATE INDEX ix_product_managers__employee_products
+    ON pim.product_managers (employee_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__employee_products IS '사원별 담당 제품 목록 조회 인덱스';
+
+CREATE INDEX ix_product_managers__product_history
+    ON pim.product_managers (product_id, start_date DESC, end_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX pim.ix_product_managers__product_history IS '제품별 담당자 변경 이력 조회 인덱스';
+
+-- =====================================================================================
+-- 외래키 제약조건
+-- =====================================================================================
+
+-- 제품 참조 외래키 (제품 삭제 시 담당자 이력도 함께 삭제)
+ALTER TABLE pim.product_managers
+  ADD CONSTRAINT fk_product_managers__product_id
+    FOREIGN KEY (product_id)     
+    REFERENCES pim.products(id)
+    ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_product_managers__product_id ON pim.product_managers IS '제품 참조 외래키 (CASCADE 삭제)';

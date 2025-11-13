@@ -1,0 +1,641 @@
+-- ============================================================================
+-- Warehouse Management System Schema (wms)
+-- ============================================================================
+-- Description: 창고관리시스템 스키마 (창고, 로케이션, 입출고)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: wms
+-- Created: 2025-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS wms;
+
+COMMENT ON SCHEMA wms IS 'WMS: 창고관리시스템 스키마 (창고, 로케이션, 입출고)';
+
+-- ============================================================================
+-- WAREHOUSE MANAGEMENT SYSTEM
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS wms.warehouses 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 창고 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 창고 기본 정보
+    warehouse_code      VARCHAR(20)              NOT NULL,                              -- 창고 코드
+    warehouse_name      VARCHAR(100)             NOT NULL,                              -- 창고명
+    warehouse_type      VARCHAR(20)              NOT NULL,                              -- 창고 유형
+    
+    -- 창고 관리 정보
+    manager_id          UUID,                                                          	-- 창고 관리자 식별자
+    is_primary   		BOOLEAN                  DEFAULT false,                        	-- 본창고 여부
+    is_external         BOOLEAN                  DEFAULT false,                        	-- 외부창고 여부 (3PL 등)
+    
+    -- 연락처 정보
+    phone               VARCHAR(50),                                                   	-- 전화번호
+    fax                 VARCHAR(50),                                                   	-- 팩스번호
+    email               VARCHAR(255),                                                  	-- 이메일
+    
+    -- 주소 정보
+    postcode         	VARCHAR(20),                                                   	-- 우편번호
+    address1            VARCHAR(200),                                                  	-- 기본 주소
+    address2            VARCHAR(200),                                                  	-- 상세 주소
+	
+	building_name       VARCHAR(200),                                                  -- 건물명
+    city                VARCHAR(100),                                                  -- 도시
+    state_province      VARCHAR(100),                                                  -- 주/도
+    country_code        VARCHAR(3)               DEFAULT 'KOR',                       -- 국가 코드
+    
+    -- 창고 운영 정보
+    operating_hours     VARCHAR(100),                                                  	-- 운영 시간
+    capacity_sqm        NUMERIC(12,2),                                                	-- 면적 (제곱미터)
+    capacity_volume     NUMERIC(12,2),                                                	-- 용적 (세제곱미터)
+    max_weight          NUMERIC(12,2),                                                	-- 최대 중량 (kg)
+    
+    -- 시설 정보
+    has_dock            BOOLEAN                  DEFAULT false,                        	-- 도크 보유 여부
+    has_crane           BOOLEAN                  DEFAULT false,                        	-- 크레인 보유 여부
+    has_cold_storage    BOOLEAN                  DEFAULT false,                        	-- 냉장 시설 여부
+    has_freezer         BOOLEAN                  DEFAULT false,                        	-- 냉동 시설 여부
+    
+    -- 비용 정보
+    monthly_rent        NUMERIC(18,4),                                                	-- 월 임대료
+    storage_cost 		NUMERIC(18,4),                                             		-- 단위당 보관비
+    currency            VARCHAR(3)               DEFAULT 'KRW',                       	-- 통화
+    
+    -- 외부 창고 정보
+    external_provider   VARCHAR(100),                                                  -- 외부 업체명 (3PL 등)
+    contract_start_date DATE,                                                         -- 계약 시작일
+    contract_close_date DATE,                                                         -- 계약 종료일
+    
+    -- 추가 정보
+    description         TEXT,                                                         -- 창고 설명
+    notes               TEXT,                                                         -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                       -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouses__manager_id    FOREIGN KEY (manager_id) REFERENCES wms.employees(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouses__warehouse_code_format     CHECK (warehouse_code ~ '^[A-Z0-9_]{2,20}$'),
+    CONSTRAINT ck_warehouses__warehouse_type_format     CHECK (warehouse_type IN ('MAIN', 'BRANCH', 'DISTRIBUTION', 'COLD_STORAGE', 'FREEZER', 'EXTERNAL', 'VIRTUAL', 'QUARANTINE', 'RETURN')),
+    CONSTRAINT ck_warehouses__country_code_format       CHECK (country_code ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_warehouses__phone_format              CHECK (phone IS NULL OR phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouses__fax_format                CHECK (fax IS NULL OR fax ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouses__email_format              CHECK (email IS NULL OR email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_warehouses__currency_format           CHECK (currency ~ '^[A-Z]{3}$'),
+    CONSTRAINT ck_warehouses__capacity_positive         CHECK (capacity_sqm IS NULL OR capacity_sqm > 0),
+    CONSTRAINT ck_warehouses__volume_positive           CHECK (capacity_volume IS NULL OR capacity_volume > 0),
+    CONSTRAINT ck_warehouses__weight_positive           CHECK (max_weight IS NULL OR max_weight > 0),
+    CONSTRAINT ck_warehouses__rent_positive             CHECK (monthly_rent IS NULL OR monthly_rent >= 0),
+    CONSTRAINT ck_warehouses__storage_cost_positive     CHECK (storage_cost IS NULL OR storage_cost >= 0),
+    CONSTRAINT ck_warehouses__contract_date_valid       CHECK (contract_close_date IS NULL OR contract_start_date IS NULL OR contract_close_date >= contract_start_date),
+    CONSTRAINT ck_warehouses__status_format             CHECK (status IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'SUSPENDED', 'CLOSED'))
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  wms.warehouses 						IS '창고 마스터 정보 관리 테이블';
+COMMENT ON COLUMN wms.warehouses.id            			IS '창고 고유 식별자 (UUID)';
+COMMENT ON COLUMN wms.warehouses.created_at    			IS '등록 일시';
+COMMENT ON COLUMN wms.warehouses.created_by    			IS '등록자 UUID';
+COMMENT ON COLUMN wms.warehouses.updated_at    			IS '수정 일시';
+COMMENT ON COLUMN wms.warehouses.updated_by    			IS '수정자 UUID';
+COMMENT ON COLUMN wms.warehouses.warehouse_code 		IS '창고 코드 (사내 규칙)';
+COMMENT ON COLUMN wms.warehouses.warehouse_name 		IS '창고명';
+COMMENT ON COLUMN wms.warehouses.warehouse_type 		IS '창고 유형 (MAIN/BRANCH/DISTRIBUTION/COLD_STORAGE/FREEZER/EXTERNAL/VIRTUAL/QUARANTINE/RETURN)';
+COMMENT ON COLUMN wms.warehouses.manager_id    			IS '창고 관리자 식별자';
+COMMENT ON COLUMN wms.warehouses.is_primary 			IS '주창고 여부';
+COMMENT ON COLUMN wms.warehouses.is_external   			IS '외부창고 여부 (3PL 등)';
+COMMENT ON COLUMN wms.warehouses.phone         			IS '전화번호';
+COMMENT ON COLUMN wms.warehouses.fax           			IS '팩스번호';
+COMMENT ON COLUMN wms.warehouses.email         			IS '이메일';
+COMMENT ON COLUMN wms.warehouses.postcode   			IS '우편번호';
+COMMENT ON COLUMN wms.warehouses.address1      			IS '기본 주소';
+COMMENT ON COLUMN wms.warehouses.address2      			IS '상세 주소';
+COMMENT ON COLUMN wms.warehouses.building_name 			IS '건물명';
+COMMENT ON COLUMN wms.warehouses.city          			IS '도시';
+COMMENT ON COLUMN wms.warehouses.state_province 		IS '주/도';
+COMMENT ON COLUMN wms.warehouses.country_code  			IS '국가 코드 (ISO 3166-1 alpha-3)';
+COMMENT ON COLUMN wms.warehouses.operating_hours 		IS '운영 시간';
+COMMENT ON COLUMN wms.warehouses.capacity_sqm  			IS '면적 (제곱미터)';
+COMMENT ON COLUMN wms.warehouses.capacity_volume 		IS '용적 (세제곱미터)';
+COMMENT ON COLUMN wms.warehouses.max_weight    			IS '최대 중량 (kg)';
+COMMENT ON COLUMN wms.warehouses.has_dock      			IS '도크 보유 여부';
+COMMENT ON COLUMN wms.warehouses.has_crane     			IS '크레인 보유 여부';
+COMMENT ON COLUMN wms.warehouses.has_cold_storage 		IS '냉장 시설 여부';
+COMMENT ON COLUMN wms.warehouses.has_freezer   			IS '냉동 시설 여부';
+COMMENT ON COLUMN wms.warehouses.monthly_rent  			IS '월 임대료';
+COMMENT ON COLUMN wms.warehouses.storage_cost 			IS '단위당 보관비';
+COMMENT ON COLUMN wms.warehouses.currency      			IS '통화 (ISO 4217)';
+COMMENT ON COLUMN wms.warehouses.external_provider 		IS '외부 업체명 (3PL 등)';
+COMMENT ON COLUMN wms.warehouses.contract_start_date 	IS '계약 시작일';
+COMMENT ON COLUMN wms.warehouses.contract_close_date 	IS '계약 종료일';
+COMMENT ON COLUMN wms.warehouses.description   			IS '창고 설명';
+COMMENT ON COLUMN wms.warehouses.notes         			IS '비고';
+COMMENT ON COLUMN wms.warehouses.status        			IS '상태 (ACTIVE/INACTIVE/MAINTENANCE/SUSPENDED/CLOSED)';
+COMMENT ON COLUMN wms.warehouses.is_deleted       			IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_code
+    ON wms.warehouses (warehouse_code)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_name
+    ON wms.warehouses (warehouse_name)
+ WHERE is_deleted = false;
+
+-- 창고 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__warehouse_type
+    ON wms.warehouses (warehouse_type)
+ WHERE is_deleted = false;
+
+-- 관리자별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__manager_id
+    ON wms.warehouses (manager_id)
+ WHERE manager_id IS NOT NULL 
+   AND is_deleted = false;
+
+-- 본창고 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__is_primary
+    ON wms.warehouses (is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 외부창고 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__is_external
+    ON wms.warehouses (is_external, external_provider)
+ WHERE is_external = true 
+   AND is_deleted = false;
+
+-- 도시별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__city
+    ON wms.warehouses (city)
+ WHERE city IS NOT NULL 
+   AND is_deleted = false;
+
+-- 국가별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__country_code
+    ON wms.warehouses (country_code)
+ WHERE is_deleted = false;
+
+-- 시설별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouses__facilities
+    ON wms.warehouses (has_cold_storage, has_freezer, has_dock, has_crane)
+ WHERE is_deleted = false;
+
+-- 계약 만료 조회 인덱스 (관리용)
+-- CREATE INDEX IF NOT EXISTS ix_warehouses__contract_expiring
+    -- ON wms.warehouses (contract_close_date, external_provider)
+ -- WHERE contract_close_date IS NOT NULL 
+   -- AND contract_close_date >= CURRENT_DATE 
+   -- AND contract_close_date <= CURRENT_DATE + INTERVAL '90 days'
+   -- AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+-- [INCOMPLETE INDEX] CREATE INDEX IF NOT EXISTS ix_warehouses__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 전체 창고 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__code
+    ON wms.warehouses (warehouse_code)
+ WHERE is_deleted = false;
+
+-- 전체 창고명 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__name
+    ON wms.warehouses (warehouse_name)
+ WHERE is_deleted = false;
+
+-- 전체 본창고는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouses__primary
+ WHERE is_primary = true 
+   AND is_deleted = false;
+   
+-- =====================================================================================
+-- 테이블: wms.warehouse_employees
+-- 설명: 창고별 사원 배정 및 알림 설정을 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+
+CREATE TABLE IF NOT EXISTS wms.warehouse_employees 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 창고사원 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 배정 기본 정보
+    warehouse_id        UUID                     NOT NULL,                              -- 창고 식별자
+    employee_id         UUID                     NOT NULL,                              -- 사원 식별자
+    -- 역할 및 권한
+    role_type           VARCHAR(20)              DEFAULT 'OPERATOR',                    -- 역할 유형
+    is_primary          BOOLEAN                  DEFAULT false,                        -- 주담당자 여부
+    access_level        VARCHAR(20)              DEFAULT 'READ_write',                 -- 접근 권한
+    
+    -- 알림 설정
+    notify_receipt   	BOOLEAN                  DEFAULT true,                         -- 입고 알림 여부
+    notify_shipment  	BOOLEAN                  DEFAULT true,                         -- 출고 알림 여부
+    notify_cancel 		BOOLEAN              	 DEFAULT true,                         -- 취소 알림 여부
+    notify_adjust 		BOOLEAN                	 DEFAULT false,                        -- 재고조정 알림 여부
+    notify_emergency 	BOOLEAN                  DEFAULT true,                         -- 긴급상황 알림 여부
+    
+    -- 알림 방법
+    notify_method 		VARCHAR(20)              DEFAULT 'EMAIL',                      -- 알림 방법
+    notify_email  		VARCHAR(255),                                                 -- 알림용 이메일
+    notify_phone  		VARCHAR(50),                                                  -- 알림용 전화번호
+    
+    -- 근무 정보
+    work_shift          VARCHAR(20),                                                   -- 근무 시간대
+    start_date          DATE,                                                          -- 배정 시작일
+    close_date          DATE,                                                          -- 배정 종료일
+    
+    -- 추가 정보
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                      -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouse_employees__warehouse_id FOREIGN KEY (warehouse_id) REFERENCES wms.warehouses(id),
+    CONSTRAINT fk_warehouse_employees__employee_id  FOREIGN KEY (employee_id) REFERENCES wms.employees(id),
+    CONSTRAINT fk_warehouse_employees__created_by   FOREIGN KEY (created_by) REFERENCES wms.employees(id),
+    CONSTRAINT fk_warehouse_employees__updated_by   FOREIGN KEY (updated_by) REFERENCES wms.employees(id),
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouse_employees__role_type_format     CHECK (role_type IN ('MANAGER', 'SUPERVISOR', 'OPERATOR', 'PICKER', 'PACKER', 'LOADER', 'CHECKER', 'ADMIN')),
+    CONSTRAINT ck_warehouse_employees__access_level_format  CHECK (access_level IN ('read_only', 'read_write', 'admin', 'full_control')),
+    CONSTRAINT ck_warehouse_employees__notify_method      	CHECK (notify_method IN ('EMAIL', 'SMS', 'PHONE', 'PUSH', 'ALL')),
+    CONSTRAINT ck_warehouse_employees__work_shift_format    CHECK (work_shift IS NULL OR work_shift IN ('DAY', 'NIGHT', 'SWING', 'ROTATING', 'FLEXIBLE')),
+    CONSTRAINT ck_warehouse_employees__status_format        CHECK (status IN ('ACTIVE', 'INACTIVE', 'SUSPENDED', 'TERMINATED')),
+    CONSTRAINT ck_warehouse_employees__email_format         CHECK (notify_email IS NULL OR notify_email ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'),
+    CONSTRAINT ck_warehouse_employees__phone_format         CHECK (notify_phone IS NULL OR notify_phone ~ '^[0-9\-\+\(\)\s]{8,20}$'),
+    CONSTRAINT ck_warehouse_employees__date_range_valid     CHECK (close_date IS NULL OR start_date IS NULL OR close_date >= start_date)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  wms.warehouse_employees 					IS '창고별 사원 배정 및 알림 설정 관리 테이블';
+COMMENT ON COLUMN wms.warehouse_employees.id           		IS '창고사원 고유 식별자 (UUID)';
+COMMENT ON COLUMN wms.warehouse_employees.created_at   		IS '등록 일시';
+COMMENT ON COLUMN wms.warehouse_employees.created_by   		IS '등록자 UUID';
+COMMENT ON COLUMN wms.warehouse_employees.updated_at   		IS '수정 일시';
+COMMENT ON COLUMN wms.warehouse_employees.updated_by   		IS '수정자 UUID';
+COMMENT ON COLUMN wms.warehouse_employees.warehouse_id 		IS '창고 식별자';
+COMMENT ON COLUMN wms.warehouse_employees.employee_id  		IS '사원 식별자';
+COMMENT ON COLUMN wms.warehouse_employees.role_type    		IS '역할 유형 (MANAGER/SUPERVISOR/OPERATOR/PICKER/PACKER/LOADER/CHECKER/ADMIN)';
+COMMENT ON COLUMN wms.warehouse_employees.is_primary   		IS '주담당자 여부';
+COMMENT ON COLUMN wms.warehouse_employees.access_level 		IS '접근 권한 (read_only/read_write/admin/full_control)';
+COMMENT ON COLUMN wms.warehouse_employees.notify_receipt 	IS '입고 알림 여부';
+COMMENT ON COLUMN wms.warehouse_employees.notify_shipment 	IS '출고 알림 여부';
+COMMENT ON COLUMN wms.warehouse_employees.notify_cancel 	IS '취소 알림 여부';
+COMMENT ON COLUMN wms.warehouse_employees.notify_adjust 	IS '재고조정 알림 여부';
+COMMENT ON COLUMN wms.warehouse_employees.notify_emergency 	IS '긴급상황 알림 여부';
+COMMENT ON COLUMN wms.warehouse_employees.notify_method 	IS '알림 방법 (EMAIL/SMS/PHONE/PUSH/ALL)';
+COMMENT ON COLUMN wms.warehouse_employees.notify_email 		IS '알림용 이메일';
+COMMENT ON COLUMN wms.warehouse_employees.notify_phone 		IS '알림용 전화번호';
+COMMENT ON COLUMN wms.warehouse_employees.work_shift    	IS '근무 시간대 (DAY/NIGHT/SWING/ROTATING/FLEXIBLE)';
+COMMENT ON COLUMN wms.warehouse_employees.start_date   		IS '배정 시작일';
+COMMENT ON COLUMN wms.warehouse_employees.close_date     	IS '배정 종료일';
+COMMENT ON COLUMN wms.warehouse_employees.notes        		IS '비고';
+COMMENT ON COLUMN wms.warehouse_employees.status       		IS '상태 (ACTIVE/INACTIVE/SUSPENDED/TERMINATED)';
+COMMENT ON COLUMN wms.warehouse_employees.is_deleted      		IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__warehouse_id
+    ON wms.warehouse_employees (warehouse_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__employee_id
+    ON wms.warehouse_employees (employee_id)
+ WHERE is_deleted = false;
+
+-- 창고별 사원 목록 조회 인덱스
+-- [INCOMPLETE INDEX] CREATE INDEX IF NOT EXISTS ix_warehouse_employees__warehouse_active
+
+-- 사원별 창고 목록 조회 인덱스
+-- [INCOMPLETE INDEX] CREATE INDEX IF NOT EXISTS ix_warehouse_employees__employee_active
+
+-- 역할별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__role_type
+    ON wms.warehouse_employees (role_type, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 주담당자 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__primary
+    ON wms.warehouse_employees (warehouse_id, is_primary)
+ WHERE is_primary = true 
+   AND is_deleted = false;
+
+-- 접근 권한별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__access_level
+    ON wms.warehouse_employees (access_level, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 알림 설정별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__notifications
+    ON wms.warehouse_employees (warehouse_id, notify_method)
+ WHERE (notify_receipt = true OR notify_shipment = true OR notify_cancel = true OR notify_emergency = true)
+   AND is_deleted = false;
+
+-- 근무 시간대별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__work_shift
+    ON wms.warehouse_employees (work_shift, warehouse_id)
+ WHERE work_shift IS NOT NULL 
+   AND is_deleted = false;
+
+-- 배정 기간별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_employees__date_range
+    ON wms.warehouse_employees (start_date, close_date, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 현재 활성 배정 조회 인덱스
+-- CREATE INDEX IF NOT EXISTS ix_warehouse_employees__current_active
+    -- ON wms.warehouse_employees (warehouse_id, employee_id)
+ -- WHERE status = 'ACTIVE' 
+   -- AND (start_date IS NULL OR start_date <= CURRENT_DATE)
+   -- AND (close_date IS NULL OR close_date >= CURRENT_DATE)
+   -- AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+-- [INCOMPLETE INDEX] CREATE INDEX IF NOT EXISTS ix_warehouse_employees__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 창고별 사원 중복 배정 방지 (현재 활성 기간)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_employees__warehouse_employee_active
+    ON wms.warehouse_employees (warehouse_id, employee_id)
+ WHERE status = 'ACTIVE' 
+   AND is_deleted = false;
+
+-- 창고별 주담당자는 하나만
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_employees__warehouse_primary
+    ON wms.warehouse_employees (warehouse_id)
+ WHERE is_primary = true 
+   AND status = 'ACTIVE'
+   AND is_deleted = false;
+
+-- =====================================================================================
+-- 테이블: wms.warehouse_locations
+-- 설명	: 창고 로케이션 정보를 관리하는 테이블
+-- 작성일: 2024-12-19
+-- =====================================================================================
+
+
+CREATE TABLE IF NOT EXISTS wms.warehouse_locations 
+(
+    -- 기본 식별자 및 감사 필드
+    id                  UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),	-- 로케이션 고유 식별자 (UUID)
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,    -- 등록 일시
+    created_by          UUID,                                                           -- 등록자 UUID
+    updated_at          TIMESTAMP WITH TIME ZONE,                                       -- 수정 일시
+    updated_by          UUID,                                                           -- 수정자 UUID
+    
+    -- 로케이션 기본 정보
+    warehouse_id        UUID                     NOT NULL,                              -- 창고 식별자
+    location_code       VARCHAR(50)              NOT NULL,                              -- 로케이션 코드
+    location_name       VARCHAR(100)             NOT NULL,                              -- 로케이션명
+    location_type       VARCHAR(20)              DEFAULT 'BIN',                        -- 로케이션 유형
+    
+    -- 계층 구조 정보
+    parent_id  			UUID,                                                          -- 상위 로케이션 식별자
+    level_depth         INTEGER                  DEFAULT 1,                            -- 계층 깊이
+    full_path           VARCHAR(500),                                                  -- 전체 경로 (예: ZONE-A/AISLE-01/RACK-001/BIN-A001)
+    
+    -- 물리적 정보
+    zone_code           VARCHAR(20),                                                   -- 구역 코드
+    aisle_code          VARCHAR(20),                                                   -- 통로 코드
+    rack_code           VARCHAR(20),                                                   -- 랙 코드
+    bin_code            VARCHAR(20),                                                   -- 빈 코드
+    
+    -- 위치 좌표 (선택적)
+    x_coordinate        NUMERIC(10,2),                                                 -- X 좌표
+    y_coordinate        NUMERIC(10,2),                                                 -- Y 좌표
+    z_coordinate        NUMERIC(10,2),                                                 -- Z 좌표 (높이)
+    
+    -- 용량 및 규격 정보
+    capacity_weight     NUMERIC(12,2),                                                 -- 중량 용량 (kg)
+    capacity_volume     NUMERIC(12,2),                                                 -- 부피 용량 (㎥)
+    capacity_units      INTEGER,                                                       -- 단위 용량 (개수)
+    width_cm            NUMERIC(8,2),                                                  -- 가로 (cm)
+    height_cm           NUMERIC(8,2),                                                  -- 세로 (cm)
+    depth_cm            NUMERIC(8,2),                                                  -- 깊이 (cm)
+    
+    -- 로케이션 속성
+    is_pickable         BOOLEAN                  DEFAULT true,                         -- 피킹 가능 여부
+    is_receivable       BOOLEAN                  DEFAULT true,                         -- 입고 가능 여부
+    is_virtual          BOOLEAN                  DEFAULT false,                        -- 가상 로케이션 여부
+    is_damaged_area     BOOLEAN                  DEFAULT false,                        -- 불량품 구역 여부
+    is_quarantine       BOOLEAN                  DEFAULT false,                        -- 격리 구역 여부
+    
+    -- 환경 조건
+    temperature_min     NUMERIC(5,2),                                                  -- 최저 온도 (℃)
+    temperature_max     NUMERIC(5,2),                                                  -- 최고 온도 (℃)
+    humidity_min        NUMERIC(5,2),                                                  -- 최저 습도 (%)
+    humidity_max        NUMERIC(5,2),                                                  -- 최고 습도 (%)
+    
+    -- 정렬 및 우선순위
+    sort_order          INTEGER                  DEFAULT 0,                            -- 정렬 순서
+    picking_priority    INTEGER                  DEFAULT 0,                            -- 피킹 우선순위
+    
+    -- 바코드 및 RFID
+    barcode             VARCHAR(100),                                                  -- 바코드
+    rfid_tag            VARCHAR(100),                                                  -- RFID 태그
+    
+    -- 추가 정보
+    description         TEXT,                                                          -- 로케이션 설명
+    notes               TEXT,                                                          -- 비고
+    
+    -- 상태 관리
+    status              VARCHAR(20)              DEFAULT 'ACTIVE',                     -- 상태
+    is_deleted             BOOLEAN                  DEFAULT false,                        -- 논리 삭제 플래그
+	
+	-- 외래키 제약 조건
+    CONSTRAINT fk_warehouse_locations__warehouse_id     FOREIGN KEY (warehouse_id) 	REFERENCES wms.warehouses(id)			ON DELETE CASCADE,
+    CONSTRAINT fk_warehouse_locations__parent_id 		FOREIGN KEY (parent_id) 	REFERENCES wms.warehouse_locations(id)	ON DELETE CASCADE,
+    
+	-- 제약조건
+    CONSTRAINT ck_warehouse_locations__location_code_format     CHECK (location_code ~ '^[A-Z0-9\-_]{1,50}$'),
+    CONSTRAINT ck_warehouse_locations__location_type_format     CHECK (location_type IN ('ZONE', 'AISLE', 'RACK', 'SHELF', 'BIN', 'PALLET', 'FLOOR', 'DOOR', 'STAGING', 'VIRTUAL')),
+    CONSTRAINT ck_warehouse_locations__level_depth_range        CHECK (level_depth BETWEEN 1 AND 10),
+    CONSTRAINT ck_warehouse_locations__capacity_positive        CHECK (capacity_weight IS NULL OR capacity_weight >= 0),
+    CONSTRAINT ck_warehouse_locations__volume_positive          CHECK (capacity_volume IS NULL OR capacity_volume >= 0),
+    CONSTRAINT ck_warehouse_locations__units_positive           CHECK (capacity_units IS NULL OR capacity_units >= 0),
+    CONSTRAINT ck_warehouse_locations__dimensions_positive      CHECK ((width_cm IS NULL OR width_cm > 0) AND (height_cm IS NULL OR height_cm > 0) AND (depth_cm IS NULL OR depth_cm > 0)),
+    CONSTRAINT ck_warehouse_locations__temperature_range        CHECK ((temperature_min IS NULL OR temperature_max IS NULL) OR temperature_min <= temperature_max),
+    CONSTRAINT ck_warehouse_locations__humidity_range           CHECK ((humidity_min IS NULL OR humidity_max IS NULL) OR (humidity_min <= humidity_max AND humidity_min >= 0 AND humidity_max <= 100)),
+    CONSTRAINT ck_warehouse_locations__sort_order_positive      CHECK (sort_order >= 0),
+    CONSTRAINT ck_warehouse_locations__picking_priority 		CHECK (picking_priority >= 0),
+    CONSTRAINT ck_warehouse_locations__status_format            CHECK (status IN ('ACTIVE', 'INACTIVE', 'MAINTENANCE', 'BLOCKED', 'DAMAGED', 'RESERVED')),
+    CONSTRAINT ck_warehouse_locations__parent_not_self          CHECK (parent_id != id)
+);
+
+-- =====================================================================================
+-- 코멘트
+-- =====================================================================================
+COMMENT ON TABLE  wms.warehouse_locations 					IS '창고 로케이션 정보 관리 테이블';
+COMMENT ON COLUMN wms.warehouse_locations.id           		IS '로케이션 고유 식별자 (UUID)';
+COMMENT ON COLUMN wms.warehouse_locations.created_at   		IS '등록 일시';
+COMMENT ON COLUMN wms.warehouse_locations.created_by   		IS '등록자 UUID';
+COMMENT ON COLUMN wms.warehouse_locations.updated_at   		IS '수정 일시';
+COMMENT ON COLUMN wms.warehouse_locations.updated_by   		IS '수정자 UUID';
+COMMENT ON COLUMN wms.warehouse_locations.warehouse_id 		IS '창고 식별자';
+COMMENT ON COLUMN wms.warehouse_locations.location_code 	IS '로케이션 코드';
+COMMENT ON COLUMN wms.warehouse_locations.location_name 	IS '로케이션명';
+COMMENT ON COLUMN wms.warehouse_locations.location_type 	IS '로케이션 유형 (ZONE/AISLE/RACK/SHELF/BIN/PALLET/FLOOR/DOOR/STAGING/VIRTUAL)';
+COMMENT ON COLUMN wms.warehouse_locations.parent_id 		IS '상위 로케이션 식별자 (계층구조)';
+COMMENT ON COLUMN wms.warehouse_locations.level_depth  		IS '계층 깊이 (1=ZONE, 2=AISLE, 3=RACK, 4=BIN)';
+COMMENT ON COLUMN wms.warehouse_locations.full_path    		IS '전체 경로 (ZONE-A/AISLE-01/RACK-001/BIN-A001)';
+COMMENT ON COLUMN wms.warehouse_locations.zone_code    		IS '구역 코드';
+COMMENT ON COLUMN wms.warehouse_locations.aisle_code   		IS '통로 코드';
+COMMENT ON COLUMN wms.warehouse_locations.rack_code    		IS '랙 코드';
+COMMENT ON COLUMN wms.warehouse_locations.bin_code     		IS '빈 코드';
+COMMENT ON COLUMN wms.warehouse_locations.x_coordinate 		IS 'X 좌표';
+COMMENT ON COLUMN wms.warehouse_locations.y_coordinate 		IS 'Y 좌표';
+COMMENT ON COLUMN wms.warehouse_locations.z_coordinate 		IS 'Z 좌표 (높이)';
+COMMENT ON COLUMN wms.warehouse_locations.capacity_weight 	IS '중량 용량 (kg)';
+COMMENT ON COLUMN wms.warehouse_locations.capacity_volume 	IS '부피 용량 (㎥)';
+COMMENT ON COLUMN wms.warehouse_locations.capacity_units 	IS '단위 용량 (개수)';
+COMMENT ON COLUMN wms.warehouse_locations.width_cm     		IS '가로 (cm)';
+COMMENT ON COLUMN wms.warehouse_locations.height_cm    		IS '세로 (cm)';
+COMMENT ON COLUMN wms.warehouse_locations.depth_cm     		IS '깊이 (cm)';
+COMMENT ON COLUMN wms.warehouse_locations.is_pickable  		IS '피킹 가능 여부';
+COMMENT ON COLUMN wms.warehouse_locations.is_receivable 	IS '입고 가능 여부';
+COMMENT ON COLUMN wms.warehouse_locations.is_virtual   		IS '가상 로케이션 여부';
+COMMENT ON COLUMN wms.warehouse_locations.is_damaged_area 	IS '불량품 구역 여부';
+COMMENT ON COLUMN wms.warehouse_locations.is_quarantine 	IS '격리 구역 여부';
+COMMENT ON COLUMN wms.warehouse_locations.temperature_min 	IS '최저 온도 (℃)';
+COMMENT ON COLUMN wms.warehouse_locations.temperature_max 	IS '최고 온도 (℃)';
+COMMENT ON COLUMN wms.warehouse_locations.humidity_min 		IS '최저 습도 (%)';
+COMMENT ON COLUMN wms.warehouse_locations.humidity_max 		IS '최고 습도 (%)';
+COMMENT ON COLUMN wms.warehouse_locations.sort_order   		IS '정렬 순서';
+COMMENT ON COLUMN wms.warehouse_locations.picking_priority 	IS '피킹 우선순위';
+COMMENT ON COLUMN wms.warehouse_locations.barcode      		IS '바코드';
+COMMENT ON COLUMN wms.warehouse_locations.rfid_tag     		IS 'RFID 태그';
+COMMENT ON COLUMN wms.warehouse_locations.description  		IS '로케이션 설명';
+COMMENT ON COLUMN wms.warehouse_locations.notes        		IS '비고';
+COMMENT ON COLUMN wms.warehouse_locations.status       		IS '상태 (ACTIVE/INACTIVE/MAINTENANCE/BLOCKED/DAMAGED/RESERVED)';
+COMMENT ON COLUMN wms.warehouse_locations.is_deleted      		IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- 기본 조회 인덱스
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__warehouse_id
+    ON wms.warehouse_locations (warehouse_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__location_code
+    ON wms.warehouse_locations (location_code)
+ WHERE is_deleted = false;
+
+-- 계층구조 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__parent_id
+    ON wms.warehouse_locations (parent_id)
+ WHERE is_deleted = false;
+
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__level_depth
+    ON wms.warehouse_locations (warehouse_id, level_depth, sort_order)
+ WHERE is_deleted = false;
+
+-- 로케이션 유형별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__location_type
+    ON wms.warehouse_locations (location_type, warehouse_id)
+ WHERE is_deleted = false;
+
+-- 구역별 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__zone_code
+    ON wms.warehouse_locations (zone_code)
+ WHERE zone_code IS NOT NULL 
+   AND is_deleted = false;
+
+-- 피킹 최적화 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__picking
+    ON wms.warehouse_locations (warehouse_id, is_pickable, picking_priority, sort_order)
+ WHERE is_pickable = true 
+   AND is_deleted = false;
+
+-- 입고 가능 로케이션 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__receivable
+    ON wms.warehouse_locations (warehouse_id, is_receivable)
+ WHERE is_receivable = true 
+   AND is_deleted = false;
+
+-- 좌표 기반 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__coordinates
+    ON wms.warehouse_locations (warehouse_id, x_coordinate, y_coordinate, z_coordinate)
+ WHERE x_coordinate IS NOT NULL 
+   AND y_coordinate IS NOT NULL 
+   AND is_deleted = false;
+
+-- 바코드 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__barcode
+    ON wms.warehouse_locations (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- RFID 태그 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__rfid_tag
+    ON wms.warehouse_locations (rfid_tag)
+ WHERE rfid_tag IS NOT NULL 
+   AND is_deleted = false;
+
+-- 전체 경로 조회 인덱스
+CREATE INDEX IF NOT EXISTS ix_warehouse_locations__full_path
+    ON wms.warehouse_locations (full_path)
+ WHERE full_path IS NOT NULL 
+   AND is_deleted = false;
+
+-- 상태별 조회 인덱스
+-- [INCOMPLETE INDEX] CREATE INDEX IF NOT EXISTS ix_warehouse_locations__status
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- 창고별 로케이션 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__warehouse_code
+    ON wms.warehouse_locations (warehouse_id, location_code)
+ WHERE is_deleted = false;
+
+-- 바코드 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__barcode
+    ON wms.warehouse_locations (barcode)
+ WHERE barcode IS NOT NULL 
+   AND is_deleted = false;
+
+-- RFID 태그 유니크 (전역)
+CREATE UNIQUE INDEX IF NOT EXISTS ux_warehouse_locations__rfid_tag
+    ON wms.warehouse_locations (rfid_tag)
+ WHERE rfid_tag IS NOT NULL 
+   AND is_deleted = false;   
+
+

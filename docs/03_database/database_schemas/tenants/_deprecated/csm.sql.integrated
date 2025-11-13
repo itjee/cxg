@@ -1,0 +1,141 @@
+-- ============================================================================
+-- Customer Service Management Schema (csm)
+-- ============================================================================
+-- Description: 고객 서비스 관리 (CRM, 고객관리, 서비스티켓, 문의사항)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: csm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS csm;
+
+COMMENT ON SCHEMA csm IS 'CSM: 고객 서비스 관리 스키마 (CRM, 서비스티켓)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- CSM: 고객지원 (Customer Service Management)
+-- ============================================================================
+
+-- 고객 지원 티켓
+CREATE TABLE csm.support_tickets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    ticket_code VARCHAR(50) NOT NULL,
+    customer_id UUID,
+    contact_name VARCHAR(100),
+    contact_email VARCHAR(255),
+    contact_phone VARCHAR(50),
+    subject VARCHAR(255) NOT NULL,
+    description TEXT,
+    category VARCHAR(50),
+    priority VARCHAR(20) DEFAULT 'MEDIUM', -- LOW, MEDIUM, HIGH, URGENT
+    status VARCHAR(20) DEFAULT 'OPEN', -- OPEN, IN_PROGRESS, RESOLVED, CLOSED
+    assigned_to UUID,
+    resolved_at TIMESTAMPTZ,
+    resolution TEXT,
+    satisfaction_rating INTEGER,
+    is_deleted BOOLEAN DEFAULT false,
+    CONSTRAINT uk_csm_support_tickets__code UNIQUE (ticket_code),
+    CONSTRAINT ck_csm_support_tickets__satisfaction CHECK (satisfaction_rating BETWEEN 1 AND 5)
+);
+
+-- 티켓 댓글
+CREATE TABLE csm.ticket_comments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    ticket_id UUID NOT NULL,
+    comment_text TEXT NOT NULL,
+    is_internal BOOLEAN DEFAULT false,
+    is_deleted BOOLEAN DEFAULT false
+);
+
+-- FAQ
+CREATE TABLE csm.faqs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    category VARCHAR(50),
+    question TEXT NOT NULL,
+    answer TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    view_count INTEGER DEFAULT 0,
+    is_published BOOLEAN DEFAULT true,
+    is_deleted BOOLEAN DEFAULT false
+);
+-- ============================================================================
+-- CSM 스키마 인덱스 및 제약조건 추가
+-- ============================================================================
+CREATE INDEX IF NOT EXISTS idx_csm_customers_created_at ON csm.customers(created_at);
+CREATE INDEX IF NOT EXISTS idx_csm_service_tickets_created_at ON csm.service_tickets(created_at);
+
+COMMENT ON SCHEMA csm IS '고객 서비스 관리 스키마 (CRM, 서비스티켓)';
+-- ============================================================================
+-- CSM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 고객 지원 티켓 테이블
+COMMENT ON TABLE csm.support_tickets IS '고객 지원 요청 및 문의사항 관리 테이블';
+COMMENT ON COLUMN csm.support_tickets.id IS '지원 티켓 고유 식별자';
+COMMENT ON COLUMN csm.support_tickets.ticket_number IS '티켓 번호 - 고객에게 표시되는 식별 번호';
+COMMENT ON COLUMN csm.support_tickets.customer_id IS '고객 ID - adm.partners 테이블 참조';
+COMMENT ON COLUMN csm.support_tickets.contact_name IS '문의자 이름';
+COMMENT ON COLUMN csm.support_tickets.contact_email IS '문의자 이메일';
+COMMENT ON COLUMN csm.support_tickets.contact_phone IS '문의자 연락처';
+COMMENT ON COLUMN csm.support_tickets.subject IS '문의 제목';
+COMMENT ON COLUMN csm.support_tickets.description IS '문의 상세 내용';
+COMMENT ON COLUMN csm.support_tickets.category IS '문의 유형 (기술지원, 제품문의, 불만사항, 제안 등)';
+COMMENT ON COLUMN csm.support_tickets.priority IS '우선순위 (낮음, 보통, 높음, 긴급)';
+COMMENT ON COLUMN csm.support_tickets.status IS '처리 상태 (접수, 처리중, 보류, 완료, 취소)';
+COMMENT ON COLUMN csm.support_tickets.assigned_to IS '담당자 ID - sys.users 테이블 참조';
+COMMENT ON COLUMN csm.support_tickets.resolved_at IS '해결 완료 일시';
+COMMENT ON COLUMN csm.support_tickets.resolution_notes IS '해결 내용';
+COMMENT ON COLUMN csm.support_tickets.satisfaction_rating IS '만족도 평가 (1-5점)';
+COMMENT ON COLUMN csm.support_tickets.created_at IS '생성일시 (접수일시)';
+COMMENT ON COLUMN csm.support_tickets.created_by IS '생성자 ID';
+COMMENT ON COLUMN csm.support_tickets.updated_at IS '최종 수정일시';
+COMMENT ON COLUMN csm.support_tickets.updated_by IS '최종 수정자 ID';
+
+-- 티켓 댓글 테이블
+COMMENT ON TABLE csm.ticket_comments IS '지원 티켓 처리 과정의 댓글 및 이력 관리 테이블';
+COMMENT ON COLUMN csm.ticket_comments.id IS '댓글 고유 식별자';
+COMMENT ON COLUMN csm.ticket_comments.ticket_id IS '티켓 ID - support_tickets 테이블 참조';
+COMMENT ON COLUMN csm.ticket_comments.comment_text IS '댓글 내용';
+COMMENT ON COLUMN csm.ticket_comments.is_internal IS '내부 메모 여부 (true: 내부용, false: 고객 공개)';
+COMMENT ON COLUMN csm.ticket_comments.is_solution IS '해결방안 여부';
+COMMENT ON COLUMN csm.ticket_comments.attachments IS '첨부파일 정보 (JSON 배열)';
+COMMENT ON COLUMN csm.ticket_comments.created_at IS '작성일시';
+COMMENT ON COLUMN csm.ticket_comments.created_by IS '작성자 ID';
+COMMENT ON COLUMN csm.ticket_comments.updated_at IS '수정일시';
+COMMENT ON COLUMN csm.ticket_comments.updated_by IS '수정자 ID';
+
+-- FAQ 테이블
+COMMENT ON TABLE csm.faqs IS '자주 묻는 질문 관리 테이블';
+COMMENT ON COLUMN csm.faqs.id IS 'FAQ 고유 식별자';
+COMMENT ON COLUMN csm.faqs.category IS 'FAQ 카테고리';
+COMMENT ON COLUMN csm.faqs.question IS '질문';
+COMMENT ON COLUMN csm.faqs.answer IS '답변';
+COMMENT ON COLUMN csm.faqs.view_count IS '조회수';
+COMMENT ON COLUMN csm.faqs.helpful_count IS '도움됨 카운트';
+COMMENT ON COLUMN csm.faqs.is_published IS '공개 여부';
+COMMENT ON COLUMN csm.faqs.display_order IS '표시 순서';
+COMMENT ON COLUMN csm.faqs.tags IS '태그 (검색용)';
+COMMENT ON COLUMN csm.faqs.created_at IS '생성일시';
+COMMENT ON COLUMN csm.faqs.created_by IS '작성자 ID';
+COMMENT ON COLUMN csm.faqs.updated_at IS '수정일시';
+COMMENT ON COLUMN csm.faqs.updated_by IS '수정자 ID';

@@ -1,0 +1,106 @@
+"""테넌트 API v1 라우터 - 완전판 (한글 태그)"""
+
+from fastapi import APIRouter
+
+# ADM(Administration)
+from src.modules.tenants.adm.code_groups.router import router as adm_code_groups_router
+from src.modules.tenants.adm.codes.router import router as adm_codes_router
+from src.modules.tenants.adm.currencies.router import router as adm_currencies_router
+from src.modules.tenants.adm.exchange_rates.router import router as adm_exchange_rates_router
+from src.modules.tenants.adm.payment_terms.router import router as adm_payment_terms_router
+from src.modules.tenants.adm.settings.router import router as adm_settings_router
+from src.modules.tenants.adm.units.router import router as adm_units_router
+
+# ASM(Asset Management)
+from src.modules.tenants.asm.service_requests.router import router as asm_service_requests_router
+
+# HRM(Human Resource Management)
+from src.modules.tenants.hrm.employees.router import router as hrm_employees_router
+from src.modules.tenants.hrm.salary_structures.router import router as hrm_salary_structures_router
+
+# CRM(Customer Relationship Management)
+from src.modules.tenants.crm.partners.router import router as crm_partners_router
+from src.modules.tenants.crm.partner_addresses.router import router as crm_partner_addresses_router
+from src.modules.tenants.crm.activities.router import router as crm_activities_router
+from src.modules.tenants.crm.opportunities.router import router as crm_opportunities_router
+from src.modules.tenants.crm.contracts.router import router as crm_contracts_router
+
+# FIM(Finance)
+from src.modules.tenants.fim.accounts.router import router as fim_accounts_router
+from src.modules.tenants.fim.journal_entries.router import router as fim_journal_entries_router
+from src.modules.tenants.fim.payment_transactions.router import router as fim_payment_transactions_router
+from src.modules.tenants.fim.accounts_payable.router import router as fim_accounts_payable_router
+from src.modules.tenants.fim.accounts_receivable.router import router as fim_accounts_receivable_router
+from src.modules.tenants.fim.business_documents.router import router as fim_business_documents_router
+from src.modules.tenants.fim.tax_invoices.router import router as fim_tax_invoices_router
+
+# PSM(Procurement)
+from src.modules.tenants.psm.purchase_orders.router import router as psm_purchase_orders_router
+
+# SRM(Sales)
+from src.modules.tenants.srm.sales_orders.router import router as srm_sales_orders_router
+from src.modules.tenants.srm.sales_invoices.router import router as srm_sales_invoices_router
+
+# LWM(Workflow)
+from src.modules.tenants.lwm.workflows.router import router as lwm_workflows_router
+from src.modules.tenants.lwm.tasks.router import router as lwm_tasks_router
+from src.modules.tenants.lwm.steps.router import router as lwm_steps_router
+
+
+router = APIRouter()
+
+# ==================== 대:테넌트 ====================
+
+# 중:기준정보 > 소:코드
+router.include_router(adm_code_groups_router, prefix="/adm/code-groups", tags=["테넌트 > 기준정보 > 코드"])
+router.include_router(adm_codes_router, prefix="/adm/codes", tags=["테넌트 > 기준정보 > 코드"])
+
+# 중:기준정보 > 소:통화
+router.include_router(adm_currencies_router, prefix="/adm/currencies", tags=["테넌트 > 기준정보 > 통화"])
+router.include_router(adm_exchange_rates_router, prefix="/adm/exchange-rates", tags=["테넌트 > 기준정보 > 통화"])
+
+# 중:기준정보 > 소:설정
+router.include_router(adm_payment_terms_router, prefix="/adm/payment-terms", tags=["테넌트 > 기준정보 > 설정"])
+router.include_router(adm_settings_router, prefix="/adm/settings", tags=["테넌트 > 기준정보 > 설정"])
+router.include_router(adm_units_router, prefix="/adm/units", tags=["테넌트 > 기준정보 > 설정"])
+
+# 중:자산관리 > 소:서비스요청
+router.include_router(asm_service_requests_router, prefix="/asm/service-requests", tags=["테넌트 > 자산관리 > 서비스요청"])
+
+# 중:인사관리 > 소:직원
+router.include_router(hrm_employees_router, prefix="/hrm/employees", tags=["테넌트 > 인사관리 > 직원"])
+router.include_router(hrm_salary_structures_router, prefix="/hrm/salary-structures", tags=["테넌트 > 인사관리 > 직원"])
+
+# 중:고객관리 > 소:거래처
+router.include_router(crm_partners_router, prefix="/crm/partners", tags=["테넌트 > 고객관리 > 거래처"])
+router.include_router(crm_partner_addresses_router, prefix="/crm/partner-addresses", tags=["테넌트 > 고객관리 > 거래처"])
+
+# 중:고객관리 > 소:영업
+router.include_router(crm_activities_router, prefix="/crm/activities", tags=["테넌트 > 고객관리 > 영업"])
+router.include_router(crm_opportunities_router, prefix="/crm/opportunities", tags=["테넌트 > 고객관리 > 영업"])
+router.include_router(crm_contracts_router, prefix="/crm/contracts", tags=["테넌트 > 고객관리 > 영업"])
+
+# 중:구매관리 > 소:구매주문
+router.include_router(psm_purchase_orders_router, prefix="/psm/purchase-orders", tags=["테넌트 > 구매관리 > 구매주문"])
+
+# 중:판매관리 > 소:판매주문
+router.include_router(srm_sales_orders_router, prefix="/srm/sales-orders", tags=["테넌트 > 판매관리 > 판매주문"])
+router.include_router(srm_sales_invoices_router, prefix="/srm/sales-invoices", tags=["테넌트 > 판매관리 > 판매주문"])
+
+# 중:재무관리 > 소:회계
+router.include_router(fim_accounts_router, prefix="/fim/accounts", tags=["테넌트 > 재무관리 > 회계"])
+router.include_router(fim_journal_entries_router, prefix="/fim/journal-entries", tags=["테넌트 > 재무관리 > 회계"])
+router.include_router(fim_payment_transactions_router, prefix="/fim/payment-transactions", tags=["테넌트 > 재무관리 > 회계"])
+
+# 중:재무관리 > 소:채권채무
+router.include_router(fim_accounts_payable_router, prefix="/fim/accounts-payable", tags=["테넌트 > 재무관리 > 채권채무"])
+router.include_router(fim_accounts_receivable_router, prefix="/fim/accounts-receivable", tags=["테넌트 > 재무관리 > 채권채무"])
+
+# 중:재무관리 > 소:증빙
+router.include_router(fim_business_documents_router, prefix="/fim/business-documents", tags=["테넌트 > 재무관리 > 증빙"])
+router.include_router(fim_tax_invoices_router, prefix="/fim/tax-invoices", tags=["테넌트 > 재무관리 > 증빙"])
+
+# 중:워크플로우 > 소:흐름관리
+router.include_router(lwm_workflows_router, prefix="/lwm/workflows", tags=["테넌트 > 워크플로우 > 흐름관리"])
+router.include_router(lwm_tasks_router, prefix="/lwm/tasks", tags=["테넌트 > 워크플로우 > 흐름관리"])
+router.include_router(lwm_steps_router, prefix="/lwm/steps", tags=["테넌트 > 워크플로우 > 흐름관리"])

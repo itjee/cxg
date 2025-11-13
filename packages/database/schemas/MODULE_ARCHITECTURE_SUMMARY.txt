@@ -1,0 +1,322 @@
+╔═══════════════════════════════════════════════════════════════════════════════╗
+║                  CONEXGROW MODULE AND PERMISSION ARCHITECTURE                ║
+║                           EXECUTIVE SUMMARY                                   ║
+╚═══════════════════════════════════════════════════════════════════════════════╝
+
+DUAL-DATABASE ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+┌─────────────────────────────┐                  ┌─────────────────────────────┐
+│     MANAGER DB (IDAM)       │                  │    TENANTS DB (SYS)         │
+│  Platform Administration    │                  │  Business Operations        │
+├─────────────────────────────┤                  ├─────────────────────────────┤
+│ Users: Operators (MASTER)   │                  │ Users: Employees (TENANT)   │
+│ Roles: 6+ types             │                  │ Roles: Custom per tenant    │
+│ Permissions: 4 categories   │                  │ Permissions: 11 modules     │
+│ Isolation: Logical          │                  │ Isolation: Physical (DB)    │
+│ Scope: GLOBAL/TENANT        │                  │ Scope: Per-tenant only      │
+└─────────────────────────────┘                  └─────────────────────────────┘
+
+
+1. MANAGER DB: PERMISSION STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Location: /packages/database/schemas/manager/02_idam/02_permissions.sql
+
+KEY CHARACTERISTICS:
+- Module Concept: NO (not applicable for platform management)
+- Permission Format: category:resource:action
+- Categories: tenant, system, billing, monitoring (4 types)
+- Actions: CREATE, READ, UPDATE, DELETE, LIST, MANAGE
+- Scope: GLOBAL (all tenants) or TENANT (specific tenant)
+- Applies To: ALL, MASTER, TENANT, SYSTEM
+
+EXAMPLE PERMISSIONS:
+  tenant:read                    (Read tenant info)
+  system:config:write            (Write system config)
+  billing:invoice:list           (List invoices)
+  monitoring:logs:read           (Read monitoring logs)
+
+
+2. TENANTS DB: PERMISSION STRUCTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Location: /packages/database/schemas/tenants/22_sys/03_permissions.sql
+
+KEY CHARACTERISTIC: MODULES ARE STRING CODES, NOT TABLE REFERENCES!
+┌─────────────────────────────────────────────────────────────────┐
+│ CONSTRAINT ck_permissions__module_code CHECK (                 │
+│     module_code IN (                                             │
+│         'ADM', 'ASM', 'BIM', 'COM', 'CSM', 'FIM',              │
+│         'IVM', 'LWM', 'PSM', 'SRM', 'SYS'                       │
+│     )                                                            │
+│ )                                                                │
+└─────────────────────────────────────────────────────────────────┘
+
+Why String Codes Instead of FK?
+  Benefits:
+    - No JOIN overhead (simpler queries)
+    - No cascading delete issues
+    - Modules are static/rarely change
+    - Better performance
+    - Flexible to add new permissions
+  Trade-offs:
+    - Cannot dynamically add modules
+    - Requires schema migration to add module
+    - Metadata stored separately
+
+EXAMPLE PERMISSIONS:
+  ADM_USERS_CREATE              (Create user)
+  PSM_PURCHASE_ORDER_CREATE     (Create PO)
+  PSM_PURCHASE_ORDER_APPROVE    (Approve PO)
+  SRM_SALES_ORDER_READ          (Read SO)
+  IVM_INVENTORY_UPDATE          (Update inventory)
+
+
+3. ALL AVAILABLE MODULES (11 TOTAL)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CORE INFRASTRUCTURE (4)
+┌────┬────────────────────────┬─────────────────────────┐
+│ ID │ Name                   │ Description             │
+├────┼────────────────────────┼─────────────────────────┤
+│ ADM│ Administration         │ User/Role management    │
+│ SYS│ System Configuration   │ System settings, config │
+│ COM│ Communication          │ Messaging, notifs       │
+│ BIM│ Business Intelligence  │ Analytics, reports      │
+└────┴────────────────────────┴─────────────────────────┘
+
+BUSINESS OPERATIONS (7)
+┌────┬──────────────────────┬──────────────────────────┐
+│ ID │ Name                 │ Description              │
+├────┼──────────────────────┼──────────────────────────┤
+│ PSM│ Procurement/Sourcing │ Purchase orders, supplier│
+│ SRM│ Sales/Revenue        │ Sales, quotes, invoices │
+│ IVM│ Inventory Mgmt       │ Stock, warehouse        │
+│ FIM│ Finance/Accounting   │ GL, accounts, reports   │
+│ LWM│ Workflow/Approval    │ Processes, routing      │
+│ CSM│ Customer/CRM         │ Customer data, relations│
+│ ASM│ Asset Management     │ Asset tracking, maint.  │
+└────┴──────────────────────┴──────────────────────────┘
+
+MODULE STORAGE:
+  Current: String enum constraint in sys.permissions.module_code
+  Optional: Metadata table available in _archive/06_modules.sql
+  Approach: Kept simple for performance
+
+
+4. PERMISSION RESOLUTION FLOW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MANAGER DB (Operator):
+  1. User authentication (type: MASTER/SYSTEM)
+  2. Load user roles (scope: GLOBAL or TENANT with context)
+  3. Load role permissions for each role
+  4. Filter by applies_to (ALL, MASTER, TENANT, SYSTEM)
+  5. Check scope (GLOBAL or TENANT)
+  6. Cache permission set → Ready for API calls
+
+TENANTS DB (Employee):
+  1. User authentication (tenant_id isolation)
+  2. Load active user roles (expires_at checking)
+  3. Load role permissions for each role
+  4. Filter by module_code and is_active
+  5. Group permissions by module
+  6. Cache permission set → Ready for API calls
+
+
+5. RECENT IMPROVEMENTS (October 2025)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+NEW TABLES ADDED TO TENANTS DB:
+
+sys.sessions (13_sessions.sql)
+  - Tracks login sessions per user
+  - Device tracking: WEB, MOBILE, API, DESKTOP
+  - Geolocation: IP, country, city
+  - Session lifecycle: created, expires, revoked
+  - 8 optimized indices
+
+sys.user_roles (14_user_roles.sql)
+  - Maps users to roles with full history
+  - Multiple roles per user
+  - Temporary roles (expires_at)
+  - Grant/revoke tracking with audit trail
+
+sys.role_permissions_history (15_role_permissions_history.sql)
+  - Automatic audit log for permission changes
+  - Tracks GRANTED/REVOKED actions
+  - Records change reason and who changed it
+  - Supports compliance reporting
+
+
+6. ARCHITECTURE COMPARISON TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                       MANAGER DB          TENANTS DB
+Purpose                Platform Ops        Business Ops
+Users                  Operators           Employees
+Modules Defined?       NO                  YES (11 codes)
+Module Type            N/A                 String enum (FK)
+Permission Format      category:res:act    module_res_act
+Categories/Modules     4 categories        11 modules
+Isolation              Logical (type)      Physical (DB)
+Scope                  GLOBAL/TENANT       Per-tenant
+Applies To             4 options           Role-based
+Session Tracking       YES (idam.sessions) YES (sys.sessions)
+Role Expiration        YES                 YES (NEW)
+Permission History     Partial             YES (NEW)
+
+
+7. DESIGN DECISIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Why Two Databases?
+  1. Operational isolation (platform vs business)
+  2. Tenant data security (physical separation)
+  3. Performance (each tenant scales independently)
+  4. Compliance (easier data residency management)
+
+Why String Codes for Modules?
+  1. Simplicity (modules static/rarely change)
+  2. Performance (no extra JOIN)
+  3. Flexibility (change permissions without schema update)
+  4. Scalability (works across distributed systems)
+
+Why Module Metadata Separate?
+  1. Separation of concerns
+  2. Future flexibility (can enable dynamic modules later)
+  3. Current simplicity (avoid unnecessary complexity)
+  4. Clear upgrade path (optional _archive/06_modules.sql)
+
+
+8. MULTI-TENANCY ISOLATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MANAGER DB:
+  Type: Logical isolation (user_type field)
+  Cross-tenant: Operators can manage multiple tenants
+  Scope: GLOBAL (all) or TENANT (specific)
+
+TENANTS DB:
+  Type: Physical isolation (separate databases)
+  Cross-tenant: None (complete separation)
+  Access: Always filtered by tenant_id
+
+
+9. MODULE CODES REFERENCE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ACTIVE MODULES:
+  ADM = Administration        (User/Role management)
+  PSM = Procurement          (Purchase orders)
+  SRM = Sales/Revenue        (Sales orders, invoicing)
+  IVM = Inventory            (Stock management)
+  FIM = Finance              (Accounting, GL)
+  LWM = Workflow             (Approvals, processes)
+  CSM = CRM                  (Customer management)
+  ASM = Asset Management     (Asset tracking)
+  BIM = BI/Analytics         (Reports, dashboards)
+  COM = Communication        (Messaging)
+  SYS = System Config        (Settings, permissions)
+
+FUTURE/DEPRECATED:
+  HRM, PIM, WMS, APM, FAM (see _archive/06_modules.sql)
+
+
+10. KEY INSIGHTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Positive Features:
+  ✅ Clear separation between platform and business
+  ✅ Well-designed RBAC model
+  ✅ Complete audit trails (NEW in Oct 2025)
+  ✅ Session tracking (NEW in Oct 2025)
+  ✅ Temporary role assignments (expires_at)
+  ✅ Multi-tenancy from ground up
+
+Design Clarity:
+  ✅ Modules as string codes = simplicity + performance
+  ✅ No foreign keys on modules = flexibility
+  ✅ Module metadata available if needed (archive)
+  ✅ Clear upgrade path for dynamic modules
+
+Production Ready:
+  ✅ All core functionality implemented
+  ✅ Security considerations addressed
+  ✅ Compliance-ready audit trails
+  ✅ Scalable to thousands of permissions
+
+
+FILES TO REVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Core Schema Files:
+  1. /packages/database/schemas/manager/02_idam/02_permissions.sql
+     → Manager DB permission definitions
+
+  2. /packages/database/schemas/tenants/22_sys/03_permissions.sql
+     → Tenants DB permission definitions (MODULE CODES HERE)
+
+  3. /packages/database/schemas/tenants/22_sys/13_sessions.sql
+     → NEW: Session tracking for tenant employees
+
+  4. /packages/database/schemas/tenants/22_sys/14_user_roles.sql
+     → NEW: User-role mapping with history
+
+  5. /packages/database/schemas/tenants/22_sys/15_role_permissions_history.sql
+     → NEW: Permission change audit trail
+
+Documentation Files:
+  - /packages/database/schemas/USER_ROLE_PERMISSION_ARCHITECTURE.md
+  - /packages/database/schemas/tenants/22_sys/README.md
+  - /packages/database/schemas/tenants/22_sys/SCHEMA_IMPROVEMENTS.md
+  - /packages/database/schemas/tenants/22_sys/_archive/06_modules.sql
+
+
+QUICK REFERENCE: MODULE ENUM CONSTRAINT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Current Definition (in sys.permissions):
+  CONSTRAINT ck_permissions__module_code CHECK (
+      module_code IN ('ADM', 'ASM', 'BIM', 'COM', 'CSM', 'FIM',
+                      'IVM', 'LWM', 'PSM', 'SRM', 'SYS')
+  )
+
+Optional Metadata Table (archived):
+  Location: /packages/database/schemas/tenants/22_sys/_archive/06_modules.sql
+  Contains: icon, color_scheme, route_path, license_type, etc.
+  Status: Available but not used (design decision for simplicity)
+
+
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ConexGrow's module and permission architecture is:
+
+1. WELL-DESIGNED
+   - Clear two-tier system (platform vs business)
+   - Appropriate use of string codes for modules
+   - Scalable to thousands of permissions
+
+2. PRODUCTION-READY
+   - All core functionality implemented
+   - Security and audit trails in place
+   - Recent enhancements for compliance
+
+3. FLEXIBLE
+   - Can add new permissions without code changes
+   - Optional metadata for future enhancements
+   - Supports temporary assignments and scoping
+
+4. MULTI-TENANT FROM GROUND UP
+   - Physical isolation in Tenants DB
+   - Flexible scoping in Manager DB
+   - Complete per-tenant customization
+
+═════════════════════════════════════════════════════════════════════════════════
+
+Document generated: 2025-10-26
+Status: Complete Analysis
+For detailed information, see: MODULE_ARCHITECTURE_ANALYSIS.md
+

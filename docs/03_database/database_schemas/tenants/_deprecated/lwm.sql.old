@@ -1,0 +1,228 @@
+-- ============================================================================
+-- Logistics & WMS Schema (lwm)
+-- ============================================================================
+-- Description: 물류/창고 관리 (Logistics & WMS)
+-- Database: tnnt (Tenant Database)
+-- Schema: lwm
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS lwm;
+
+COMMENT ON SCHEMA lwm IS 'LWM: 물류/창고 관리 스키마';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- LWM: 물류/창고 관리 (Logistics & WMS)
+-- ============================================================================
+
+-- =====================================================================================
+-- 테이블: lwm.goods_receipts
+-- 설명: 입고 헤더 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+CREATE TABLE lwm.goods_receipts (
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 입고 고유 식별자
+    created_at              TIMESTAMPTZ              DEFAULT CURRENT_TIMESTAMP,                 -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMPTZ,                                                        -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gr_code                 VARCHAR(50)              NOT NULL,                                  -- 입고 코드
+    doc_date                DATE                     NOT NULL,                                  -- 전표 일자
+    -- 참조 정보
+    po_id                   UUID,                                                               -- 구매발주 식별자
+    vendor_id               UUID,                                                               -- 공급업체 식별자
+    warehouse_id            UUID                     NOT NULL,                                  -- 창고 식별자
+    receiver_id             UUID,                                                               -- 입고 담당자 식별자
+    
+    -- 수량 정보
+    total_qty               INTEGER                  DEFAULT 0,                                 -- 총 수량
+    
+    -- 상태 관리
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',                           -- 상태 (DRAFT/CONFIRMED/COMPLETED/CANCELLED)
+    is_deleted              BOOLEAN                  DEFAULT false,                             -- 논리 삭제 플래그
+    
+    CONSTRAINT uk_lwm_goods_receipts__code UNIQUE (gr_code)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_receipt_lines
+-- 설명: 입고 라인 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+CREATE TABLE lwm.goods_receipt_lines (
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 입고 라인 고유 식별자
+    created_at              TIMESTAMPTZ              DEFAULT CURRENT_TIMESTAMP,                 -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMPTZ,                                                        -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gr_id                   UUID                     NOT NULL,                                  -- 입고 헤더 식별자
+    line_no                 INTEGER                  NOT NULL,                                  -- 라인 번호
+    po_line_id              UUID,                                                               -- 구매발주 라인 식별자
+    item_id                 UUID                     NOT NULL,                                  -- 제품 식별자
+    location_id             UUID,                                                               -- 로케이션 식별자
+    
+    -- 로트/시리얼 정보
+    lot_number              VARCHAR(100),                                                       -- 로트 번호
+    serial_number           VARCHAR(100),                                                       -- 시리얼 번호
+    
+    -- 수량 정보
+    ordered_qty             INTEGER                  DEFAULT 0,                                 -- 발주 수량
+    received_qty            INTEGER                  NOT NULL,                                  -- 입고 수량
+    rejected_qty            INTEGER                  DEFAULT 0,                                 -- 불량 수량
+    
+    -- 원가 정보
+    unit_cost               NUMERIC(18,4)            DEFAULT 0,                                 -- 단가
+    
+    CONSTRAINT uk_lwm_gr_lines__gr_line UNIQUE (gr_id, line_no)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_issues
+-- 설명: 출고 헤더 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+CREATE TABLE lwm.goods_issues (
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 출고 고유 식별자
+    created_at              TIMESTAMPTZ              DEFAULT CURRENT_TIMESTAMP,                 -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMPTZ,                                                        -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gi_code                 VARCHAR(50)              NOT NULL,                                  -- 출고 코드
+    doc_date                DATE                     NOT NULL,                                  -- 전표 일자
+    -- 참조 정보
+    so_id                   UUID,                                                               -- 판매주문 식별자
+    customer_id             UUID,                                                               -- 고객 식별자
+    warehouse_id            UUID                     NOT NULL,                                  -- 창고 식별자
+    picker_id               UUID,                                                               -- 피킹 담당자 식별자
+    
+    -- 수량 정보
+    total_qty               INTEGER                  DEFAULT 0,                                 -- 총 수량
+    
+    -- 상태 관리
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',                           -- 상태 (DRAFT/CONFIRMED/COMPLETED/CANCELLED)
+    is_deleted              BOOLEAN                  DEFAULT false,                             -- 논리 삭제 플래그
+    
+    CONSTRAINT uk_lwm_goods_issues__code UNIQUE (gi_code)
+);
+
+-- =====================================================================================
+-- 테이블: lwm.goods_issue_lines
+-- 설명: 출고 라인 관리 테이블
+-- 작성일: 2024-10-20
+-- =====================================================================================
+CREATE TABLE lwm.goods_issue_lines (
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),    -- 출고 라인 고유 식별자
+    created_at              TIMESTAMPTZ              DEFAULT CURRENT_TIMESTAMP,                 -- 등록 일시
+    created_by              UUID,                                                               -- 등록자 UUID
+    updated_at              TIMESTAMPTZ,                                                        -- 수정 일시
+    updated_by              UUID,                                                               -- 수정자 UUID
+    
+    -- 기본 정보
+    gi_id                   UUID                     NOT NULL,                                  -- 출고 헤더 식별자
+    line_no                 INTEGER                  NOT NULL,                                  -- 라인 번호
+    so_line_id              UUID,                                                               -- 판매주문 라인 식별자
+    item_id                 UUID                     NOT NULL,                                  -- 제품 식별자
+    location_id             UUID,                                                               -- 로케이션 식별자
+    
+    -- 로트/시리얼 정보
+    lot_number              VARCHAR(100),                                                       -- 로트 번호
+    serial_number           VARCHAR(100),                                                       -- 시리얼 번호
+    
+    -- 수량 정보
+    requested_qty           INTEGER                  DEFAULT 0,                                 -- 요청 수량
+    picked_qty              INTEGER                  NOT NULL,                                  -- 피킹 수량
+    
+    CONSTRAINT uk_lwm_gi_lines__gi_line UNIQUE (gi_id, line_no)
+);
+-- ============================================================================
+-- LWM 스키마 인덱스 및 제약조건 추가
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_lwm_workflows_created_at ON lwm.workflows(created_at);
+CREATE INDEX IF NOT EXISTS idx_lwm_approvals_created_at ON lwm.approvals(created_at);
+
+COMMENT ON SCHEMA lwm IS '워크플로우/결재 관리 스키마';
+
+-- ============================================================================
+-- LWM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 입고 테이블
+COMMENT ON TABLE lwm.goods_receipts IS '자재/제품 입고 관리 테이블';
+COMMENT ON COLUMN lwm.goods_receipts.id IS '입고 고유 식별자';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_number IS '입고 번호';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_date IS '입고 일자';
+COMMENT ON COLUMN lwm.goods_receipts.receipt_type IS '입고 유형 (구매입고, 생산입고, 반품입고, 이동입고)';
+COMMENT ON COLUMN lwm.goods_receipts.warehouse_id IS '입고 창고 ID';
+COMMENT ON COLUMN lwm.goods_receipts.supplier_id IS '공급업체 ID (구매입고인 경우)';
+COMMENT ON COLUMN lwm.goods_receipts.purchase_order_id IS '구매발주 ID';
+COMMENT ON COLUMN lwm.goods_receipts.status IS '입고 상태 (예정, 진행중, 완료, 취소)';
+COMMENT ON COLUMN lwm.goods_receipts.inspection_status IS '검수 상태 (미검수, 검수중, 합격, 불합격)';
+COMMENT ON COLUMN lwm.goods_receipts.remarks IS '비고';
+COMMENT ON COLUMN lwm.goods_receipts.created_at IS '생성일시';
+COMMENT ON COLUMN lwm.goods_receipts.created_by IS '생성자 ID';
+COMMENT ON COLUMN lwm.goods_receipts.updated_at IS '수정일시';
+COMMENT ON COLUMN lwm.goods_receipts.updated_by IS '수정자 ID';
+
+-- 입고 상세 테이블
+COMMENT ON TABLE lwm.goods_receipt_lines IS '입고 상세 라인 테이블';
+COMMENT ON COLUMN lwm.goods_receipt_lines.id IS '입고 라인 고유 식별자';
+COMMENT ON COLUMN lwm.goods_receipt_lines.receipt_id IS '입고 ID - goods_receipts 테이블 참조';
+COMMENT ON COLUMN lwm.goods_receipt_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN lwm.goods_receipt_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN lwm.goods_receipt_lines.ordered_quantity IS '발주 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.received_quantity IS '입고 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.rejected_quantity IS '불량 수량';
+COMMENT ON COLUMN lwm.goods_receipt_lines.unit_price IS '단가';
+COMMENT ON COLUMN lwm.goods_receipt_lines.amount IS '금액';
+COMMENT ON COLUMN lwm.goods_receipt_lines.location IS '보관 위치';
+COMMENT ON COLUMN lwm.goods_receipt_lines.lot_number IS '로트 번호';
+COMMENT ON COLUMN lwm.goods_receipt_lines.expiry_date IS '유효기간';
+COMMENT ON COLUMN lwm.goods_receipt_lines.created_at IS '생성일시';
+
+-- 출고 테이블
+COMMENT ON TABLE lwm.goods_issues IS '자재/제품 출고 관리 테이블';
+COMMENT ON COLUMN lwm.goods_issues.id IS '출고 고유 식별자';
+COMMENT ON COLUMN lwm.goods_issues.issue_number IS '출고 번호';
+COMMENT ON COLUMN lwm.goods_issues.issue_date IS '출고 일자';
+COMMENT ON COLUMN lwm.goods_issues.issue_type IS '출고 유형 (판매출고, 생산출고, 이동출고, 폐기)';
+COMMENT ON COLUMN lwm.goods_issues.warehouse_id IS '출고 창고 ID';
+COMMENT ON COLUMN lwm.goods_issues.customer_id IS '고객 ID (판매출고인 경우)';
+COMMENT ON COLUMN lwm.goods_issues.sales_order_id IS '판매주문 ID';
+COMMENT ON COLUMN lwm.goods_issues.status IS '출고 상태 (예정, 진행중, 완료, 취소)';
+COMMENT ON COLUMN lwm.goods_issues.remarks IS '비고';
+COMMENT ON COLUMN lwm.goods_issues.created_at IS '생성일시';
+COMMENT ON COLUMN lwm.goods_issues.created_by IS '생성자 ID';
+COMMENT ON COLUMN lwm.goods_issues.updated_at IS '수정일시';
+COMMENT ON COLUMN lwm.goods_issues.updated_by IS '수정자 ID';
+
+-- 출고 상세 테이블
+COMMENT ON TABLE lwm.goods_issue_lines IS '출고 상세 라인 테이블';
+COMMENT ON COLUMN lwm.goods_issue_lines.id IS '출고 라인 고유 식별자';
+COMMENT ON COLUMN lwm.goods_issue_lines.issue_id IS '출고 ID - goods_issues 테이블 참조';
+COMMENT ON COLUMN lwm.goods_issue_lines.line_number IS '라인 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.item_id IS '품목 ID';
+COMMENT ON COLUMN lwm.goods_issue_lines.ordered_quantity IS '주문 수량';
+COMMENT ON COLUMN lwm.goods_issue_lines.issued_quantity IS '출고 수량';
+COMMENT ON COLUMN lwm.goods_issue_lines.unit_price IS '단가';
+COMMENT ON COLUMN lwm.goods_issue_lines.amount IS '금액';
+COMMENT ON COLUMN lwm.goods_issue_lines.location IS '피킹 위치';
+COMMENT ON COLUMN lwm.goods_issue_lines.lot_number IS '로트 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.serial_number IS '시리얼 번호';
+COMMENT ON COLUMN lwm.goods_issue_lines.created_at IS '생성일시';

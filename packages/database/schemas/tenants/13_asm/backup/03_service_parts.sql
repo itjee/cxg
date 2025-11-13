@@ -1,0 +1,233 @@
+CREATE TABLE IF NOT EXISTS asm.service_parts 
+(
+    -- 기본 식별자 및 감사 필드
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),              -- 부품 사용 고유 식별자 (UUID)
+    created_at              TIMESTAMP                WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 등록 일시
+    created_by              UUID,                                                                        -- 등록자 UUID
+    updated_at              TIMESTAMP                WITH TIME ZONE,                                     -- 수정 일시
+    updated_by              UUID,                                                                        -- 수정자 UUID
+    
+    -- 부품 사용 기본 정보
+    service_request_id      UUID                     NOT NULL,                                           -- A/S 요청 식별자
+    product_id              UUID                     NOT NULL,                                           -- 부품(제품) 식별자
+    
+    -- 부품 정보
+    part_name               VARCHAR(200),                                                                -- 부품명 -- 추가
+    part_code               VARCHAR(50),                                                                 -- 부품 코드 -- 추가
+    serial_number           VARCHAR(100),                                                                -- 부품 시리얼 번호 -- 추가
+    
+    -- 수량 및 가격
+    qty                     INTEGER                  NOT NULL,                                           -- 사용 수량
+    unit_cost               NUMERIC(18,4)            NOT NULL,                                           -- 부품 단가
+    total_cost              NUMERIC(18,4)            NOT NULL,                                           -- 총 비용 (단가 × 수량)
+    
+    -- 부품 상태
+    part_condition          VARCHAR(20),                                                                 -- 부품 상태 (NEW/REFURBISHED/USED) -- 추가
+    warranty_months         INTEGER,                                                                     -- 부품 보증 개월수 -- 추가
+    
+    -- 비고
+    notes                   TEXT,                                                                        -- 비고 -- 추가
+    
+    -- 상태 관리
+    is_deleted              BOOLEAN                  DEFAULT false,                                      -- 논리 삭제 플래그
+    
+    -- 제약조건
+    -- 수량 양수 체크 (1개 이상)
+    CONSTRAINT ck_service_parts__qty                CHECK (qty > 0),
+    -- 비용 양수 체크
+    CONSTRAINT ck_service_parts__costs              CHECK (unit_cost >= 0 AND total_cost >= 0),
+    -- 부품 상태 체크 (NEW: 신품, REFURBISHED: 리퍼, USED: 중고)
+    CONSTRAINT ck_service_parts__part_condition     CHECK (part_condition IS NULL OR part_condition IN ('NEW', 'REFURBISHED', 'USED')),
+    -- 보증 개월수 양수 체크
+    CONSTRAINT ck_service_parts__warranty_months    CHECK (warranty_months IS NULL OR warranty_months >= 0)
+);
+
+COMMENT ON TABLE  asm.service_parts                              IS 'A/S 작업시 사용된 부품 내역 관리 테이블';
+COMMENT ON COLUMN asm.service_parts.id                           IS '부품 사용 고유 식별자 (UUID)';
+COMMENT ON COLUMN asm.service_parts.created_at                   IS '등록 일시';
+COMMENT ON COLUMN asm.service_parts.created_by                   IS '등록자 UUID';
+COMMENT ON COLUMN asm.service_parts.updated_at                   IS '수정 일시';
+COMMENT ON COLUMN asm.service_parts.updated_by                   IS '수정자 UUID';
+COMMENT ON COLUMN asm.service_parts.service_request_id           IS 'A/S 요청 식별자';
+COMMENT ON COLUMN asm.service_parts.product_id                   IS '부품(제품) 식별자';
+COMMENT ON COLUMN asm.service_parts.part_name                    IS '부품명';
+COMMENT ON COLUMN asm.service_parts.part_code                    IS '부품 코드';
+COMMENT ON COLUMN asm.service_parts.serial_number                IS '부품 시리얼 번호';
+COMMENT ON COLUMN asm.service_parts.qty                          IS '사용 수량';
+COMMENT ON COLUMN asm.service_parts.unit_cost                    IS '부품 단가';
+COMMENT ON COLUMN asm.service_parts.total_cost                   IS '총 비용 (단가 × 수량)';
+COMMENT ON COLUMN asm.service_parts.part_condition               IS '부품 상태 (NEW: 신품/REFURBISHED: 리퍼/USED: 중고)';
+COMMENT ON COLUMN asm.service_parts.warranty_months              IS '부품 보증 개월수';
+COMMENT ON COLUMN asm.service_parts.notes                        IS '비고';
+COMMENT ON COLUMN asm.service_parts.is_deleted                   IS '논리 삭제 플래그';
+
+-- =====================================================================================
+-- 인덱스
+-- =====================================================================================
+
+-- service_requests 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_requests__sr_code
+    ON asm.service_requests (sr_code)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__sr_code IS 'A/S 요청 코드 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__customer_id
+    ON asm.service_requests (customer_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__customer_id IS '고객별 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__product_id
+    ON asm.service_requests (product_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__product_id IS '제품별 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__assigned_technician_id
+    ON asm.service_requests (assigned_technician_id)
+ WHERE assigned_technician_id IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__assigned_technician_id IS '기술자별 배정된 A/S 요청 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__status
+    ON asm.service_requests (status, created_at DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__status IS 'A/S 요청 상태별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__service_type
+    ON asm.service_requests (service_type)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__service_type IS 'A/S 유형별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__priority
+    ON asm.service_requests (priority, status)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__priority IS 'A/S 우선순위 및 상태별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__is_warranty
+    ON asm.service_requests (is_warranty)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__is_warranty IS '보증기간 여부별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__created_at
+    ON asm.service_requests (created_at DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__created_at IS 'A/S 요청 등록일시 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__completed_at
+    ON asm.service_requests (completed_at DESC)
+ WHERE completed_at IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__completed_at IS 'A/S 요청 완료일시 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__serial_number
+    ON asm.service_requests (serial_number)
+ WHERE serial_number IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__serial_number IS '시리얼 번호별 A/S 이력 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_requests__scheduled_date
+    ON asm.service_requests (scheduled_date)
+ WHERE scheduled_date IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX asm.ix_service_requests__scheduled_date IS '예약 작업일별 조회 인덱스';
+
+-- service_works 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_works__service_request_id
+    ON asm.service_works (service_request_id, work_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_works__service_request_id IS 'A/S 요청별 작업 내역 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__technician_id
+    ON asm.service_works (technician_id, work_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_works__technician_id IS '기술자별 작업 내역 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__work_date
+    ON asm.service_works (work_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_works__work_date IS '작업일자별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__status
+    ON asm.service_works (status, work_date DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_works__status IS '작업 상태별 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_works__created_at
+    ON asm.service_works (created_at DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_works__created_at IS '작업 등록일시 조회 인덱스';
+
+-- service_parts 테이블 인덱스
+CREATE INDEX IF NOT EXISTS ix_service_parts__service_request_id
+    ON asm.service_parts (service_request_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_parts__service_request_id IS 'A/S 요청별 사용 부품 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_parts__product_id
+    ON asm.service_parts (product_id)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_parts__product_id IS '부품별 사용 이력 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_parts__created_at
+    ON asm.service_parts (created_at DESC)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ix_service_parts__created_at IS '부품 사용 등록일시 조회 인덱스';
+
+CREATE INDEX IF NOT EXISTS ix_service_parts__part_code
+    ON asm.service_parts (part_code)
+ WHERE part_code IS NOT NULL
+   AND is_deleted = false;
+COMMENT ON INDEX asm.ix_service_parts__part_code IS '부품 코드별 사용 이력 조회 인덱스';
+
+-- =====================================================================================
+-- 유니크 제약 조건 (Unique Index)
+-- =====================================================================================
+
+-- A/S 요청 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_service_requests__code
+    ON asm.service_requests (sr_code)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ux_service_requests__code IS 'A/S 요청 코드 유니크 제약 (삭제되지 않은 데이터만)';
+
+-- 지원 티켓 코드 유니크
+CREATE UNIQUE INDEX IF NOT EXISTS ux_support_tickets__code
+    ON asm.support_tickets (ticket_code)
+ WHERE is_deleted = false;
+COMMENT ON INDEX asm.ux_support_tickets__code IS '지원 티켓 코드 유니크 제약';
+
+-- =====================================================================================
+-- 외래키 제약 조건
+-- =====================================================================================
+
+-- service_works 테이블 외래키
+-- A/S 요청 참조 외래키 (A/S 요청 삭제 시 작업 내역도 함께 삭제)
+ALTER TABLE asm.service_works ADD CONSTRAINT fk_service_works__service_request_id
+    FOREIGN KEY (service_request_id) REFERENCES asm.service_requests(id) ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_service_works__service_request_id ON asm.service_works IS 'A/S 요청 참조 외래키 (CASCADE 삭제)';
+
+-- service_parts 테이블 외래키
+-- A/S 요청 참조 외래키 (A/S 요청 삭제 시 부품 내역도 함께 삭제)
+ALTER TABLE asm.service_parts ADD CONSTRAINT fk_service_parts__service_request_id
+    FOREIGN KEY (service_request_id) REFERENCES asm.service_requests(id) ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_service_parts__service_request_id ON asm.service_parts IS 'A/S 요청 참조 외래키 (CASCADE 삭제)';
+
+-- ticket_comments 테이블 외래키
+-- 지원 티켓 참조 외래키 (티켓 삭제 시 댓글도 함께 삭제)
+ALTER TABLE asm.ticket_comments ADD CONSTRAINT fk_ticket_comments__ticket_id
+    FOREIGN KEY (ticket_id) REFERENCES asm.support_tickets(id) ON DELETE CASCADE;
+COMMENT ON CONSTRAINT fk_ticket_comments__ticket_id ON asm.ticket_comments IS '지원 티켓 참조 외래키 (CASCADE 삭제)';
+
+-- support_tickets 테이블 외래키
+-- A/S 요청 연계 외래키 (A/S 요청 삭제 시 연계 정보만 NULL로 설정)
+ALTER TABLE asm.support_tickets ADD CONSTRAINT fk_support_tickets__linked_service_request_id
+    FOREIGN KEY (linked_service_request_id) REFERENCES asm.service_requests(id) ON DELETE SET NULL;
+COMMENT ON CONSTRAINT fk_support_tickets__linked_service_request_id ON asm.support_tickets IS 'A/S 요청 연계 외래키 (SET NULL)';
+
+-- =====================================================================================
+-- 고객 지원 관리 (Customer Support Management - from CSM)
+-- =====================================================================================
+-- 통합일: 2025-01-20
+-- 사유: 고객 서비스팀에서 문의/지원과 A/S를 함께 관리
+-- =====================================================================================
+-- 설명: 고객 문의 및 지원 티켓을 관리하는 테이블 (기술지원, 제품문의, 불만사항)
+-- 작성일: 2025-01-20
+-- =====================================================================================

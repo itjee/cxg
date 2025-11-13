@@ -1,0 +1,892 @@
+-- ============================================================================
+-- System Configuration Schema (sys)
+-- ============================================================================
+-- Description: 시스템 설정 (코드 규칙, 시스템 설정, 권한)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: sys
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS sys;
+
+COMMENT ON SCHEMA sys IS 'SYS: 시스템 설정 스키마 (코드규칙, 설정)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- SYS: 시스템 관리 (System Management)
+-- 시스템 전반의 사용자, 권한, 역할 관리를 담당하는 스키마
+-- ============================================================================
+
+-- 시스템 사용자 (테넌트별)
+-- 각 테넌트의 사용자 계정 정보를 관리하는 테이블
+CREATE TABLE sys.users 
+(
+    -- 공통 필드 (모든 테이블 공통)
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 사용자 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,  -- 레코드 생성 일시
+    created_by UUID,  -- 레코드 생성자 ID (users.id 참조, FK 없음)
+    updated_at TIMESTAMPTZ,  -- 레코드 최종 수정 일시
+    updated_by UUID,  -- 레코드 최종 수정자 ID (users.id 참조, FK 없음)
+    
+    -- 테넌트/회사 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자 (멀티테넌시)
+    company_id UUID,  -- 소속 회사 ID (adm.companies.id 참조)
+    
+    -- 사용자 기본 정보
+    user_code VARCHAR(50) NOT NULL,  -- 사용자 코드 (테넌트 내 유니크)
+    username VARCHAR(100) NOT NULL,  -- 로그인 사용자명 (테넌트 내 유니크)
+    email VARCHAR(255) NOT NULL,  -- 이메일 주소 (테넌트 내 유니크)
+    password_hash VARCHAR(255) NOT NULL,  -- 암호화된 비밀번호
+    first_name VARCHAR(100),  -- 이름
+    last_name VARCHAR(100),  -- 성
+    phone VARCHAR(50),  -- 전화번호
+    
+    -- 조직 정보
+    department_id UUID,  -- 소속 부서 ID (adm.departments.id 참조)
+    position VARCHAR(100),  -- 직급/직책
+    role_id UUID,  -- 역할 ID (sys.roles.id 참조)
+    
+    -- 상태 정보
+    last_login_at TIMESTAMPTZ,  -- 마지막 로그인 일시
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태 (true: 활성, false: 비활성)
+    is_deleted BOOLEAN DEFAULT false,  -- 삭제 상태 (Soft Delete)
+    
+    -- 제약조건
+    CONSTRAINT uk_sys_users__tenant_username UNIQUE (tenant_id, username),
+    CONSTRAINT uk_sys_users__tenant_email UNIQUE (tenant_id, email),
+    CONSTRAINT uk_sys_users__tenant_user_code UNIQUE (tenant_id, user_code)
+);
+
+-- 테이블 주석
+COMMENT ON TABLE sys.users IS '시스템 사용자 정보를 관리하는 테이블. 각 테넌트별로 사용자 계정을 분리하여 관리';
+
+-- 컬럼 주석
+COMMENT ON COLUMN sys.users.id IS '사용자 고유 식별자 (UUID)';
+COMMENT ON COLUMN sys.users.tenant_id IS '테넌트 식별자 - 멀티테넌시 구현을 위한 필수 필드';
+COMMENT ON COLUMN sys.users.user_code IS '사용자 코드 - 테넌트 내에서 유니크한 사용자 식별 코드';
+COMMENT ON COLUMN sys.users.username IS '로그인 사용자명 - 로그인 시 사용하는 사용자명';
+COMMENT ON COLUMN sys.users.email IS '이메일 주소 - 사용자 식별 및 알림 발송용';
+COMMENT ON COLUMN sys.users.password_hash IS '암호화된 비밀번호 - bcrypt 등으로 해시화된 비밀번호';
+COMMENT ON COLUMN sys.users.is_active IS '활성 상태 - true: 로그인 가능, false: 로그인 불가';
+COMMENT ON COLUMN sys.users.is_deleted IS 'Soft Delete 플래그 - true: 삭제됨, false: 활성';
+
+-- 역할 관리
+-- 시스템 내 역할(Role) 정보를 정의하는 테이블
+CREATE TABLE sys.roles (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 역할 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 테넌트 정보
+    tenant_id UUID NOT NULL,  -- 테넌트 식별자
+    
+    -- 역할 정보
+    role_code VARCHAR(50) NOT NULL,  -- 역할 코드 (테넌트 내 유니크)
+    role_name VARCHAR(100) NOT NULL,  -- 역할명
+    description TEXT,  -- 역할 설명
+    is_system_role BOOLEAN DEFAULT false,  -- 시스템 기본 역할 여부
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태
+    is_deleted BOOLEAN DEFAULT false,  -- 삭제 상태
+    
+    CONSTRAINT uk_sys_roles__tenant_code UNIQUE (tenant_id, role_code)
+);
+
+COMMENT ON TABLE sys.roles IS '시스템 역할 정보를 관리하는 테이블. RBAC(Role-Based Access Control) 구현을 위한 역할 정의';
+COMMENT ON COLUMN sys.roles.role_code IS '역할 코드 - 테넌트 내에서 유니크한 역할 식별 코드';
+COMMENT ON COLUMN sys.roles.role_name IS '역할명 - 사용자에게 표시되는 역할 이름';
+COMMENT ON COLUMN sys.roles.is_system_role IS '시스템 기본 역할 여부 - true: 시스템 기본 역할(삭제 불가), false: 사용자 정의 역할';
+
+-- 권한 관리
+-- 시스템의 모든 권한을 정의하는 마스터 테이블
+CREATE TABLE sys.permissions (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 권한 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 권한 정보
+    permission_code VARCHAR(100) NOT NULL UNIQUE,  -- 권한 코드 (전체 시스템 유니크)
+    permission_name VARCHAR(200) NOT NULL,  -- 권한명
+    module_code VARCHAR(50) NOT NULL,  -- 모듈 코드 (ADM, PSM, SRM 등)
+    resource VARCHAR(100) NOT NULL,  -- 리소스명 (테이블명 또는 기능명)
+    action VARCHAR(50) NOT NULL,  -- 액션 (CREATE, READ, UPDATE, DELETE, APPROVE 등)
+    description TEXT,  -- 권한 설명
+    is_active BOOLEAN DEFAULT true  -- 활성 상태
+);
+
+COMMENT ON TABLE sys.permissions IS '시스템의 모든 권한을 정의하는 마스터 테이블. 모듈별 리소스에 대한 액션 권한 관리';
+COMMENT ON COLUMN sys.permissions.permission_code IS '권한 코드 - 전체 시스템에서 유니크한 권한 식별자 (예: ADM_USERS_CREATE)';
+COMMENT ON COLUMN sys.permissions.module_code IS '모듈 코드 - 권한이 속한 모듈 (ADM, PSM, SRM, IVM, LWM, CSM, ASM, FIM, BIM, COM, SYS)';
+COMMENT ON COLUMN sys.permissions.resource IS '리소스명 - 권한이 적용되는 대상 (테이블명, 화면명, 기능명 등)';
+COMMENT ON COLUMN sys.permissions.action IS '액션 - 리소스에 대한 작업 (CREATE, READ, UPDATE, DELETE, APPROVE, EXPORT 등)';
+
+-- 역할-권한 매핑
+-- 역할과 권한의 다대다 관계를 관리하는 테이블
+CREATE TABLE sys.role_permissions (
+    -- 공통 필드
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),  -- 매핑 고유 식별자
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    -- 매핑 정보
+    role_id UUID NOT NULL,  -- 역할 ID (sys.roles.id 참조)
+    permission_id UUID NOT NULL,  -- 권한 ID (sys.permissions.id 참조)
+    is_active BOOLEAN DEFAULT true,  -- 활성 상태
+    
+    CONSTRAINT uk_sys_role_permissions__role_permission UNIQUE (role_id, permission_id)
+);
+
+COMMENT ON TABLE sys.role_permissions IS '역할과 권한의 매핑 테이블. RBAC 구현을 위한 역할별 권한 할당 관리';
+COMMENT ON COLUMN sys.role_permissions.role_id IS '역할 ID - sys.roles 테이블 참조';
+COMMENT ON COLUMN sys.role_permissions.permission_id IS '권한 ID - sys.permissions 테이블 참조';
+
+-- ============================================================================
+-- ============================================================================
+-- sys 스키마 테이블 인덱스 및 제약조건 추가
+-- ============================================================================
+
+-- ============================================================================
+-- sys.users 테이블
+-- ============================================================================
+
+-- 인덱스
+CREATE INDEX IF NOT EXISTS idx_sys_users_tenant_id ON sys.users(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sys_users_company_id ON sys.users(company_id) WHERE company_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sys_users_department_id ON sys.users(department_id) WHERE department_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sys_users_role_id ON sys.users(role_id) WHERE role_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sys_users_email ON sys.users(email);
+CREATE INDEX IF NOT EXISTS idx_sys_users_username ON sys.users(username);
+CREATE INDEX IF NOT EXISTS idx_sys_users_user_code ON sys.users(user_code);
+CREATE INDEX IF NOT EXISTS idx_sys_users_is_active ON sys.users(is_active);
+CREATE INDEX IF NOT EXISTS idx_sys_users_is_deleted ON sys.users(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_sys_users_created_at ON sys.users(created_at);
+CREATE INDEX IF NOT EXISTS idx_sys_users_last_login_at ON sys.users(last_login_at) WHERE last_login_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sys_users_tenant_active ON sys.users(tenant_id, is_active) WHERE is_deleted = false;
+
+-- 외래키
+ALTER TABLE sys.users DROP CONSTRAINT IF EXISTS fk_sys_users_role_id;
+ALTER TABLE sys.users ADD CONSTRAINT fk_sys_users_role_id FOREIGN KEY (role_id) REFERENCES sys.roles(id) ON DELETE SET NULL;
+
+-- CHECK 제약조건
+ALTER TABLE sys.users DROP CONSTRAINT IF EXISTS chk_sys_users_email_format;
+ALTER TABLE sys.users ADD CONSTRAINT chk_sys_users_email_format CHECK (email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
+
+ALTER TABLE sys.users DROP CONSTRAINT IF EXISTS chk_sys_users_phone_format;
+ALTER TABLE sys.users ADD CONSTRAINT chk_sys_users_phone_format CHECK (phone IS NULL OR phone ~ '^\+?[0-9\-\(\) ]{8,20}$');
+
+-- ============================================================================
+-- sys.roles 테이블
+-- ============================================================================
+
+-- 인덱스
+CREATE INDEX IF NOT EXISTS idx_sys_roles_tenant_id ON sys.roles(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_role_code ON sys.roles(role_code);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_is_active ON sys.roles(is_active);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_is_deleted ON sys.roles(is_deleted);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_is_system_role ON sys.roles(is_system_role);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_created_at ON sys.roles(created_at);
+CREATE INDEX IF NOT EXISTS idx_sys_roles_tenant_active ON sys.roles(tenant_id, is_active) WHERE is_deleted = false;
+
+-- CHECK 제약조건
+ALTER TABLE sys.roles DROP CONSTRAINT IF EXISTS chk_sys_roles_role_code_format;
+ALTER TABLE sys.roles ADD CONSTRAINT chk_sys_roles_role_code_format CHECK (role_code ~ '^[A-Z0-9_]+$');
+
+ALTER TABLE sys.roles DROP CONSTRAINT IF EXISTS chk_sys_roles_role_name_length;
+ALTER TABLE sys.roles ADD CONSTRAINT chk_sys_roles_role_name_length CHECK (char_length(role_name) >= 2);
+
+-- ============================================================================
+-- sys.permissions 테이블
+-- ============================================================================
+
+-- 인덱스
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_permission_code ON sys.permissions(permission_code);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_module_code ON sys.permissions(module_code);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_resource ON sys.permissions(resource);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_action ON sys.permissions(action);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_is_active ON sys.permissions(is_active);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_created_at ON sys.permissions(created_at);
+CREATE INDEX IF NOT EXISTS idx_sys_permissions_module_resource ON sys.permissions(module_code, resource);
+
+-- CHECK 제약조건
+ALTER TABLE sys.permissions DROP CONSTRAINT IF EXISTS chk_sys_permissions_permission_code_format;
+ALTER TABLE sys.permissions ADD CONSTRAINT chk_sys_permissions_permission_code_format CHECK (permission_code ~ '^[A-Z0-9_]+$');
+
+ALTER TABLE sys.permissions DROP CONSTRAINT IF EXISTS chk_sys_permissions_module_code_valid;
+ALTER TABLE sys.permissions ADD CONSTRAINT chk_sys_permissions_module_code_valid 
+    CHECK (module_code IN ('ADM', 'ASM', 'BIM', 'COM', 'CSM', 'FIM', 'IVM', 'LWM', 'PSM', 'SRM', 'SYS'));
+
+ALTER TABLE sys.permissions DROP CONSTRAINT IF EXISTS chk_sys_permissions_action_valid;
+ALTER TABLE sys.permissions ADD CONSTRAINT chk_sys_permissions_action_valid 
+    CHECK (action IN ('CREATE', 'READ', 'UPDATE', 'DELETE', 'APPROVE', 'REJECT', 'EXPORT', 'IMPORT', 'EXECUTE'));
+
+-- ============================================================================
+-- sys.role_permissions 테이블
+-- ============================================================================
+
+-- 인덱스
+CREATE INDEX IF NOT EXISTS idx_sys_role_permissions_role_id ON sys.role_permissions(role_id);
+CREATE INDEX IF NOT EXISTS idx_sys_role_permissions_permission_id ON sys.role_permissions(permission_id);
+CREATE INDEX IF NOT EXISTS idx_sys_role_permissions_is_active ON sys.role_permissions(is_active);
+CREATE INDEX IF NOT EXISTS idx_sys_role_permissions_created_at ON sys.role_permissions(created_at);
+
+-- 외래키
+ALTER TABLE sys.role_permissions DROP CONSTRAINT IF EXISTS fk_sys_role_permissions_role_id;
+ALTER TABLE sys.role_permissions ADD CONSTRAINT fk_sys_role_permissions_role_id 
+    FOREIGN KEY (role_id) REFERENCES sys.roles(id) ON DELETE CASCADE;
+
+ALTER TABLE sys.role_permissions DROP CONSTRAINT IF EXISTS fk_sys_role_permissions_permission_id;
+ALTER TABLE sys.role_permissions ADD CONSTRAINT fk_sys_role_permissions_permission_id 
+    FOREIGN KEY (permission_id) REFERENCES sys.permissions(id) ON DELETE CASCADE;
+
+-- ============================================================================
+-- 인덱스 및 제약조건 주석
+-- ============================================================================
+
+COMMENT ON INDEX idx_sys_users_tenant_id IS '테넌트별 사용자 조회 최적화';
+COMMENT ON INDEX idx_sys_users_tenant_active IS '활성 사용자 조회 최적화 (Partial Index)';
+COMMENT ON INDEX idx_sys_users_email IS '이메일 검색 인덱스';
+
+COMMENT ON INDEX idx_sys_roles_tenant_id IS '테넌트별 역할 조회 최적화';
+COMMENT ON INDEX idx_sys_roles_tenant_active IS '활성 역할 조회 최적화';
+
+COMMENT ON INDEX idx_sys_permissions_module_code IS '모듈별 권한 조회 최적화';
+COMMENT ON INDEX idx_sys_permissions_module_resource IS '모듈-리소스 복합 조회 최적화';
+
+COMMENT ON INDEX idx_sys_role_permissions_role_id IS '역할별 권한 조회 최적화';
+COMMENT ON INDEX idx_sys_role_permissions_permission_id IS '권한별 역할 조회 최적화';
+
+
+-- 코드 규칙 관리 (Code Rules)
+-- ============================================================================
+
+-- ============================================================================
+-- 코드 규칙 관리 테이블 (Code Rules Management)
+-- ============================================================================
+-- 설명: 엔티티별 자동 생성 코드의 Prefix와 일련번호를 관리하는 테이블
+-- 데이터베이스: tnnt_db (Tenant Database)
+-- 스키마: sys (시스템 관리)
+-- 생성일: 2024-10-20
+-- ============================================================================
+
+-- 테이블 생성
+CREATE TABLE IF NOT EXISTS sys_code_rules (
+    -- 기본키
+    id                  BIGSERIAL PRIMARY KEY,
+    
+    -- 엔티티 정보
+    entity_name         VARCHAR(100) NOT NULL,              -- 엔티티명 (예: 거래처, 제품, 창고)
+    entity_code         VARCHAR(50) NOT NULL UNIQUE,        -- 엔티티 코드 (예: PARTNER, PRODUCT, WAREHOUSE)
+    
+    -- 코드 규칙
+    prefix              CHAR(3) NOT NULL,                   -- 코드 Prefix (3자리 영문 대문자, 예: MCO, MPT, MWH)
+    current_number      INTEGER NOT NULL DEFAULT 0,         -- 현재 일련번호 (다음 발급될 번호)
+    digit_length        SMALLINT NOT NULL DEFAULT 4,        -- 일련번호 자릿수 (2-10)
+    
+    -- 추가 정보
+    description         VARCHAR(500),                       -- 설명
+    example_code        VARCHAR(20),                        -- 예시 코드 (자동 생성)
+    
+    -- 상태 관리
+    status              VARCHAR(20) NOT NULL DEFAULT 'active',  -- 상태 (active: 활성, inactive: 비활성)
+    
+    -- 감사 정보
+    created_by          BIGINT,                             -- 생성자 ID
+    created_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 생성일시
+    updated_by          BIGINT,                             -- 수정자 ID
+    updated_at          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 수정일시
+    
+    -- 제약 조건
+    CONSTRAINT chk_prefix_format CHECK (prefix ~ '^[A-Z]{3}$'),  -- Prefix는 3자리 영문 대문자만
+    CONSTRAINT chk_digit_length CHECK (digit_length BETWEEN 2 AND 10),  -- 자릿수는 2-10
+    CONSTRAINT chk_current_number CHECK (current_number >= 0),  -- 일련번호는 0 이상
+    CONSTRAINT chk_status CHECK (status IN ('active', 'inactive'))  -- 상태값 제한
+);
+
+-- 코멘트 추가
+COMMENT ON TABLE sys_code_rules IS '엔티티별 코드 자동 생성 규칙 관리 테이블';
+COMMENT ON COLUMN sys_code_rules.id IS '기본키';
+COMMENT ON COLUMN sys_code_rules.entity_name IS '엔티티명 (한글)';
+COMMENT ON COLUMN sys_code_rules.entity_code IS '엔티티 코드 (영문 대문자, UNIQUE)';
+COMMENT ON COLUMN sys_code_rules.prefix IS '코드 Prefix (3자리 영문 대문자)';
+COMMENT ON COLUMN sys_code_rules.current_number IS '현재 일련번호 (다음 발급될 번호)';
+COMMENT ON COLUMN sys_code_rules.digit_length IS '일련번호 자릿수 (2-10)';
+COMMENT ON COLUMN sys_code_rules.description IS '규칙 설명';
+COMMENT ON COLUMN sys_code_rules.example_code IS '코드 형식 예시';
+COMMENT ON COLUMN sys_code_rules.status IS '상태 (active/inactive)';
+COMMENT ON COLUMN sys_code_rules.created_by IS '생성자 사용자 ID';
+COMMENT ON COLUMN sys_code_rules.created_at IS '생성일시';
+COMMENT ON COLUMN sys_code_rules.updated_by IS '수정자 사용자 ID';
+COMMENT ON COLUMN sys_code_rules.updated_at IS '수정일시';
+
+-- 인덱스 생성
+CREATE INDEX idx_sys_code_rules_entity_code ON sys_code_rules(entity_code);
+CREATE INDEX idx_sys_code_rules_status ON sys_code_rules(status);
+CREATE INDEX idx_sys_code_rules_created_at ON sys_code_rules(created_at);
+
+-- Updated_at 자동 업데이트 트리거 함수
+CREATE OR REPLACE FUNCTION update_sys_code_rules_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Updated_at 자동 업데이트 트리거
+CREATE TRIGGER trg_sys_code_rules_updated_at
+    BEFORE UPDATE ON sys_code_rules
+    FOR EACH ROW
+    EXECUTE FUNCTION update_sys_code_rules_updated_at();
+
+-- ============================================================================
+-- 초기 데이터 삽입 (기본 엔티티)
+-- ============================================================================
+
+INSERT INTO sys_code_rules (entity_name, entity_code, prefix, current_number, digit_length, description, status) VALUES
+    ('회사', 'COMPANY', 'MCO', 0, 3, '회사 코드 자동 생성 (Master Company)', 'active'),
+    ('부서', 'DEPARTMENT', 'MDP', 0, 3, '부서 코드 자동 생성 (Master Department)', 'active'),
+    ('거래처', 'PARTNER', 'MBP', 0, 4, '거래처 코드 자동 생성 (Master Business Partner)', 'active'),
+    ('제품', 'PRODUCT', 'MPD', 0, 5, '제품 코드 자동 생성 (Master ProDuct)', 'active'),
+    ('창고', 'WAREHOUSE', 'MWH', 0, 2, '창고 코드 자동 생성 (Master Warehouse)', 'active'),
+    ('사원', 'EMPLOYEE', 'MEM', 0, 4, '사원 코드 자동 생성 (Master EMployee)', 'active')
+ON CONFLICT (entity_code) DO NOTHING;
+
+-- ============================================================================
+-- 코드 생성 함수
+-- ============================================================================
+
+-- 다음 코드 생성 및 일련번호 증가 함수
+CREATE OR REPLACE FUNCTION generate_next_code(p_entity_code VARCHAR)
+RETURNS VARCHAR AS $$
+DECLARE
+    v_prefix VARCHAR(2);
+    v_current_number INTEGER;
+    v_digit_length SMALLINT;
+    v_next_code VARCHAR(20);
+BEGIN
+    -- 코드 규칙 조회 및 일련번호 증가 (FOR UPDATE로 동시성 제어)
+    SELECT prefix, current_number + 1, digit_length
+    INTO v_prefix, v_current_number, v_digit_length
+    FROM sys_code_rules
+    WHERE entity_code = p_entity_code
+        AND status = 'active'
+    FOR UPDATE;
+    
+    -- 규칙이 없으면 에러
+    IF NOT FOUND THEN
+        RAISE EXCEPTION '코드 규칙을 찾을 수 없습니다: %', p_entity_code;
+    END IF;
+    
+    -- 일련번호 업데이트
+    UPDATE sys_code_rules
+    SET current_number = v_current_number
+    WHERE entity_code = p_entity_code;
+    
+    -- 코드 생성 (Prefix + 0으로 패딩된 번호)
+    v_next_code := v_prefix || LPAD(v_current_number::TEXT, v_digit_length, '0');
+    
+    RETURN v_next_code;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION generate_next_code(VARCHAR) IS '엔티티 코드를 받아 다음 코드를 생성하고 일련번호를 증가시키는 함수';
+
+-- 다음 코드 미리보기 함수 (일련번호 증가 없이)
+CREATE OR REPLACE FUNCTION preview_next_code(p_entity_code VARCHAR)
+RETURNS VARCHAR AS $$
+DECLARE
+    v_prefix VARCHAR(2);
+    v_next_number INTEGER;
+    v_digit_length SMALLINT;
+    v_preview_code VARCHAR(20);
+BEGIN
+    -- 코드 규칙 조회
+    SELECT prefix, current_number + 1, digit_length
+    INTO v_prefix, v_next_number, v_digit_length
+    FROM sys_code_rules
+    WHERE entity_code = p_entity_code
+        AND status = 'active';
+    
+    -- 규칙이 없으면 NULL 반환
+    IF NOT FOUND THEN
+        RETURN NULL;
+    END IF;
+    
+    -- 미리보기 코드 생성
+    v_preview_code := v_prefix || LPAD(v_next_number::TEXT, v_digit_length, '0');
+    
+    RETURN v_preview_code;
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION preview_next_code(VARCHAR) IS '엔티티 코드를 받아 다음 코드를 미리보기하는 함수 (일련번호 증가 안함)';
+
+-- 현재 번호 조회 함수
+CREATE OR REPLACE FUNCTION get_current_number(p_entity_code VARCHAR)
+RETURNS INTEGER AS $$
+DECLARE
+    v_current_number INTEGER;
+BEGIN
+    SELECT current_number
+    INTO v_current_number
+    FROM sys_code_rules
+    WHERE entity_code = p_entity_code
+        AND status = 'active';
+    
+    RETURN COALESCE(v_current_number, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+COMMENT ON FUNCTION get_current_number(VARCHAR) IS '엔티티 코드의 현재 일련번호를 조회하는 함수';
+
+-- ============================================================================
+-- 사용 예시
+-- ============================================================================
+/*
+-- 1. 다음 코드 생성 (일련번호 자동 증가)
+SELECT generate_next_code('PARTNER');  -- 결과: MBP0001
+
+-- 2. 다음 코드 미리보기 (일련번호 증가 안함)
+SELECT preview_next_code('PRODUCT');   -- 결과: MPD00001
+
+-- 3. 현재 번호 조회
+SELECT get_current_number('WAREHOUSE'); -- 결과: 0
+
+-- 4. 모든 코드 규칙 조회
+SELECT 
+    entity_name,
+    entity_code,
+    prefix,
+    current_number,
+    digit_length,
+    prefix || LPAD((current_number + 1)::TEXT, digit_length, '0') AS next_code,
+    status
+FROM sys_code_rules
+WHERE status = 'active'
+ORDER BY entity_code;
+
+-- 5. 코드 규칙 추가
+INSERT INTO sys_code_rules (entity_name, entity_code, prefix, current_number, digit_length, description)
+VALUES ('고객', 'CUSTOMER', 'CU', 0, 4, '고객 코드 자동 생성');
+
+-- 6. 코드 규칙 수정
+UPDATE sys_code_rules
+SET digit_length = 5,
+    description = '제품 코드 자동 생성 (5자리)'
+WHERE entity_code = 'PRODUCT';
+
+-- 7. 일련번호 초기화 (주의: 중복 코드 발생 가능)
+UPDATE sys_code_rules
+SET current_number = 0
+WHERE entity_code = 'PARTNER';
+
+-- 8. 코드 규칙 비활성화
+UPDATE sys_code_rules
+SET status = 'inactive'
+WHERE entity_code = 'OLD_ENTITY';
+*/
+
+-- ============================================================================
+-- 권한 설정 (필요시 사용)
+-- ============================================================================
+-- GRANT SELECT, INSERT, UPDATE ON sys_code_rules TO tenant_app_user;
+-- GRANT USAGE, SELECT ON SEQUENCE sys_code_rules_id_seq TO tenant_app_user;
+-- GRANT EXECUTE ON FUNCTION generate_next_code(VARCHAR) TO tenant_app_user;
+-- GRANT EXECUTE ON FUNCTION preview_next_code(VARCHAR) TO tenant_app_user;
+-- GRANT EXECUTE ON FUNCTION get_current_number(VARCHAR) TO tenant_app_user;
+
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- tbs_cldr_mst
+CREATE TABLE IF NOT EXISTS tbs_cldr_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cldr_dt CHAR(8) NOT NULL,
+  cldr_yy CHAR(4) NOT NULL,
+  cldr_mm CHAR(2) NOT NULL,
+  cldr_dd CHAR(2) NOT NULL,
+  cldr_dw CHAR(3) NOT NULL,
+  cldr_wk INTEGER NOT NULL,
+  cldr_mw INTEGER NOT NULL,
+  hldy_yn CHAR(1) NOT NULL,
+  hldy_nm VARCHAR(50),
+  PRIMARY KEY (id)
+);
+
+-- tbs_clsf_mst
+CREATE TABLE IF NOT EXISTS tbs_clsf_mst (
+  id SERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_id INTEGER NOT NULL,
+  create_by VARCHAR(100) NOT NULL,
+  update_on TIMESTAMP,
+  update_id INTEGER,
+  update_by VARCHAR(100),
+  clsf_nm VARCHAR(200) NOT NULL,
+  sort_seq INTEGER,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_file_mst
+CREATE TABLE IF NOT EXISTS tbs_file_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  file_nm VARCHAR(200) NOT NULL,
+  file_name VARCHAR(200) NOT NULL,
+  file_path VARCHAR(200),
+  file_size DECIMAL(17, 2),
+  file_ext VARCHAR(10),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_hldy_mst
+CREATE TABLE IF NOT EXISTS tbs_hldy_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  hldy_dt CHAR(8) NOT NULL,
+  hldy_nm VARCHAR(50) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_lbry_mst
+CREATE TABLE IF NOT EXISTS tbs_lbry_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  lbry_nm VARCHAR(200) NOT NULL,
+  lbry_doc_tp CHAR(2) NOT NULL,
+  lbry_cat_tp CHAR(4) NOT NULL,
+  file_id INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_clsn_mon
+CREATE TABLE IF NOT EXISTS tss_clsn_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  clsn_tp CHAR(1) NOT NULL,
+  clsn_dt CHAR(8),
+  clsn_tm CHAR(4),
+  clsn_yn CHAR(1) NOT NULL,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tss_clsn_mon_log
+CREATE TABLE IF NOT EXISTS tss_clsn_mon_log (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8) NOT NULL,
+  clsn_ym CHAR(6) NOT NULL,
+  clsn_dt CHAR(8) NOT NULL,
+  mnth_tp CHAR(1) NOT NULL,
+  proc_st CHAR(1) NOT NULL,
+  message TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_code_mst
+CREATE TABLE IF NOT EXISTS tss_code_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  code_cd VARCHAR(50) NOT NULL,
+  code_nm VARCHAR(200),
+  parent_cd VARCHAR(50) NOT NULL,
+  max_length INTEGER NOT NULL,
+  sort_seq INTEGER NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  code_01 VARCHAR(100),
+  code_02 VARCHAR(100),
+  code_03 VARCHAR(100),
+  code_04 VARCHAR(100),
+  code_05 VARCHAR(100),
+  code_06 VARCHAR(100),
+  code_07 VARCHAR(100),
+  code_08 VARCHAR(100),
+  code_09 VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tss_dict_dtl
+CREATE TABLE IF NOT EXISTS tss_dict_dtl (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  dict_id INTEGER NOT NULL,
+  culture_id VARCHAR(10) NOT NULL,
+  dict_nm VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tss_dict_mst
+CREATE TABLE IF NOT EXISTS tss_dict_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  dict_tp CHAR(1) NOT NULL,
+  dict_cd VARCHAR(100) NOT NULL,
+  dict_nm VARCHAR(100) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_error_log
+CREATE TABLE IF NOT EXISTS tss_error_log (
+  err_idx SERIAL,
+  forminstance VARCHAR(100),
+  formid VARCHAR(20),
+  formname VARCHAR(200),
+  empno VARCHAR(8),
+  errdate TIMESTAMP,
+  errmsg VARCHAR(500),
+  stacktrace VARCHAR(2000),
+  imgname VARCHAR(200),
+  macaddress VARCHAR(30),
+  ipaddress VARCHAR(20),
+  status CHAR(1),
+  regdate TIMESTAMP,
+  PRIMARY KEY (err_idx)
+);
+
+-- tss_file_mst
+CREATE TABLE IF NOT EXISTS tss_file_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  org_file_nm VARCHAR(200) NOT NULL,
+  file_nm VARCHAR(200) NOT NULL,
+  file_path VARCHAR(200),
+  file_ext VARCHAR(10),
+  file_size DECIMAL(17, 2),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_help_grid
+CREATE TABLE IF NOT EXISTS tss_help_grid (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  help_id INTEGER NOT NULL,
+  field_name VARCHAR(100) NOT NULL,
+  field_desc VARCHAR(200) NOT NULL,
+  halignment CHAR(1) NOT NULL,
+  formattype CHAR(1) NOT NULL,
+  formatstring VARCHAR(20),
+  summary_yn CHAR(1) NOT NULL,
+  merge_yn CHAR(1),
+  sort_order INTEGER NOT NULL,
+  width INTEGER,
+  description TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_help_mst
+CREATE TABLE IF NOT EXISTS tss_help_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  help_cd VARCHAR(50) NOT NULL,
+  help_nm VARCHAR(50) NOT NULL,
+  sp_name VARCHAR(50),
+  sql_query TEXT,
+  sql_param VARCHAR(200),
+  form_title VARCHAR(50) NOT NULL,
+  form_width INTEGER NOT NULL,
+  form_height INTEGER NOT NULL,
+  disp_field VARCHAR(500),
+  is_find_text CHAR(1) NOT NULL,
+  is_use_yn CHAR(1) NOT NULL,
+  is_paging CHAR(1) NOT NULL,
+  is_tree CHAR(1) NOT NULL,
+  use_def_value CHAR(1),
+  key_field VARCHAR(50),
+  pid_field VARCHAR(50),
+  root_value VARCHAR(50),
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tss_view
+CREATE TABLE IF NOT EXISTS tss_view (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  view_nm VARCHAR(50) NOT NULL,
+  module_id INTEGER NOT NULL,
+  namespace VARCHAR(50),
+  instance VARCHAR(50),
+  use_yn CHAR(1) NOT NULL,
+  description TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tss_view_grid
+CREATE TABLE IF NOT EXISTS tss_view_grid (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  view_id INTEGER NOT NULL,
+  grid_no INTEGER NOT NULL,
+  comment TEXT,
+  dbsp_id VARCHAR(100),
+  smry_yn CHAR(1),
+  pagn_yn CHAR(1),
+  pagn_size INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tss_view_grid_band
+CREATE TABLE IF NOT EXISTS tss_view_grid_band (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  grid_id INTEGER NOT NULL,
+  caption VARCHAR(100) NOT NULL,
+  comment TEXT,
+  sort_seq INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tss_view_grid_column
+CREATE TABLE IF NOT EXISTS tss_view_grid_column (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  grid_id INTEGER NOT NULL,
+  caption VARCHAR(100) NOT NULL,
+  field_name VARCHAR(100) NOT NULL,
+  field_type CHAR(3),
+  halignment CHAR(3) NOT NULL,
+  formattype CHAR(3) NOT NULL,
+  formatstring VARCHAR(20),
+  width INTEGER NOT NULL,
+  smry_yn CHAR(1) NOT NULL,
+  fixd_yn CHAR(1) NOT NULL,
+  merg_yn CHAR(1) NOT NULL,
+  edit_yn CHAR(1) NOT NULL,
+  mand_yn CHAR(1) NOT NULL,
+  sort_seq INTEGER NOT NULL,
+  band_id INTEGER,
+  back_color VARCHAR(20),
+  fore_color VARCHAR(20),
+  comment TEXT,
+  grid_edit_tp CHAR(4),
+  lookup_para1 VARCHAR(100),
+  lookup_para2 VARCHAR(100),
+  lookup_para3 VARCHAR(100),
+  lookup_para4 VARCHAR(100),
+  lookup_para5 VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tss_view_role
+CREATE TABLE IF NOT EXISTS tss_view_role (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  view_id INTEGER NOT NULL,
+  role_id INTEGER NOT NULL,
+  inq_yn CHAR(1),
+  sav_yn CHAR(1),
+  del_yn CHAR(1),
+  fix_yn CHAR(1),
+  prt_yn CHAR(1),
+  description TEXT,
+  PRIMARY KEY (id)
+);

@@ -1,0 +1,1137 @@
+-- ============================================================================
+-- Sales & Revenue Management Schema (srm)
+-- ============================================================================
+CREATE SCHEMA IF NOT EXISTS srm;
+COMMENT ON SCHEMA srm IS 'SRM: 판매/영업 관리 스키마';
+
+-- 견적서
+CREATE TABLE IF NOT EXISTS srm.quotations (
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by              UUID,
+    updated_at              TIMESTAMP WITH TIME ZONE,
+    updated_by              UUID,
+    quote_code              VARCHAR(50)              NOT NULL,
+    customer_id             UUID                     NOT NULL,
+    doc_date                DATE                     NOT NULL,
+    valid_until             DATE,
+    sales_person_id         UUID,
+    total_amount            NUMERIC(18,4)            DEFAULT 0,
+    currency                VARCHAR(3)               DEFAULT 'KRW',
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',
+    is_deleted                 BOOLEAN                  DEFAULT false,
+    CONSTRAINT ck_quotations__status CHECK (status IN ('DRAFT', 'SENT', 'ACCEPTED', 'REJECTED', 'EXPIRED'))
+);
+-- 견적서 라인
+CREATE TABLE IF NOT EXISTS srm.quotation_lines (
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by              UUID,
+    updated_at              TIMESTAMP WITH TIME ZONE,
+    updated_by              UUID,
+    quote_id                UUID                     NOT NULL,
+    line_no                 INTEGER                  NOT NULL,
+    product_id                 UUID                     NOT NULL,
+    description             TEXT,
+    qty                     INTEGER                  NOT NULL,
+    unit_price              NUMERIC(18,4)            NOT NULL,
+    discount_rate           NUMERIC(5,2)             DEFAULT 0,
+    total_amount            NUMERIC(18,4)            NOT NULL,
+    CONSTRAINT ck_quotation_lines__qty CHECK (qty > 0)
+);
+
+-- 판매주문
+CREATE TABLE IF NOT EXISTS srm.sales_orders (
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by              UUID,
+    updated_at              TIMESTAMP WITH TIME ZONE,
+    updated_by              UUID,
+    so_code                 VARCHAR(50)              NOT NULL,
+    customer_id             UUID                     NOT NULL,
+    doc_date                DATE                     NOT NULL,
+    delivery_date           DATE,
+    warehouse_id            UUID,
+    sales_person_id         UUID,
+    payment_terms           VARCHAR(20),
+    total_amount            NUMERIC(18,4)            DEFAULT 0,
+    currency                VARCHAR(3)               DEFAULT 'KRW',
+    status                  VARCHAR(20)              DEFAULT 'DRAFT',
+    is_deleted                 BOOLEAN                  DEFAULT false,
+    CONSTRAINT ck_sales_orders__status CHECK (status IN ('DRAFT', 'CONFIRMED', 'PROCESSING', 'SHIPPED', 'COMPLETED', 'CANCELLED'))
+);
+-- 판매주문 라인
+CREATE TABLE IF NOT EXISTS srm.sales_order_lines (
+    id                      UUID                     PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at              TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_by              UUID,
+    updated_at              TIMESTAMP WITH TIME ZONE,
+    updated_by              UUID,
+    so_id                   UUID                     NOT NULL,
+    line_no                 INTEGER                  NOT NULL,
+    product_id                 UUID                     NOT NULL,
+    description             TEXT,
+    qty                     INTEGER                  NOT NULL,
+    unit_price              NUMERIC(18,4)            NOT NULL,
+    discount_rate           NUMERIC(5,2)             DEFAULT 0,
+    total_amount            NUMERIC(18,4)            NOT NULL,
+    shipped_qty             INTEGER                  DEFAULT 0,
+    CONSTRAINT ck_sales_order_lines__qty CHECK (qty > 0)
+);
+
+COMMENT ON TABLE srm.quotations IS '판매 견적서 관리 테이블';
+COMMENT ON TABLE srm.quotation_lines IS '견적 상세 라인 테이블';
+COMMENT ON TABLE srm.sales_orders IS '판매 주문 관리 테이블';
+COMMENT ON TABLE srm.sales_order_lines IS '판매주문 상세 라인 테이블';
+
+
+CREATE INDEX IF NOT EXISTS ix_quotation_lines__quote_id ON srm.quotation_lines (quote_id);
+
+CREATE INDEX IF NOT EXISTS ix_sales_order_lines__so_id ON srm.sales_order_lines (so_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS ux_quotations__quote_code ON srm.quotations (quote_code) WHERE is_deleted = false;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_quotation_lines__quote_line ON srm.quotation_lines (quote_id, line_no);
+CREATE UNIQUE INDEX IF NOT EXISTS ux_sales_orders__so_code ON srm.sales_orders (so_code) WHERE is_deleted = false;
+CREATE UNIQUE INDEX IF NOT EXISTS ux_sales_order_lines__so_line ON srm.sales_order_lines (so_id, line_no);
+
+ALTER TABLE srm.quotation_lines ADD CONSTRAINT fk_quotation_lines__quote_id FOREIGN KEY (quote_id) REFERENCES srm.quotations(id) ON DELETE CASCADE;
+ALTER TABLE srm.sales_order_lines ADD CONSTRAINT fk_sales_order_lines__so_id FOREIGN KEY (so_id) REFERENCES srm.sales_orders(id) ON DELETE CASCADE;
+
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- tsd_proc_log
+CREATE TABLE IF NOT EXISTS tsd_proc_log (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_id INTEGER NOT NULL,
+  proc_prdt_id INTEGER NOT NULL,
+  smry_tp CHAR(1) NOT NULL,
+  smry_qty INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_proc_log_hist
+CREATE TABLE IF NOT EXISTS tsd_proc_log_hist (
+  hist_id BIGSERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_id INTEGER NOT NULL,
+  proc_prdt_id INTEGER NOT NULL,
+  smry_tp CHAR(1) NOT NULL,
+  smry_qty INTEGER NOT NULL,
+  PRIMARY KEY (hist_id)
+);
+
+-- tsd_proc_mst
+CREATE TABLE IF NOT EXISTS tsd_proc_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_no CHAR(14) NOT NULL,
+  proc_req_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  shpt_dt CHAR(8) NOT NULL,
+  shpt_tp CHAR(4) NOT NULL,
+  delv_addr_id INTEGER,
+  delv_memo TEXT,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  delv_out_id INTEGER,
+  dwel_ord_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_proc_mst_prdt
+CREATE TABLE IF NOT EXISTS tsd_proc_mst_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  proc_req_qty INTEGER NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tsd_proc_rcv
+CREATE TABLE IF NOT EXISTS tsd_proc_rcv (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_rcv_no CHAR(14) NOT NULL,
+  proc_rcv_dt CHAR(8) NOT NULL,
+  delv_rcv_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(10) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  delv_rcv_id INTEGER,
+  dwel_ord_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_proc_rcv_prdt
+CREATE TABLE IF NOT EXISTS tsd_proc_rcv_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_rcv_id INTEGER NOT NULL,
+  proc_prdt_id INTEGER NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  proc_rcv_qty INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_proc_sum
+CREATE TABLE IF NOT EXISTS tsd_proc_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  proc_id INTEGER NOT NULL,
+  proc_prdt_id INTEGER NOT NULL,
+  proc_end_dt CHAR(8) NOT NULL,
+  proc_qty INTEGER NOT NULL,
+  recv_qty INTEGER NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  blnc_qty INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rcbl_dpst
+CREATE TABLE IF NOT EXISTS tsd_rcbl_dpst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rcbl_id INTEGER NOT NULL,
+  dpst_id INTEGER NOT NULL,
+  dpst_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rcbl_noti
+CREATE TABLE IF NOT EXISTS tsd_rcbl_noti (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  paym_amt DECIMAL(17, 2) NOT NULL,
+  noti_log_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rcbl_sum
+CREATE TABLE IF NOT EXISTS tsd_rcbl_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rcbl_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_dt CHAR(8) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  rcbl_amt DECIMAL(17, 2) NOT NULL,
+  dpst_amt DECIMAL(17, 2) NOT NULL,
+  blnc_amt DECIMAL(17, 2) NOT NULL,
+  refr_tp CHAR(2) NOT NULL,
+  refr_id INTEGER,
+  notes VARCHAR(500),
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_ext
+CREATE TABLE IF NOT EXISTS tsd_rent_ext (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  rent_ext_no CHAR(14) NOT NULL,
+  rent_ext_dt CHAR(8) NOT NULL,
+  rent_end_dt CHAR(8) NOT NULL,
+  old_rent_end_dt CHAR(8),
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  eas_sign_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_ext_prdt
+CREATE TABLE IF NOT EXISTS tsd_rent_ext_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_ext_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  rent_ext_qty INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_log
+CREATE TABLE IF NOT EXISTS tsd_rent_log (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  smry_tp CHAR(1) NOT NULL,
+  smry_qty INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_log_hist
+CREATE TABLE IF NOT EXISTS tsd_rent_log_hist (
+  hist_id BIGSERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  smry_tp CHAR(1) NOT NULL,
+  smry_qty INTEGER NOT NULL,
+  PRIMARY KEY (hist_id)
+);
+
+-- tsd_rent_mst
+CREATE TABLE IF NOT EXISTS tsd_rent_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_no CHAR(14) NOT NULL,
+  rent_req_dt CHAR(8) NOT NULL,
+  rent_end_dt CHAR(8),
+  rent_tp CHAR(1) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  shpt_dt CHAR(8) NOT NULL,
+  shpt_tp CHAR(4) NOT NULL,
+  delv_addr_id INTEGER,
+  delv_memo TEXT,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  eas_sign_id INTEGER,
+  delv_out_id INTEGER,
+  dwel_ord_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_mst_file
+CREATE TABLE IF NOT EXISTS tsd_rent_mst_file (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  file_id INTEGER NOT NULL,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_mst_prdt
+CREATE TABLE IF NOT EXISTS tsd_rent_mst_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  rent_req_qty INTEGER NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(300),
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_rcv
+CREATE TABLE IF NOT EXISTS tsd_rent_rcv (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_rcv_no CHAR(14) NOT NULL,
+  rent_rcv_dt CHAR(8) NOT NULL,
+  delv_rcv_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(10) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  delv_rcv_id INTEGER,
+  dwel_ord_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_rcv_prdt
+CREATE TABLE IF NOT EXISTS tsd_rent_rcv_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_rcv_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  rent_rcv_qty INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_sal
+CREATE TABLE IF NOT EXISTS tsd_rent_sal (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_sal_no CHAR(14) NOT NULL,
+  rent_sal_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  proc_st CHAR(1) NOT NULL,
+  notes TEXT,
+  sale_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_sal_prdt
+CREATE TABLE IF NOT EXISTS tsd_rent_sal_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_sal_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  usd_sale_pr DECIMAL(17, 4) NOT NULL,
+  usd_sale_amt DECIMAL(17, 4) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  krw_sale_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_rent_sum
+CREATE TABLE IF NOT EXISTS tsd_rent_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rent_id INTEGER NOT NULL,
+  rent_prdt_id INTEGER NOT NULL,
+  rent_end_dt CHAR(8) NOT NULL,
+  rent_qty INTEGER NOT NULL,
+  recv_qty INTEGER NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  blnc_qty INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_dct
+CREATE TABLE IF NOT EXISTS tsd_sale_dct (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_dct_no CHAR(14) NOT NULL,
+  sale_dct_tp CHAR(1) NOT NULL,
+  sale_dct_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  zero_tax_yn CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1) NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  proc_st CHAR(1) NOT NULL,
+  eas_sign_id INTEGER,
+  sale_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_dct_prdt
+CREATE TABLE IF NOT EXISTS tsd_sale_dct_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_dct_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_dct_qty INTEGER NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2),
+  sale_sum_amt DECIMAL(17, 2),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_ext_chr
+CREATE TABLE IF NOT EXISTS tsd_sale_ext_chr (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_ord_no CHAR(14),
+  extra_charge_yn CHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mod
+CREATE TABLE IF NOT EXISTS tsd_sale_mod (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_mod_no CHAR(14) NOT NULL,
+  sale_mod_dt CHAR(8) NOT NULL,
+  sale_mod_tp CHAR(1) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  notes TEXT,
+  proc_st CHAR(1) NOT NULL,
+  eas_sign_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mod_date
+CREATE TABLE IF NOT EXISTS tsd_sale_mod_date (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_mod_id INTEGER NOT NULL,
+  sale_no CHAR(14) NOT NULL,
+  org_sale_dt CHAR(8) NOT NULL,
+  chg_sale_dt CHAR(8),
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mod_prdt
+CREATE TABLE IF NOT EXISTS tsd_sale_mod_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_mod_id INTEGER NOT NULL,
+  sale_no CHAR(14) NOT NULL,
+  sale_prdt_id INTEGER NOT NULL,
+  chg_sale_qty INTEGER NOT NULL,
+  chg_sale_pr DECIMAL(17, 2) NOT NULL,
+  org_sale_pr DECIMAL(17, 2) NOT NULL,
+  rtn_sale_no CHAR(14),
+  nor_sale_no CHAR(14),
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mst
+CREATE TABLE IF NOT EXISTS tsd_sale_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  corp_cd CHAR(3),
+  sale_no CHAR(14) NOT NULL,
+  sale_dt CHAR(8) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  slip_tp CHAR(1) NOT NULL,
+  mdfy_tp CHAR(1) NOT NULL,
+  path_tp CHAR(1) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  cday_tp CHAR(3) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  crcy_tp CHAR(3) NOT NULL,
+  exch_rat DECIMAL(17, 2),
+  tot_usd_amt DECIMAL(17, 4) NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  use_pnt_amt DECIMAL(17, 2) NOT NULL,
+  crm_oppr_id INTEGER,
+  zero_tax_yn CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1),
+  tax_pre_yn CHAR(1),
+  tax_bill_no VARCHAR(50),
+  tax_issu_tp CHAR(1),
+  notes VARCHAR(500),
+  org_sale_id INTEGER,
+  sale_ord_id INTEGER,
+  sale_rtn_id INTEGER,
+  delv_ord_id INTEGER,
+  purc_req_id INTEGER,
+  rent_id INTEGER,
+  purc_id INTEGER,
+  refr_no VARCHAR(50),
+  proc_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mst_hist
+CREATE TABLE IF NOT EXISTS tsd_sale_mst_hist (
+  hist_id SERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  corp_cd CHAR(3),
+  sale_no CHAR(14) NOT NULL,
+  sale_dt CHAR(8) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  slip_tp CHAR(1) NOT NULL,
+  mdfy_tp CHAR(1) NOT NULL,
+  path_tp CHAR(1) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  cday_tp CHAR(3) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  crcy_tp CHAR(3) NOT NULL,
+  exch_rat DECIMAL(17, 2),
+  tot_usd_amt DECIMAL(17, 4) NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  use_pnt_amt DECIMAL(17, 2) NOT NULL,
+  crm_oppr_id INTEGER,
+  zero_tax_yn CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1),
+  tax_pre_yn CHAR(1),
+  tax_bill_no VARCHAR(50),
+  tax_issu_tp CHAR(1),
+  notes VARCHAR(500),
+  org_sale_id INTEGER,
+  sale_ord_id INTEGER,
+  sale_rtn_id INTEGER,
+  delv_ord_id INTEGER,
+  purc_req_id INTEGER,
+  rent_id INTEGER,
+  purc_id INTEGER,
+  refr_no VARCHAR(50),
+  proc_id INTEGER,
+  PRIMARY KEY (hist_id)
+);
+
+-- tsd_sale_mst_prdt
+CREATE TABLE IF NOT EXISTS tsd_sale_mst_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  usd_sale_pr DECIMAL(17, 4) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_usd_amt DECIMAL(17, 4) NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(500),
+  tax_bill_item_id INTEGER,
+  sale_ord_prdt_id INTEGER,
+  org_sale_prdt_id INTEGER,
+  rent_prdt_id INTEGER,
+  proc_prdt_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_mst_prdt_hist
+CREATE TABLE IF NOT EXISTS tsd_sale_mst_prdt_hist (
+  hist_id BIGSERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  usd_sale_pr DECIMAL(17, 4) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_usd_amt DECIMAL(17, 4) NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(500),
+  tax_bill_item_id INTEGER,
+  sale_ord_prdt_id INTEGER,
+  org_sale_prdt_id INTEGER,
+  rent_prdt_id INTEGER,
+  proc_prdt_id INTEGER,
+  PRIMARY KEY (hist_id)
+);
+
+-- tsd_sale_mst_upload
+CREATE TABLE IF NOT EXISTS tsd_sale_mst_upload (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8),
+  sale_no CHAR(14),
+  sale_dt CHAR(8),
+  cust_cd CHAR(14),
+  biz_reg_no VARCHAR(20),
+  dept_cd CHAR(10),
+  empy_cd CHAR(10),
+  whse_cd CHAR(10),
+  paym_dt CHAR(8),
+  notes VARCHAR(200),
+  prdt_cd CHAR(14),
+  model_nm VARCHAR(100),
+  sale_qty INTEGER,
+  krw_sale_pr DECIMAL(17, 2),
+  old_prdt_cd VARCHAR(100),
+  proc_st CHAR(1) NOT NULL,
+  proc_msg TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_ord
+CREATE TABLE IF NOT EXISTS tsd_sale_ord (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_ord_no CHAR(14) NOT NULL,
+  sale_ord_dt CHAR(8) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  path_tp CHAR(1),
+  sale_dt CHAR(8) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  cday_tp CHAR(3),
+  crcy_tp CHAR(3) NOT NULL,
+  exch_rat DECIMAL(12, 2),
+  zero_tax_yn CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1) NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  tot_usd_amt DECIMAL(17, 4) NOT NULL,
+  use_pnt_amt INTEGER NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  shpt_dt CHAR(8),
+  shpt_tp CHAR(4),
+  delv_addr_id INTEGER,
+  delv_memo VARCHAR(500),
+  ordr_nm VARCHAR(50),
+  ordr_phne_no VARCHAR(50),
+  invc_tp CHAR(1) NOT NULL,
+  end_user VARCHAR(50),
+  notes TEXT,
+  proc_st CHAR(1) NOT NULL,
+  eas_sign_id INTEGER,
+  refr_no VARCHAR(50),
+  crm_oppr_id INTEGER,
+  delv_out_id INTEGER,
+  dwel_ord_id INTEGER,
+  purc_cust_cd CHAR(14),
+  rent_id INTEGER,
+  proc_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_ord_prdt
+CREATE TABLE IF NOT EXISTS tsd_sale_ord_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_ord_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1) NOT NULL,
+  std_sale_pr DECIMAL(17, 2) NOT NULL,
+  min_sale_pr DECIMAL(17, 2) NOT NULL,
+  usd_sale_pr DECIMAL(17, 4) NOT NULL,
+  krw_sale_pr DECIMAL(12, 0) NOT NULL,
+  sale_ord_qty INTEGER NOT NULL,
+  sale_usd_amt DECIMAL(17, 4) NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  rent_prdt_id INTEGER,
+  proc_prdt_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_ord_prdt_dr
+CREATE TABLE IF NOT EXISTS tsd_sale_ord_prdt_dr (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_ord_prdt_id INTEGER NOT NULL,
+  dr_no VARCHAR(50) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_ord_work
+CREATE TABLE IF NOT EXISTS tsd_sale_ord_work (
+  id BIGSERIAL,
+  create_on TIMESTAMP NOT NULL,
+  create_by VARCHAR(50) NOT NULL,
+  create_id INTEGER NOT NULL,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  ref_tp CHAR(2) NOT NULL,
+  ref_id INTEGER NOT NULL,
+  prdt_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  elc_work_tp VARCHAR(4) NOT NULL,
+  chk_yn CHAR(1) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_rtn
+CREATE TABLE IF NOT EXISTS tsd_sale_rtn (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_rtn_no CHAR(14) NOT NULL,
+  sale_rtn_dt CHAR(8) NOT NULL,
+  sale_rtn_tp CHAR(1) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  path_tp CHAR(1) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  cday_tp CHAR(3) NOT NULL,
+  paym_dt CHAR(8) NOT NULL,
+  crcy_tp CHAR(3) NOT NULL,
+  exch_rat DECIMAL(17, 2) NOT NULL,
+  zero_tax_yn CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1) NOT NULL,
+  tot_sup_amt DECIMAL(17, 2) NOT NULL,
+  tot_tax_amt DECIMAL(17, 2) NOT NULL,
+  tot_sum_amt DECIMAL(17, 2) NOT NULL,
+  tot_usd_amt DECIMAL(17, 4) NOT NULL,
+  tot_pnt_amt DECIMAL(17, 2) NOT NULL,
+  whse_cd CHAR(10) NOT NULL,
+  shpt_tp CHAR(4),
+  delv_addr_id INTEGER,
+  delv_memo VARCHAR(500),
+  notes TEXT,
+  proc_st CHAR(1) NOT NULL,
+  eas_sign_id INTEGER,
+  delv_rcv_id INTEGER,
+  dwel_ord_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_rtn_doa_purc
+CREATE TABLE IF NOT EXISTS tsd_sale_rtn_doa_purc (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_rtn_prdt_id INTEGER NOT NULL,
+  prdt_sn VARCHAR(50),
+  cust_cd CHAR(14) NOT NULL,
+  purc_rtn_dt CHAR(8) NOT NULL,
+  crcy_tp CHAR(3),
+  exch_rat DECIMAL(17, 2) NOT NULL,
+  usd_purc_pr DECIMAL(17, 4) NOT NULL,
+  krw_purc_pr DECIMAL(17, 2) NOT NULL,
+  purc_usd_amt DECIMAL(17, 4) NOT NULL,
+  purc_sup_amt DECIMAL(17, 2) NOT NULL,
+  purc_tax_amt DECIMAL(17, 2) NOT NULL,
+  purc_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  proc_st CHAR(1) NOT NULL,
+  purc_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_rtn_doa_sale
+CREATE TABLE IF NOT EXISTS tsd_sale_rtn_doa_sale (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_rtn_prdt_id INTEGER NOT NULL,
+  sale_id INTEGER NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_rtn_prdt
+CREATE TABLE IF NOT EXISTS tsd_sale_rtn_prdt (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  sale_rtn_id INTEGER NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  free_tax_yn CHAR(1) NOT NULL,
+  usd_sale_pr DECIMAL(17, 4) NOT NULL,
+  krw_sale_pr DECIMAL(17, 2) NOT NULL,
+  sale_rtn_qty INTEGER NOT NULL,
+  sale_usd_amt DECIMAL(17, 4) NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  notes VARCHAR(200),
+  sale_prdt_id INTEGER,
+  PRIMARY KEY (id)
+);
+
+-- tsd_sale_sum
+CREATE TABLE IF NOT EXISTS tsd_sale_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  sale_tp CHAR(1) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  stck_tp CHAR(1) NOT NULL,
+  sale_qty INTEGER NOT NULL,
+  sale_sup_amt DECIMAL(17, 2) NOT NULL,
+  sale_tax_amt DECIMAL(17, 2) NOT NULL,
+  sale_sum_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tsd_wthd_mst
+CREATE TABLE IF NOT EXISTS tsd_wthd_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  wthd_no CHAR(14) NOT NULL,
+  regi_dt CHAR(8) NOT NULL,
+  wthd_dt CHAR(8) NOT NULL,
+  wthd_tm CHAR(6) NOT NULL,
+  wthd_tp CHAR(4) NOT NULL,
+  cbib_tp CHAR(2) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crcy_tp CHAR(3),
+  exch_rat DECIMAL(17, 2),
+  wthd_usd_amt DECIMAL(17, 4),
+  wthd_tot_amt DECIMAL(17, 2) NOT NULL,
+  wthd_net_amt DECIMAL(17, 2) NOT NULL,
+  wthd_fee_amt DECIMAL(17, 2) NOT NULL,
+  wthd_sum_amt DECIMAL(17, 2) NOT NULL,
+  fnsh_yn CHAR(1) NOT NULL,
+  refr_no VARCHAR(100),
+  notes TEXT,
+  PRIMARY KEY (id)
+);

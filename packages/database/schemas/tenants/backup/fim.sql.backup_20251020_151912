@@ -1,0 +1,295 @@
+-- ============================================================================
+-- Financial Management Schema (fim)
+-- ============================================================================
+-- Description: 재무 관리 (회계, 원가, 예산, 결산)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: fim
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS fim;
+
+COMMENT ON SCHEMA fim IS 'FIM: 재무 관리 스키마 (회계, 원가, 예산)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- FIM: 재무/관리회계 (Finance & Controlling)
+-- ============================================================================
+
+-- 계정과목
+CREATE TABLE fim.accounts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    account_code VARCHAR(50) NOT NULL,
+    account_name VARCHAR(200) NOT NULL,
+    account_type VARCHAR(20) NOT NULL, -- ASSET, LIABILITY, EQUITY, REVENUE, EXPENSE
+    account_group VARCHAR(50),
+    parent_account_id UUID,
+    is_control_account BOOLEAN DEFAULT false,
+    is_posting_allowed BOOLEAN DEFAULT true,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    is_active BOOLEAN DEFAULT true,
+    is_deleted BOOLEAN DEFAULT false,
+    
+    CONSTRAINT uk_fim_accounts__company_code UNIQUE (company_id, account_code)
+);
+
+-- 분개장 헤더
+CREATE TABLE fim.journal_entries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    je_code VARCHAR(50) NOT NULL,
+    doc_date DATE NOT NULL,
+    posting_date DATE NOT NULL,
+    period VARCHAR(7) NOT NULL, -- YYYY-MM
+    reference_doc_type VARCHAR(50),
+    reference_doc_id UUID,
+    description TEXT,
+    total_debit NUMERIC(18,4) DEFAULT 0,
+    total_credit NUMERIC(18,4) DEFAULT 0,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    status VARCHAR(20) DEFAULT 'DRAFT', -- DRAFT, POSTED, REVERSED
+    posted_at TIMESTAMPTZ,
+    posted_by UUID,
+    is_deleted BOOLEAN DEFAULT false,
+    
+    CONSTRAINT uk_fim_journal_entries__company_code UNIQUE (company_id, je_code)
+);
+
+-- 분개장 라인
+CREATE TABLE fim.journal_entry_lines (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    je_id UUID NOT NULL,
+    line_no INTEGER NOT NULL,
+    account_id UUID NOT NULL,
+    debit_amount NUMERIC(18,4) DEFAULT 0,
+    credit_amount NUMERIC(18,4) DEFAULT 0,
+    description TEXT,
+    cost_center VARCHAR(50),
+    project_code VARCHAR(50),
+    partner_id UUID,
+    
+    CONSTRAINT uk_fim_je_lines__je_line UNIQUE (je_id, line_no)
+);
+
+-- 매출채권
+CREATE TABLE fim.accounts_receivable (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    ar_code VARCHAR(50) NOT NULL,
+    customer_id UUID NOT NULL,
+    doc_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    invoice_amount NUMERIC(18,4) NOT NULL,
+    paid_amount NUMERIC(18,4) DEFAULT 0,
+    outstanding_amount NUMERIC(18,4) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    status VARCHAR(20) DEFAULT 'OPEN', -- OPEN, PARTIAL, PAID, OVERDUE
+    reference_doc_type VARCHAR(50),
+    reference_doc_id UUID,
+    
+    CONSTRAINT uk_fim_accounts_receivable__company_code UNIQUE (company_id, ar_code)
+);
+
+-- 매입채무
+CREATE TABLE fim.accounts_payable (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    ap_code VARCHAR(50) NOT NULL,
+    vendor_id UUID NOT NULL,
+    doc_date DATE NOT NULL,
+    due_date DATE NOT NULL,
+    invoice_amount NUMERIC(18,4) NOT NULL,
+    paid_amount NUMERIC(18,4) DEFAULT 0,
+    outstanding_amount NUMERIC(18,4) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    status VARCHAR(20) DEFAULT 'OPEN', -- OPEN, PARTIAL, PAID, OVERDUE
+    reference_doc_type VARCHAR(50),
+    reference_doc_id UUID,
+    
+    CONSTRAINT uk_fim_accounts_payable__company_code UNIQUE (company_id, ap_code)
+);
+
+-- 결제 거래
+CREATE TABLE fim.payment_transactions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    transaction_code VARCHAR(50) NOT NULL,
+    transaction_date DATE NOT NULL,
+    transaction_type VARCHAR(20) NOT NULL, -- RECEIPT, PAYMENT
+    payment_method VARCHAR(20) NOT NULL, -- CASH, BANK_TRANSFER, CREDIT_CARD, CHECK
+    partner_id UUID NOT NULL,
+    account_id UUID NOT NULL,
+    amount NUMERIC(18,4) NOT NULL,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    reference_doc_type VARCHAR(50),
+    reference_doc_id UUID,
+    description TEXT,
+    bank_account VARCHAR(50),
+    check_number VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'COMPLETED',
+    
+    CONSTRAINT uk_fim_payment_transactions__company_code UNIQUE (company_id, transaction_code)
+);
+-- ============================================================================
+-- FIM 스키마 인덱스 및 제약조건 추가
+-- ============================================================================
+
+CREATE INDEX IF NOT EXISTS idx_fim_accounts_tenant_id ON fim.accounts(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_fim_accounts_created_at ON fim.accounts(created_at);
+CREATE INDEX IF NOT EXISTS idx_fim_journals_tenant_id ON fim.journals(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_fim_journals_created_at ON fim.journals(created_at);
+CREATE INDEX IF NOT EXISTS idx_fim_budgets_tenant_id ON fim.budgets(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_fim_budgets_created_at ON fim.budgets(created_at);
+
+COMMENT ON SCHEMA fim IS '재무 관리 스키마 (회계, 원가, 예산)';
+-- ============================================================================
+-- FIM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- 계정과목 테이블
+COMMENT ON TABLE fim.accounts IS '회계 계정과목 관리 테이블 (자산, 부채, 자본, 수익, 비용)';
+COMMENT ON COLUMN fim.accounts.id IS '계정과목 고유 식별자';
+COMMENT ON COLUMN fim.accounts.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN fim.accounts.company_id IS '회사 ID';
+COMMENT ON COLUMN fim.accounts.account_code IS '계정과목 코드';
+COMMENT ON COLUMN fim.accounts.account_name IS '계정과목 명칭';
+COMMENT ON COLUMN fim.accounts.account_type IS '계정 유형 (자산, 부채, 자본, 수익, 비용)';
+COMMENT ON COLUMN fim.accounts.account_class IS '계정 분류 (유동/비유동, 영업/영업외 등)';
+COMMENT ON COLUMN fim.accounts.parent_account_id IS '상위 계정과목 ID (계층 구조)';
+COMMENT ON COLUMN fim.accounts.level IS '계정 레벨 (1: 대분류, 2: 중분류, 3: 소분류)';
+COMMENT ON COLUMN fim.accounts.is_control_account IS '통제계정 여부';
+COMMENT ON COLUMN fim.accounts.is_active IS '사용 여부';
+COMMENT ON COLUMN fim.accounts.description IS '계정 설명';
+COMMENT ON COLUMN fim.accounts.created_at IS '생성일시';
+COMMENT ON COLUMN fim.accounts.created_by IS '생성자 ID';
+COMMENT ON COLUMN fim.accounts.updated_at IS '수정일시';
+COMMENT ON COLUMN fim.accounts.updated_by IS '수정자 ID';
+
+-- 분개장 테이블
+COMMENT ON TABLE fim.journal_entries IS '회계 분개 전표 헤더 테이블';
+COMMENT ON COLUMN fim.journal_entries.id IS '분개 전표 고유 식별자';
+COMMENT ON COLUMN fim.journal_entries.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN fim.journal_entries.company_id IS '회사 ID';
+COMMENT ON COLUMN fim.journal_entries.journal_number IS '전표 번호';
+COMMENT ON COLUMN fim.journal_entries.journal_date IS '전표 일자';
+COMMENT ON COLUMN fim.journal_entries.journal_type IS '전표 유형 (일반, 매입, 매출, 급여, 결산 등)';
+COMMENT ON COLUMN fim.journal_entries.description IS '적요 (전표 설명)';
+COMMENT ON COLUMN fim.journal_entries.reference_type IS '참조 문서 유형 (구매전표, 판매전표 등)';
+COMMENT ON COLUMN fim.journal_entries.reference_id IS '참조 문서 ID';
+COMMENT ON COLUMN fim.journal_entries.status IS '전표 상태 (임시저장, 승인대기, 승인, 취소)';
+COMMENT ON COLUMN fim.journal_entries.approved_by IS '승인자 ID';
+COMMENT ON COLUMN fim.journal_entries.approved_at IS '승인일시';
+COMMENT ON COLUMN fim.journal_entries.created_at IS '생성일시';
+COMMENT ON COLUMN fim.journal_entries.created_by IS '생성자 ID';
+COMMENT ON COLUMN fim.journal_entries.updated_at IS '수정일시';
+COMMENT ON COLUMN fim.journal_entries.updated_by IS '수정자 ID';
+
+-- 분개장 상세 테이블
+COMMENT ON TABLE fim.journal_entry_lines IS '회계 분개 전표 상세 라인 테이블 (차변/대변)';
+COMMENT ON COLUMN fim.journal_entry_lines.id IS '분개 라인 고유 식별자';
+COMMENT ON COLUMN fim.journal_entry_lines.journal_entry_id IS '분개 전표 ID - journal_entries 테이블 참조';
+COMMENT ON COLUMN fim.journal_entry_lines.line_number IS '라인 번호 (순서)';
+COMMENT ON COLUMN fim.journal_entry_lines.account_id IS '계정과목 ID - accounts 테이블 참조';
+COMMENT ON COLUMN fim.journal_entry_lines.debit_amount IS '차변 금액';
+COMMENT ON COLUMN fim.journal_entry_lines.credit_amount IS '대변 금액';
+COMMENT ON COLUMN fim.journal_entry_lines.description IS '적요 (라인별 설명)';
+COMMENT ON COLUMN fim.journal_entry_lines.cost_center_id IS '원가센터 ID';
+COMMENT ON COLUMN fim.journal_entry_lines.project_id IS '프로젝트 ID';
+COMMENT ON COLUMN fim.journal_entry_lines.created_at IS '생성일시';
+COMMENT ON COLUMN fim.journal_entry_lines.created_by IS '생성자 ID';
+
+-- 매출채권 테이블
+COMMENT ON TABLE fim.accounts_receivable IS '매출채권 관리 테이블';
+COMMENT ON COLUMN fim.accounts_receivable.id IS '매출채권 고유 식별자';
+COMMENT ON COLUMN fim.accounts_receivable.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN fim.accounts_receivable.company_id IS '회사 ID';
+COMMENT ON COLUMN fim.accounts_receivable.ar_number IS '채권 번호';
+COMMENT ON COLUMN fim.accounts_receivable.customer_id IS '고객 ID';
+COMMENT ON COLUMN fim.accounts_receivable.invoice_number IS '관련 매출전표 번호';
+COMMENT ON COLUMN fim.accounts_receivable.invoice_date IS '매출전표 일자';
+COMMENT ON COLUMN fim.accounts_receivable.due_date IS '결제 예정일';
+COMMENT ON COLUMN fim.accounts_receivable.amount IS '채권 금액';
+COMMENT ON COLUMN fim.accounts_receivable.paid_amount IS '입금 금액';
+COMMENT ON COLUMN fim.accounts_receivable.balance IS '미수금 잔액';
+COMMENT ON COLUMN fim.accounts_receivable.status IS '상태 (미수, 부분입금, 완료)';
+COMMENT ON COLUMN fim.accounts_receivable.payment_terms IS '결제 조건';
+COMMENT ON COLUMN fim.accounts_receivable.created_at IS '생성일시';
+COMMENT ON COLUMN fim.accounts_receivable.updated_at IS '수정일시';
+
+-- 매입채무 테이블
+COMMENT ON TABLE fim.accounts_payable IS '매입채무 관리 테이블';
+COMMENT ON COLUMN fim.accounts_payable.id IS '매입채무 고유 식별자';
+COMMENT ON COLUMN fim.accounts_payable.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN fim.accounts_payable.company_id IS '회사 ID';
+COMMENT ON COLUMN fim.accounts_payable.ap_number IS '채무 번호';
+COMMENT ON COLUMN fim.accounts_payable.supplier_id IS '공급업체 ID';
+COMMENT ON COLUMN fim.accounts_payable.invoice_number IS '관련 매입전표 번호';
+COMMENT ON COLUMN fim.accounts_payable.invoice_date IS '매입전표 일자';
+COMMENT ON COLUMN fim.accounts_payable.due_date IS '지급 예정일';
+COMMENT ON COLUMN fim.accounts_payable.amount IS '채무 금액';
+COMMENT ON COLUMN fim.accounts_payable.paid_amount IS '지급 금액';
+COMMENT ON COLUMN fim.accounts_payable.balance IS '미지급금 잔액';
+COMMENT ON COLUMN fim.accounts_payable.status IS '상태 (미지급, 부분지급, 완료)';
+COMMENT ON COLUMN fim.accounts_payable.payment_terms IS '지급 조건';
+COMMENT ON COLUMN fim.accounts_payable.created_at IS '생성일시';
+COMMENT ON COLUMN fim.accounts_payable.updated_at IS '수정일시';
+
+-- 결제 거래 테이블
+COMMENT ON TABLE fim.payment_transactions IS '입출금 거래 내역 관리 테이블';
+COMMENT ON COLUMN fim.payment_transactions.id IS '거래 고유 식별자';
+COMMENT ON COLUMN fim.payment_transactions.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN fim.payment_transactions.company_id IS '회사 ID';
+COMMENT ON COLUMN fim.payment_transactions.transaction_number IS '거래 번호';
+COMMENT ON COLUMN fim.payment_transactions.transaction_date IS '거래 일자';
+COMMENT ON COLUMN fim.payment_transactions.transaction_type IS '거래 유형 (입금, 출금)';
+COMMENT ON COLUMN fim.payment_transactions.payment_method IS '결제 수단 (현금, 계좌이체, 카드, 어음 등)';
+COMMENT ON COLUMN fim.payment_transactions.amount IS '거래 금액';
+COMMENT ON COLUMN fim.payment_transactions.reference_type IS '관련 문서 유형 (AR, AP, 기타)';
+COMMENT ON COLUMN fim.payment_transactions.reference_id IS '관련 문서 ID';
+COMMENT ON COLUMN fim.payment_transactions.account_id IS '계정과목 ID';
+COMMENT ON COLUMN fim.payment_transactions.bank_account IS '은행 계좌 정보';
+COMMENT ON COLUMN fim.payment_transactions.description IS '거래 설명';
+COMMENT ON COLUMN fim.payment_transactions.created_at IS '생성일시';
+COMMENT ON COLUMN fim.payment_transactions.created_by IS '생성자 ID';
+

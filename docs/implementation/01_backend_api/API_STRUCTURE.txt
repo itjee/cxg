@@ -1,0 +1,270 @@
+CXG Platform API Structure
+===========================
+
+BASE URL: http://localhost:8100
+
+ROOT ENDPOINTS
+--------------
+GET  /                  - API 정보
+GET  /health            - 헬스체크
+GET  /docs              - Swagger UI
+GET  /redoc             - ReDoc UI
+GET  /openapi.json      - OpenAPI Spec
+
+
+MANAGER SYSTEM APIs (/api/v1/manager)
+======================================
+
+┌─ Authentication (/auth)
+│  ├─ POST   /register          - 회원가입
+│  ├─ POST   /login             - 로그인
+│  ├─ POST   /refresh           - 토큰 갱신
+│  ├─ GET    /me                - 현재 사용자
+│  ├─ POST   /change-password   - 비밀번호 변경
+│  └─ POST   /logout            - 로그아웃
+│
+├─ IDAM - Identity & Access Management (/idam)
+│  ├─ /users                    [5 endpoints: CRUD + List]
+│  ├─ /roles                    [5 endpoints: CRUD + List]
+│  ├─ /permissions              [5 endpoints: CRUD + List]
+│  ├─ /user-roles               [5 endpoints: CRUD + List]
+│  ├─ /role-permissions         [5 endpoints: CRUD + List]
+│  ├─ /sessions                 [5 endpoints: CRUD + List]
+│  ├─ /login-logs               [5 endpoints: CRUD + List]
+│  └─ /api-keys                 [5 endpoints: CRUD + List]
+│
+├─ TNNT - Tenant Management (/tenants, /subscriptions)
+│  ├─ /tenants                  [5 endpoints: CRUD + List]
+│  └─ /subscriptions            [5 endpoints: CRUD + List]
+│
+├─ BILL - Billing (/billing)
+│  ├─ /plans                    [5 endpoints: CRUD + List]
+│  ├─ /invoices                 [5 endpoints: CRUD + List]
+│  └─ /transactions             [5 endpoints: CRUD + List]
+│
+├─ IFRA - Infrastructure (/infrastructure)
+│  ├─ /resources                [5 endpoints: CRUD + List]
+│  └─ /usages                   [5 endpoints: CRUD + List]
+│
+├─ MNTR - Monitoring (/monitoring)
+│  ├─ /metrics                  [5 endpoints: CRUD + List]
+│  ├─ /health-checks            [5 endpoints: CRUD + List]
+│  └─ /incidents                [5 endpoints: CRUD + List]
+│
+├─ AUDT - Audit (/audit)
+│  ├─ /logs                     [5 endpoints: CRUD + List]
+│  ├─ /policies                 [5 endpoints: CRUD + List]
+│  └─ /compliances              [5 endpoints: CRUD + List]
+│
+├─ BKUP - Backup (/backup)
+│  ├─ /schedules                [5 endpoints: CRUD + List]
+│  ├─ /executions               [5 endpoints: CRUD + List]
+│  └─ /recovery-plans           [5 endpoints: CRUD + List]
+│
+├─ CNFG - Configuration (/config)
+│  ├─ /configurations           [5 endpoints: CRUD + List]
+│  ├─ /feature-flags            [5 endpoints: CRUD + List]
+│  ├─ /tenant-features          [5 endpoints: CRUD + List]
+│  └─ /service-quotas           [5 endpoints: CRUD + List]
+│
+├─ INTG - Integration (/integration)
+│  ├─ /apis                     [5 endpoints: CRUD + List]
+│  ├─ /webhooks                 [5 endpoints: CRUD + List]
+│  └─ /rate-limits              [5 endpoints: CRUD + List]
+│
+├─ NOTI - Notification (/notifications)
+│  ├─ /notifications            [5 endpoints: CRUD + List]
+│  ├─ /templates                [5 endpoints: CRUD + List]
+│  └─ /campaigns                [5 endpoints: CRUD + List]
+│
+├─ SUPT - Support (/support)
+│  ├─ /tickets                  [5 endpoints: CRUD + List]
+│  ├─ /ticket-comments          [5 endpoints: CRUD + List]
+│  └─ /feedbacks                [5 endpoints: CRUD + List]
+│
+├─ STAT - Statistics (/statistics)
+│  ├─ /usage                    [5 endpoints: CRUD + List]
+│  └─ /tenants                  [5 endpoints: CRUD + List]
+│
+└─ AUTO - Automation (/automation)
+   ├─ /workflows                [5 endpoints: CRUD + List]
+   ├─ /tasks                    [5 endpoints: CRUD + List]
+   └─ /executions               [5 endpoints: CRUD + List]
+
+TOTAL MANAGER: 43 routers × 5 endpoints = 215+ endpoints
+
+
+TENANT SYSTEM APIs (/api/v1/tenants)
+=====================================
+
+├─ ADM - Administration (/adm)
+│  └─ /users                    [5 endpoints: CRUD + List] ✅ FULLY IMPLEMENTED
+│     ├─ POST   /users          - 사용자 생성
+│     ├─ GET    /users          - 사용자 목록 (pagination, filters)
+│     ├─ GET    /users/{id}     - 사용자 조회
+│     ├─ PATCH  /users/{id}     - 사용자 수정
+│     └─ DELETE /users/{id}     - 사용자 삭제
+│
+├─ CRM - Customer Relationship (/crm)
+│  ├─ /customers                [5 endpoints: CRUD + List]
+│  ├─ /contacts                 [5 endpoints: CRUD + List]
+│  ├─ /opportunities            [5 endpoints: CRUD + List]
+│  └─ /activities               [5 endpoints: CRUD + List]
+│
+├─ FIM - Finance (/finance)
+│  ├─ /accounts                 [5 endpoints: CRUD + List]
+│  ├─ /transactions             [5 endpoints: CRUD + List]
+│  ├─ /budgets                  [5 endpoints: CRUD + List]
+│  └─ /invoices                 [5 endpoints: CRUD + List]
+│
+├─ IVM - Inventory (/inventory)
+│  ├─ /products                 [5 endpoints: CRUD + List]
+│  ├─ /warehouses               [5 endpoints: CRUD + List]
+│  ├─ /stock-movements          [5 endpoints: CRUD + List]
+│  └─ /adjustments              [5 endpoints: CRUD + List]
+│
+├─ PSM - Procurement (/procurement)
+│  ├─ /purchase-orders          [5 endpoints: CRUD + List]
+│  ├─ /vendors                  [5 endpoints: CRUD + List]
+│  ├─ /requisitions             [5 endpoints: CRUD + List]
+│  └─ /receiving                [5 endpoints: CRUD + List]
+│
+├─ SRM - Sales (/sales)
+│  ├─ /sales-orders             [5 endpoints: CRUD + List]
+│  ├─ /quotes                   [5 endpoints: CRUD + List]
+│  ├─ /customers                [5 endpoints: CRUD + List]
+│  └─ /sales-activities         [5 endpoints: CRUD + List]
+│
+└─ LWM - Workflow (/workflow)
+   ├─ /workflows                [5 endpoints: CRUD + List]
+   ├─ /approvals                [5 endpoints: CRUD + List]
+   ├─ /tasks                    [5 endpoints: CRUD + List]
+   └─ /steps                    [5 endpoints: CRUD + List]
+
+TOTAL TENANT: 25 routers × 5 endpoints = 125+ endpoints
+
+
+STANDARD CRUD OPERATIONS
+=========================
+
+Each module typically provides:
+  GET    /{resource}            - List with pagination & filters
+  POST   /{resource}            - Create new resource
+  GET    /{resource}/{id}       - Get resource by ID
+  PATCH  /{resource}/{id}       - Update resource
+  DELETE /{resource}/{id}       - Delete resource
+
+
+RESPONSE FORMAT (Envelope Pattern)
+===================================
+
+Success Response:
+{
+  "success": true,
+  "data": { ... },
+  "message": null,
+  "code": null,
+  "timestamp": "2025-10-15T13:05:59.826Z",
+  "request_id": "uuid"
+}
+
+Error Response:
+{
+  "success": false,
+  "data": null,
+  "message": "Error message",
+  "code": "ERROR_CODE",
+  "timestamp": "2025-10-15T13:05:59.826Z",
+  "request_id": "uuid",
+  "detail": { ... }
+}
+
+
+PAGINATION
+==========
+
+Query Parameters:
+  ?page=1              - Page number (default: 1)
+  ?page_size=20        - Items per page (default: 20, max: 100)
+
+Response includes:
+  - items: [...],
+  - total: 100,
+  - page: 1,
+  - page_size: 20,
+  - total_pages: 5
+
+
+AUTHENTICATION
+==============
+
+1. Login to get token:
+   POST /api/v1/manager/auth/login
+   Body: {"username": "admin", "password": "password"}
+
+2. Use token in subsequent requests:
+   Authorization: Bearer {access_token}
+
+
+SUMMARY STATISTICS
+==================
+
+Manager System:
+  - Domains: 14
+  - Routers: 43
+  - Endpoints: 215+
+
+Tenant System:
+  - Domains: 7
+  - Routers: 25
+  - Endpoints: 125+
+
+TOTAL:
+  - Domains: 21
+  - Routers: 68
+  - Endpoints: 340+
+  
+Implementation Status:
+  ✅ Fully Implemented: 44 routers (Manager + ADM Users)
+  ⚠️ Skeleton Implemented: 24 routers (Other Tenant modules)
+
+
+FILE LOCATIONS
+==============
+
+Main Application:
+  - src/main.py                      - FastAPI app initialization
+  - src/core/config.py               - Configuration settings
+  - src/core/database.py             - Database connections
+  - src/core/security.py             - Authentication & JWT
+
+Manager Routers:
+  - src/routers/manager/v1.py        - Manager API aggregator
+  - src/modules/manager/{domain}/    - Domain modules
+
+Tenant Routers:
+  - src/routers/tenants/v1.py        - Tenant API aggregator
+  - src/modules/tenants/{domain}/    - Domain modules
+
+Shared:
+  - src/modules/shareds/             - Shared utilities
+  - src/models/manager/              - Manager DB models
+  - src/models/tenants/              - Tenant DB models
+
+
+DOCUMENTATION
+=============
+
+Interactive:
+  - http://localhost:8100/docs       - Swagger UI
+  - http://localhost:8100/redoc      - ReDoc
+  - http://localhost:8100/openapi.json - OpenAPI JSON
+
+Static:
+  - API_DOCUMENTATION.md             - Complete API guide
+  - IMPLEMENTATION_REPORT.md         - Implementation details
+  - API_STRUCTURE.txt                - This file
+
+
+Generated: 2025-10-15
+CXG Platform Backend API v1.0.0

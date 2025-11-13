@@ -1,0 +1,538 @@
+
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- tbs_coll_mst
+CREATE TABLE IF NOT EXISTS tbs_coll_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  coll_no CHAR(14) NOT NULL,
+  coll_tp CHAR(1) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  coll_amt DECIMAL(17, 2) NOT NULL,
+  real_amt DECIMAL(17, 2) NOT NULL,
+  coll_st CHAR(1) NOT NULL,
+  notes TEXT,
+  prop_ownr_nm VARCHAR(200),
+  prop_post_cd VARCHAR(10),
+  prop_addr1 VARCHAR(200),
+  prop_addr2 VARCHAR(200),
+  bond_trns_nm VARCHAR(100),
+  thrd_dbtr_nm VARCHAR(100),
+  bond_post_cd VARCHAR(10),
+  bond_addr1 VARCHAR(200),
+  bond_addr2 VARCHAR(200),
+  bank_brch_nm VARCHAR(100),
+  bank_acct_no VARCHAR(100),
+  bank_dpst_nm VARCHAR(100),
+  insu_brch_nm VARCHAR(100),
+  insu_plcy_no VARCHAR(100),
+  insu_ownr_nm VARCHAR(100),
+  guar_brch_nm VARCHAR(100),
+  guar_plcy_no VARCHAR(100),
+  guar_pobx_no VARCHAR(100),
+  paym_brch_nm VARCHAR(100),
+  note_brch_nm VARCHAR(100),
+  coll_type_nm VARCHAR(100),
+  end_user_nm VARCHAR(100),
+  contract_nm VARCHAR(100),
+  pjt_sign_dt CHAR(8),
+  pjt_paym_dt CHAR(8),
+  othr_coll_nm TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_crdt_day
+CREATE TABLE IF NOT EXISTS tbs_crdt_day (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cday_tp CHAR(3) NOT NULL,
+  base_day INTEGER,
+  bend_day INTEGER,
+  paym_mon INTEGER,
+  paym_day INTEGER,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_crdt_lvl
+CREATE TABLE IF NOT EXISTS tbs_crdt_lvl (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  clvl_tp CHAR(4) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_crdt_mgr
+CREATE TABLE IF NOT EXISTS tbs_crdt_mgr (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  crdt_id INTEGER NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  cday_tp CHAR(3) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_crdt_mst
+CREATE TABLE IF NOT EXISTS tbs_crdt_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  crdt_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crcy_tp CHAR(3),
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_crdt_sum
+CREATE TABLE IF NOT EXISTS tbs_crdt_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  crdt_tp CHAR(4) NOT NULL,
+  crdt_id INTEGER NOT NULL,
+  base_amt DECIMAL(17, 2) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  dpst_amt DECIMAL(17, 2) NOT NULL,
+  mdfy_amt DECIMAL(17, 2) NOT NULL,
+  blnc_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_exch_mst
+CREATE TABLE IF NOT EXISTS tbs_exch_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8) NOT NULL,
+  crcy_tp CHAR(3) NOT NULL,
+  exch_rat DECIMAL(17, 2) NOT NULL,
+  remark TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_cost_day
+CREATE TABLE IF NOT EXISTS tco_cost_day (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_dt CHAR(8) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  base_qty INTEGER NOT NULL,
+  base_amt DECIMAL(17, 2) NOT NULL,
+  base_pr DECIMAL(17, 2) NOT NULL,
+  purc_qty INTEGER NOT NULL,
+  purc_amt DECIMAL(17, 2) NOT NULL,
+  purc_pr DECIMAL(17, 2) NOT NULL,
+  make_qty INTEGER,
+  make_amt DECIMAL(17, 2),
+  make_pr DECIMAL(17, 2),
+  sale_qty INTEGER NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  sale_pr DECIMAL(17, 2) NOT NULL,
+  cost_qty INTEGER NOT NULL,
+  cost_amt DECIMAL(17, 2) NOT NULL,
+  cost_pr DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_cost_ext
+CREATE TABLE IF NOT EXISTS tco_cost_ext (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  cost_pr DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_cost_mon
+CREATE TABLE IF NOT EXISTS tco_cost_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  prdt_cd CHAR(14) NOT NULL,
+  base_qty INTEGER NOT NULL,
+  base_amt DECIMAL(17, 2) NOT NULL,
+  base_pr DECIMAL(17, 2) NOT NULL,
+  purc_qty INTEGER NOT NULL,
+  purc_amt DECIMAL(17, 2) NOT NULL,
+  purc_pr DECIMAL(17, 2) NOT NULL,
+  make_qty INTEGER,
+  make_amt DECIMAL(17, 2),
+  make_pr DECIMAL(17, 2),
+  sale_qty INTEGER NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  sale_pr DECIMAL(17, 2) NOT NULL,
+  cost_qty INTEGER NOT NULL,
+  cost_amt DECIMAL(17, 2) NOT NULL,
+  cost_pr DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_nspf_mon
+CREATE TABLE IF NOT EXISTS tco_nspf_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  cost_amt DECIMAL(17, 2) NOT NULL,
+  prft_amt DECIMAL(17, 2) NOT NULL,
+  rebt_amt DECIMAL(17, 2) NOT NULL,
+  expv_amt DECIMAL(17, 2) NOT NULL,
+  tspf_amt DECIMAL(17, 2) NOT NULL,
+  expd_amt DECIMAL(17, 2) NOT NULL,
+  expi_amt DECIMAL(17, 2) NOT NULL,
+  nspf_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tco_plan_purc
+CREATE TABLE IF NOT EXISTS tco_plan_purc (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  plan_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  plan_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tco_plan_purc_mon
+CREATE TABLE IF NOT EXISTS tco_plan_purc_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  plan_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  cost_rat DECIMAL(17, 5) NOT NULL,
+  plan_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_plan_sale
+CREATE TABLE IF NOT EXISTS tco_plan_sale (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  plan_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  sale_amt DECIMAL(17, 2) NOT NULL,
+  cost_amt DECIMAL(17, 2) NOT NULL,
+  prft_amt DECIMAL(17, 2) NOT NULL,
+  inct_amt DECIMAL(17, 2) NOT NULL,
+  tspf_amt DECIMAL(17, 2) NOT NULL,
+  dexp_amt DECIMAL(17, 2) NOT NULL,
+  cexp_amt DECIMAL(17, 2) NOT NULL,
+  nspf_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_plan_sale_mon
+CREATE TABLE IF NOT EXISTS tco_plan_sale_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  plan_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  plan_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_rebt_mst
+CREATE TABLE IF NOT EXISTS tco_rebt_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rebt_no CHAR(14) NOT NULL,
+  rebt_ym CHAR(6) NOT NULL,
+  vndr_cd CHAR(3) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  rebt_tp CHAR(1) NOT NULL,
+  rebt_amt DECIMAL(17, 2) NOT NULL,
+  prmt_tp CHAR(4),
+  st_prmt_dt CHAR(8),
+  ed_prmt_dt CHAR(8),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_rebt_pay
+CREATE TABLE IF NOT EXISTS tco_rebt_pay (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  rebt_vnd_amt DECIMAL(17, 2) NOT NULL,
+  rebt_gen_amt DECIMAL(17, 2) NOT NULL,
+  rebt_pay_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_rebt_rcv
+CREATE TABLE IF NOT EXISTS tco_rebt_rcv (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  rebt_mst_id INTEGER NOT NULL,
+  rebt_rcv_ym CHAR(6) NOT NULL,
+  rebt_rcv_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_rebt_sum
+CREATE TABLE IF NOT EXISTS tco_rebt_sum (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  nrcv_bas_amt DECIMAL(17, 2) NOT NULL,
+  nrcv_rcv_amt DECIMAL(17, 2) NOT NULL,
+  nrcv_occ_amt DECIMAL(17, 2) NOT NULL,
+  nrcv_rem_amt DECIMAL(17, 2) NOT NULL,
+  yrcv_occ_amt DECIMAL(17, 2) NOT NULL,
+  trcv_occ_amt DECIMAL(17, 2) NOT NULL,
+  purc_dct_amt DECIMAL(17, 2) NOT NULL,
+  purc_adj_amt DECIMAL(17, 2) NOT NULL,
+  purc_fex_amt DECIMAL(17, 2) NOT NULL,
+  stck_acc_amt DECIMAL(17, 2) NOT NULL,
+  make_trn_amt DECIMAL(17, 2) NOT NULL,
+  othr_adj_amt DECIMAL(17, 2) NOT NULL,
+  npay_bas_amt DECIMAL(17, 2) NOT NULL,
+  npay_occ_amt DECIMAL(17, 2) NOT NULL,
+  npay_use_amt DECIMAL(17, 2) NOT NULL,
+  npay_rem_amt DECIMAL(17, 2) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tco_vspf_mon
+CREATE TABLE IF NOT EXISTS tco_vspf_mon (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  base_ym CHAR(6) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  ctgr_cd CHAR(10) NOT NULL,
+  sale_prdt_amt DECIMAL(17, 2) NOT NULL,
+  inct_tsum_amt DECIMAL(17, 2) NOT NULL,
+  inct_nrcv_amt DECIMAL(17, 2) NOT NULL,
+  inct_yrcv_amt DECIMAL(17, 2) NOT NULL,
+  sale_cost_amt DECIMAL(17, 2) NOT NULL,
+  invt_base_amt DECIMAL(17, 2) NOT NULL,
+  invt_purc_amt DECIMAL(17, 2) NOT NULL,
+  purc_disc_amt DECIMAL(17, 2) NOT NULL,
+  purc_exch_amt DECIMAL(17, 2) NOT NULL,
+  invt_trns_amt DECIMAL(17, 2) NOT NULL,
+  invt_tpck_amt DECIMAL(17, 2) NOT NULL,
+  invt_tcto_amt DECIMAL(17, 2) NOT NULL,
+  invt_blnc_amt DECIMAL(17, 2) NOT NULL,
+  sale_prft_amt DECIMAL(17, 2) NOT NULL,
+  npay_base_amt DECIMAL(17, 2) NOT NULL,
+  nrcv_msum_amt DECIMAL(17, 2) NOT NULL,
+  npay_blnc_amt DECIMAL(17, 2) NOT NULL,
+  tspf_rslt_amt DECIMAL(17, 2) NOT NULL,
+  expn_rslt_amt DECIMAL(17, 2) NOT NULL,
+  nspf_rslt_amt DECIMAL(17, 2) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tfi_bank_mst
+CREATE TABLE IF NOT EXISTS tfi_bank_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  bank_cd CHAR(3) NOT NULL,
+  bank_acct_no VARCHAR(20) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  remarks TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tfi_bank_trn
+CREATE TABLE IF NOT EXISTS tfi_bank_trn (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  bank_cd CHAR(3) NOT NULL,
+  bank_acct_no VARCHAR(20) NOT NULL,
+  bank_trn_no VARCHAR(50) NOT NULL,
+  bank_trn_dt CHAR(8) NOT NULL,
+  bank_trn_sq INTEGER NOT NULL,
+  bank_trn_tm CHAR(14) NOT NULL,
+  bank_rcv_amt DECIMAL(17, 2) NOT NULL,
+  bank_out_amt DECIMAL(17, 2) NOT NULL,
+  bank_rem_amt DECIMAL(17, 2) NOT NULL,
+  remark1 VARCHAR(500),
+  remark2 VARCHAR(500),
+  remark3 VARCHAR(500),
+  remark4 VARCHAR(500),
+  memo VARCHAR(100),
+  reg_dtm VARCHAR(14),
+  del_yn VARCHAR(1),
+  PRIMARY KEY (id)
+);
+
+-- tfi_bank_trn_dpst
+CREATE TABLE IF NOT EXISTS tfi_bank_trn_dpst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  bank_trn_id INTEGER NOT NULL,
+  dpst_mst_id INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tfi_bank_trn_wthd
+CREATE TABLE IF NOT EXISTS tfi_bank_trn_wthd (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  bank_trn_id INTEGER NOT NULL,
+  wthd_mst_id INTEGER NOT NULL,
+  PRIMARY KEY (id)
+);

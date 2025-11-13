@@ -1,0 +1,187 @@
+-- ============================================================================
+-- Business Intelligence & Analytics Schema (bim)
+-- ============================================================================
+-- Description: BI/분석 (대시보드, 리포트, KPI, 데이터 분석)
+-- Database: tnnt_db (Tenant Database)
+-- Schema: bim
+-- Created: 2024-10-20
+-- ============================================================================
+
+CREATE SCHEMA IF NOT EXISTS bim;
+
+COMMENT ON SCHEMA bim IS 'BIM: BI/분석 스키마 (대시보드, 리포트, KPI)';
+
+-- ============================================================================
+-- AI 기반 업무지원 플랫폼 - 데이터베이스 DDL
+-- 멀티테넌시: schema per tenant 전략
+-- PostgreSQL 15+ 사용
+-- ============================================================================
+
+-- ============================================================================
+-- BIM: 경영분석 (Business Intelligence & EPM)
+-- ============================================================================
+
+-- KPI 정의
+CREATE TABLE bim.kpi_definitions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    kpi_code VARCHAR(50) NOT NULL,
+    kpi_name VARCHAR(200) NOT NULL,
+    description TEXT,
+    category VARCHAR(50),
+    measurement_unit VARCHAR(20),
+    calculation_formula TEXT,
+    target_type VARCHAR(20) DEFAULT 'HIGHER_BETTER', -- HIGHER_BETTER, LOWER_BETTER, TARGET_VALUE
+    is_active BOOLEAN DEFAULT true,
+    is_deleted BOOLEAN DEFAULT false,
+    
+    CONSTRAINT uk_bim_kpi_definitions__company_code UNIQUE (company_id, kpi_code)
+);
+
+-- KPI 목표값
+CREATE TABLE bim.kpi_targets (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    kpi_id UUID NOT NULL,
+    target_period VARCHAR(7) NOT NULL, -- YYYY-MM
+    department_id UUID,
+    user_id UUID,
+    target_value NUMERIC(18,4) NOT NULL,
+    actual_value NUMERIC(18,4),
+    achievement_rate NUMERIC(5,2),
+    
+    CONSTRAINT uk_bim_kpi_targets__kpi_period_dept UNIQUE (kpi_id, target_period, COALESCE(department_id, '00000000-0000-0000-0000-000000000000'), COALESCE(user_id, '00000000-0000-0000-0000-000000000000'))
+);
+
+-- 매출 분석 (월별 집계)
+CREATE TABLE bim.sales_analytics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    period VARCHAR(7) NOT NULL, -- YYYY-MM
+    customer_id UUID,
+    item_category_id UUID,
+    sales_person_id UUID,
+    sales_amount NUMERIC(18,4) DEFAULT 0,
+    sales_qty INTEGER DEFAULT 0,
+    cost_amount NUMERIC(18,4) DEFAULT 0,
+    gross_profit NUMERIC(18,4) DEFAULT 0,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    
+    CONSTRAINT uk_bim_sales_analytics__company_period UNIQUE (company_id, period, COALESCE(customer_id, '00000000-0000-0000-0000-000000000000'), COALESCE(item_category_id, '00000000-0000-0000-0000-000000000000'), COALESCE(sales_person_id, '00000000-0000-0000-0000-000000000000'))
+);
+
+-- 구매 분석 (월별 집계)
+CREATE TABLE bim.purchase_analytics (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID,
+    updated_at TIMESTAMPTZ,
+    updated_by UUID,
+    
+    tenant_id UUID NOT NULL,
+    company_id UUID NOT NULL,
+    period VARCHAR(7) NOT NULL, -- YYYY-MM
+    vendor_id UUID,
+    item_category_id UUID,
+    purchase_amount NUMERIC(18,4) DEFAULT 0,
+    purchase_qty INTEGER DEFAULT 0,
+    currency VARCHAR(3) DEFAULT 'KRW',
+    
+    CONSTRAINT uk_bim_purchase_analytics__company_period UNIQUE (company_id, period, COALESCE(vendor_id, '00000000-0000-0000-0000-000000000000'), COALESCE(item_category_id, '00000000-0000-0000-0000-000000000000'))
+);
+-- ============================================================================
+-- BIM 스키마 인덱스 및 제약조건 추가
+-- ============================================================================
+
+-- 각 BIM 테이블에 기본 인덱스 추가
+CREATE INDEX IF NOT EXISTS idx_bim_dashboards_tenant_id ON bim.dashboards(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_bim_dashboards_created_at ON bim.dashboards(created_at);
+CREATE INDEX IF NOT EXISTS idx_bim_reports_tenant_id ON bim.reports(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_bim_reports_created_at ON bim.reports(created_at);
+CREATE INDEX IF NOT EXISTS idx_bim_kpis_tenant_id ON bim.kpis(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_bim_kpis_created_at ON bim.kpis(created_at);
+
+-- 테이블 주석
+COMMENT ON SCHEMA bim IS 'BI/분석 스키마 (대시보드, 리포트, KPI 관리)';
+-- ============================================================================
+-- BIM 스키마 테이블 및 컬럼 주석
+-- ============================================================================
+
+-- KPI 정의 테이블
+COMMENT ON TABLE bim.kpi_definitions IS 'KPI(핵심성과지표) 정의 및 설정 정보를 관리하는 테이블';
+COMMENT ON COLUMN bim.kpi_definitions.id IS 'KPI 정의 고유 식별자';
+COMMENT ON COLUMN bim.kpi_definitions.tenant_id IS '테넌트 ID - 멀티테넌시 구분';
+COMMENT ON COLUMN bim.kpi_definitions.company_id IS '회사 ID';
+COMMENT ON COLUMN bim.kpi_definitions.kpi_code IS 'KPI 코드 - 시스템 내 고유 식별 코드';
+COMMENT ON COLUMN bim.kpi_definitions.kpi_name IS 'KPI 명칭';
+COMMENT ON COLUMN bim.kpi_definitions.category IS 'KPI 카테고리 (매출, 수익성, 효율성, 품질 등)';
+COMMENT ON COLUMN bim.kpi_definitions.calculation_method IS 'KPI 계산 방법 (수식, 집계 방법)';
+COMMENT ON COLUMN bim.kpi_definitions.unit IS '측정 단위 (원, %, 건수 등)';
+COMMENT ON COLUMN bim.kpi_definitions.frequency IS '측정 주기 (일별, 주별, 월별, 분기별, 연별)';
+COMMENT ON COLUMN bim.kpi_definitions.description IS 'KPI 상세 설명';
+COMMENT ON COLUMN bim.kpi_definitions.is_active IS '활성화 상태';
+COMMENT ON COLUMN bim.kpi_definitions.created_at IS '생성일시';
+COMMENT ON COLUMN bim.kpi_definitions.created_by IS '생성자 ID';
+COMMENT ON COLUMN bim.kpi_definitions.updated_at IS '수정일시';
+COMMENT ON COLUMN bim.kpi_definitions.updated_by IS '수정자 ID';
+
+-- KPI 목표 테이블
+COMMENT ON TABLE bim.kpi_targets IS 'KPI 목표값 및 실적 관리 테이블';
+COMMENT ON COLUMN bim.kpi_targets.id IS 'KPI 목표 고유 식별자';
+COMMENT ON COLUMN bim.kpi_targets.kpi_definition_id IS 'KPI 정의 ID - kpi_definitions 테이블 참조';
+COMMENT ON COLUMN bim.kpi_targets.target_period IS '목표 기간 (YYYY-MM 형식)';
+COMMENT ON COLUMN bim.kpi_targets.target_value IS '목표값';
+COMMENT ON COLUMN bim.kpi_targets.actual_value IS '실적값';
+COMMENT ON COLUMN bim.kpi_targets.achievement_rate IS '달성률 (%)';
+COMMENT ON COLUMN bim.kpi_targets.status IS '상태 (진행중, 완료, 미달성 등)';
+COMMENT ON COLUMN bim.kpi_targets.created_at IS '생성일시';
+COMMENT ON COLUMN bim.kpi_targets.created_by IS '생성자 ID';
+COMMENT ON COLUMN bim.kpi_targets.updated_at IS '수정일시';
+COMMENT ON COLUMN bim.kpi_targets.updated_by IS '수정자 ID';
+
+-- 매출 분석 테이블
+COMMENT ON TABLE bim.sales_analytics IS '매출 데이터 분석 및 통계 정보 테이블';
+COMMENT ON COLUMN bim.sales_analytics.id IS '매출 분석 고유 식별자';
+COMMENT ON COLUMN bim.sales_analytics.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN bim.sales_analytics.company_id IS '회사 ID';
+COMMENT ON COLUMN bim.sales_analytics.analysis_date IS '분석 기준일';
+COMMENT ON COLUMN bim.sales_analytics.period_type IS '분석 주기 (일별, 주별, 월별, 분기별, 연별)';
+COMMENT ON COLUMN bim.sales_analytics.total_sales IS '총 매출액';
+COMMENT ON COLUMN bim.sales_analytics.total_orders IS '총 주문 건수';
+COMMENT ON COLUMN bim.sales_analytics.average_order_value IS '평균 주문 금액';
+COMMENT ON COLUMN bim.sales_analytics.top_product_id IS '최다 판매 제품 ID';
+COMMENT ON COLUMN bim.sales_analytics.top_customer_id IS '최대 매출 고객 ID';
+COMMENT ON COLUMN bim.sales_analytics.created_at IS '생성일시';
+COMMENT ON COLUMN bim.sales_analytics.updated_at IS '수정일시';
+
+-- 구매 분석 테이블
+COMMENT ON TABLE bim.purchase_analytics IS '구매 데이터 분석 및 통계 정보 테이블';
+COMMENT ON COLUMN bim.purchase_analytics.id IS '구매 분석 고유 식별자';
+COMMENT ON COLUMN bim.purchase_analytics.tenant_id IS '테넌트 ID';
+COMMENT ON COLUMN bim.purchase_analytics.company_id IS '회사 ID';
+COMMENT ON COLUMN bim.purchase_analytics.analysis_date IS '분석 기준일';
+COMMENT ON COLUMN bim.purchase_analytics.period_type IS '분석 주기 (일별, 주별, 월별, 분기별, 연별)';
+COMMENT ON COLUMN bim.purchase_analytics.total_purchases IS '총 구매액';
+COMMENT ON COLUMN bim.purchase_analytics.total_purchase_orders IS '총 구매 발주 건수';
+COMMENT ON COLUMN bim.purchase_analytics.average_purchase_value IS '평균 구매 금액';
+COMMENT ON COLUMN bim.purchase_analytics.top_supplier_id IS '최다 거래 공급업체 ID';
+COMMENT ON COLUMN bim.purchase_analytics.top_item_id IS '최다 구매 품목 ID';
+COMMENT ON COLUMN bim.purchase_analytics.created_at IS '생성일시';
+COMMENT ON COLUMN bim.purchase_analytics.updated_at IS '수정일시';
+

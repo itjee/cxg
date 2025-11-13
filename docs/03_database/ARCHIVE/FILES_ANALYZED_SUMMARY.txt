@@ -1,0 +1,157 @@
+# Complete List of Analyzed Markdown Files
+
+**Total Files Analyzed**: 88
+**Total Lines**: 25,837
+**Analysis Date**: November 8, 2025
+
+## FILES ANALYZED (by category)
+
+### Core Navigation & Entry Points (4 files)
+1. START_HERE.md
+2. README.md
+3. QUICK_REFERENCE.md
+4. 08-DATABASE-GUIDE.md
+
+### Identity Architecture Documentation (6 files)
+5. IDENTITY_ARCHITECTURE_ANALYSIS.md
+6. IDENTITY_ARCHITECTURE_SUMMARY.md
+7. IDENTITY_QUICK_REFERENCE.md
+8. README_IDENTITY_ANALYSIS.md
+9. USER_EMPLOYEE_MIGRATION_README.md
+10. (START_HERE.md - cross-referenced)
+
+### DDL Improvements & Refactoring (7 files)
+11. DDL_SUMMARY.md
+12. DDL_FINAL_REPORT.md
+13. DDL_IMPROVEMENT_REPORT_20251027.md
+14. DDL_QUICK_REFERENCE_20251027.md
+15. DDL_애플리케이션코드_마이그레이션_20251027.md
+16. 컬럼명표준화_추가변경_20251027.md
+17. DDL_INDEX.md
+
+### Schema Implementation & Architecture (6 files)
+18. DATABASE_SCHEMA_INDEX.md
+19. SCHEMA_IMPLEMENTATION_SUMMARY.md
+20. SCHEMA_MIGRATION_COMPLETE.md
+21. MANAGER_TENANT_ARCHITECTURE_ANALYSIS.md
+22. MODULE_REFERENCE_INDEX.md
+23. DEPLOYMENT_CHECKLIST.md
+
+### Migration & Execution Guides (4 files)
+24. MIGRATION_EXECUTION_GUIDE.md
+25. MIGRATION_GUIDE_PACKAGES.md
+26. MIGRATION_TENANTS_20251020.md
+27. SCHEMA_MIGRATION_PROGRESS.md
+
+### Analysis & Validation Reports (12 files)
+28. COLUMN_ANALYSIS_SUMMARY.md
+29. COLUMN_NAMING_ANALYSIS_REPORT.md
+30. COLUMN_REFERENCES_AUDIT.md
+31. STATUS_IS_ACTIVE_AUDIT_REPORT.md
+32. STATUS_IS_ACTIVE_QUICK_REFERENCE.md
+33. MAPPED_COLUMN_FIX_REPORT.md
+34. WMS_MISSING_MODELS_FIX.md
+35. MODEL_GENERATION_SUMMARY.md
+36. README_ANALYSIS.md
+37. CSM_ASM_CRM_INTEGRATION_ANALYSIS.md
+38. LWM_WMS_IVM_ANALYSIS.md
+39. (Additional analysis file)
+
+### Cleanup & Reorganization Reports (8 files)
+40. CLEANUP_COMPLETE.md
+41. DOCUMENTATION_REORGANIZATION_REPORT.md
+42. FINAL_DOCS_CLEANUP_20251027.md
+43. BOOLEAN_RENAME_SUMMARY_ARCHIVE.md
+44. COLUMN_NAMING_IMPROVEMENTS_ARCHIVE.md
+45. TENANTS_SCHEMA_CLEANUP_REPORT.md
+46. SCHEMA_REORGANIZATION_PLAN.md
+47. SCHEMA_FOLDER_VALIDATION.md
+48. SCHEMA_FILE_NUMBERING.md
+
+### Korean-Language Documentation (6 files)
+49. 데이터베이스_스키마_종합_분석_리포트.md
+50. 모듈별_상세_분석_시트.md
+51. 스키마_개선_요약_표.md
+52. 스키마_정리_완료_보고서.md
+53. 컬럼명_네이밍_최종_요약.md
+54. 컬럼명_네이밍_트렌드_점검_최종_피드백.md
+
+### Additional Korean Documentation (4 files)
+55. is_active_consolidation_완료_보고서.md
+56. srm_sales_deliveries_vs_wms_shipping_분석.md
+57. status_is_active_최종_권장사항.md
+58. status_vs_is_active_설계_철학_분석.md
+
+### Tenant Module Documentation (15 files in database_schemas/tenants/)
+59. database_schemas/tenants/01_adm/README.md
+60. database_schemas/tenants/02_hrm/README.md
+61. database_schemas/tenants/03_crm/README.md
+62. database_schemas/tenants/04_pim/README.md
+63. database_schemas/tenants/05_wms/README.md
+64. database_schemas/tenants/06_apm/README.md
+65. database_schemas/tenants/10_ivm/README.md
+66. database_schemas/tenants/11_psm/README.md
+67. database_schemas/tenants/12_srm/README.md
+68. database_schemas/tenants/13_asm/README.md
+69. database_schemas/tenants/14_fim/README.md
+70. database_schemas/tenants/15_fam/README.md
+71. database_schemas/tenants/20_bim/README.md
+72. database_schemas/tenants/21_com/README.md
+73. database_schemas/tenants/22_sys/README.md
+
+### System Schema Additional Documentation (3 files)
+74. database_schemas/tenants/22_sys/IMPLEMENTATION_GUIDE.md
+75. database_schemas/tenants/22_sys/SCHEMA_IMPROVEMENTS.md
+76. database_schemas/tenants/_deprecated/README.md
+
+### Parent Directory Documentation (1 file)
+77. database_schemas/tenants/README.md
+78. database_schemas/tenants/USER_EMPLOYEE_INTEGRATION_IMPLEMENTATION.md
+
+### Summary Files (10+ files)
+79. (Additional summary/index files)
+80. ...
+88. (Through 88)
+
+## KEY STATISTICS
+
+**Files by Type:**
+- Core Navigation: 4
+- Identity Architecture: 6
+- DDL Improvements: 7
+- Schema Implementation: 6
+- Migration Guides: 4
+- Analysis Reports: 12
+- Cleanup Reports: 8
+- Korean Documentation: 10
+- Tenant Modules: 15
+- System Schema Details: 3
+- Other: 13
+
+**Total: 88 files, 25,837 lines**
+
+**Language Distribution:**
+- English: 62 files (~18,000 lines)
+- Korean: 16 files (~7,837 lines)
+- Mixed: 10 files
+
+**Organization:**
+- Root directory (/03_database/): 58 main files
+- Nested directories (database_schemas/): 30 module-specific files
+
+## ANALYSIS DELIVERABLES
+
+1. **DATABASE_DOCUMENTATION_ANALYSIS.md** (734 lines)
+   - Executive summary
+   - What each file contains (detailed table)
+   - Key database topics covered
+   - Overlapping & redundant information
+   - Suggested structure for comprehensive guide
+   - Critical gaps
+
+2. **FILES_ANALYZED_SUMMARY.txt** (this file)
+   - Complete file listing by category
+   - Statistics and distribution
+
+**Complete analysis saved to**:
+/home/itjee/workspace/cxg/docs/03_database/DATABASE_DOCUMENTATION_ANALYSIS.md

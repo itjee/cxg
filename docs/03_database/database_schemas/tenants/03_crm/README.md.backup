@@ -1,0 +1,586 @@
+# CRM 스키마 (고객관계관리)
+
+## 개요
+고객관계관리 스키마로, 거래처(고객/공급업체), 담당자, 주소 정보를 통합 관리합니다.
+
+## 테이블 구조
+
+### 실행 순서
+파일은 숫자 순서대로 실행되어야 합니다:
+
+1. **00_schema.sql** - 스키마 생성
+2. **01_partners.sql** - 거래처 마스터 테이블
+3. **02_partner_contacts.sql** - 거래처 담당자 테이블 (거래처 쪽 담당자)
+4. **03_partner_addresses.sql** - 거래처 주소 테이블
+5. **04_partner_managers.sql** - 거래처 담당 사원 테이블 (자사 담당자)
+6. **05_partner_banks.sql** - 거래처 계좌 테이블
+
+## 테이블 상세
+
+### 1. partners (거래처)
+거래처 마스터 정보 (고객, 공급업체, 기타 통합)
+
+#### 거래처 기본 정보
+- 거래처 코드 (code)
+- 거래처명 (name, name_en)
+- 거래처 유형 (partner_type)
+
+#### 사업자 등록 정보
+- 법인등록번호 (tax_no)
+- 사업자등록번호 (business_no)
+- 상호/법인명 (business_name)
+- 사업자구분 (business_type: C=법인, S=개인)
+- 업태/종목 (business_kind, business_item)
+- 대표자명 (ceo_name)
+
+#### 주소 정보
+- 우편번호 (postcode)
+- 기본주소/상세주소 (address1, address2)
+
+#### 연락처 정보
+- 전화번호 (phone)
+- 팩스 (fax)
+- 이메일 (email)
+- 웹사이트 (website)
+
+#### 거래 조건
+- 결제 조건 (payment_terms)
+- 신용 한도 (credit_limit)
+- 거래 통화 (currency_code)
+
+#### 추가 정보
+- 산업/업종 (industry)
+- 직원 수 (employee_count)
+- 연매출액 (annual_revenue)
+- 설립일 (established_date)
+
+#### 상태 관리
+- ACTIVE: 활성
+- INACTIVE: 비활성
+- SUSPENDED: 정지
+- CLOSED: 폐쇄
+
+#### 거래처 유형 (partner_type)
+- **CUSTOMER**: 매출거래처 (판매처)
+- **SUPPLIER**: 매입거래처 (공급업체)
+- **BOTH**: 매출+매입 거래처 (겸업)
+- **OTHER**: 기타 거래처
+
+#### 결제 조건 (payment_terms)
+- **COD**: Cash on Delivery (착불)
+- **NET7/15/30/45/60/90**: N일 후 지급
+- **PREPAID**: 선불
+
+### 2. partner_contacts (거래처 담당자)
+거래처별 담당자 정보 관리
+
+#### 담당자 정보
+- 거래처 참조 (partner_id)
+- 성명 (name)
+- 직위 (position)
+- 부서 (department)
+
+#### 연락처
+- 전화번호 (phone)
+- 휴대폰 (mobile)
+- 이메일 (email)
+
+#### 담당 업무
+- 업무 유형 (contact_type)
+- 주 담당자 여부 (is_primary)
+
+#### 비고
+- notes
+
+#### 상태 관리
+- ACTIVE: 활성
+- INACTIVE: 비활성
+
+#### 담당자 유형 (contact_type)
+- **SALES**: 영업 담당
+- **PURCHASING**: 구매 담당
+- **ACCOUNTING**: 회계 담당
+- **TECHNICAL**: 기술 담당
+- **MANAGEMENT**: 경영진
+- **OTHER**: 기타
+
+### 3. partner_addresses (거래처 주소)
+거래처별 다중 주소 관리
+
+#### 주소 정보
+- 거래처 참조 (partner_id)
+- 주소 유형 (address_type)
+- 주소 별칭 (address_name)
+- 우편번호 (postcode)
+- 기본주소 (address1)
+- 상세주소 (address2)
+- 건물명 (building)
+- 도시 (city)
+- 주/도 (state_province)
+- 국가 코드 (country_code)
+- 지역 코드 (region_code)
+
+#### 연락처
+- 담당자명 (contact_name)
+- 전화번호 (phone)
+- 팩스 (fax)
+- 이메일 (email)
+
+#### 주소 속성
+- 기본 주소 여부 (is_default)
+- 청구지 여부 (is_billing)
+- 배송지 여부 (is_shipping)
+
+#### 배송 정보
+- 배송 지시사항 (instruction)
+- 출입코드 (access_code)
+
+#### 비고
+- notes
+
+#### 상태 관리
+- ACTIVE: 활성
+- INACTIVE: 비활성
+- SUSPENDED: 정지
+
+#### 주소 유형 (address_type)
+- **HEADQUARTER**: 본사
+- **BRANCH**: 지사/영업소
+- **WAREHOUSE**: 창고
+- **FACTORY**: 공장
+- **BILLING**: 청구지
+- **SHIPPING**: 배송지
+- **OTHER**: 기타
+
+### 4. partner_managers (거래처 담당 사원)
+자사 직원을 거래처에 담당자로 배정
+
+#### 배정 정보
+- 거래처 참조 (partner_id)
+- 담당 사원 (employee_id)
+- 담당 시작일 (start_date)
+- 담당 종료일 (end_date) - NULL이면 현재 담당 중
+
+#### 담당자 유형 (manager_type)
+- **PRIMARY**: 주 담당자
+- **SECONDARY**: 부담당자
+- **BACKUP**: 백업 담당자
+- **TECHNICAL**: 기술 담당자
+- **SALES**: 영업 담당자
+- **SUPPORT**: 지원 담당자
+
+#### 설명 및 비고
+- 담당 업무/역할 (description)
+- 비고 (notes)
+
+#### 상태 관리
+- ACTIVE: 활성
+- INACTIVE: 비활성
+- EXPIRED: 만료
+- TERMINATED: 종료
+
+### 5. partner_banks (거래처 계좌)
+거래처의 입출금 계좌 정보 관리
+
+#### 계좌 기본 정보
+- 거래처 참조 (partner_id)
+- 계좌 유형 (account_type)
+- 은행 코드 (bank_code)
+- 은행명 (bank_name)
+
+#### 계좌 상세
+- 계좌번호 (account_no)
+- 예금주명 (account_holder)
+- 계좌별칭 (account_name)
+
+#### 계좌 설정
+- 주계좌 여부 (is_primary)
+- 기본 입금계좌 여부 (is_receive)
+- 기본 지급계좌 여부 (is_payment)
+
+#### 추가 정보
+- SWIFT 코드 (swift_code) - 해외송금용
+- 지점 코드 (branch_code)
+- 지점명 (branch_name)
+- 비고 (notes)
+
+#### 상태 관리
+- ACTIVE: 활성
+- INACTIVE: 비활성
+- SUSPENDED: 정지
+- CLOSED: 폐쇄
+
+#### 계좌 유형 (account_type)
+- **CHECKING**: 보통예금
+- **SAVINGS**: 저축예금
+- **FOREIGN_CURRENCY**: 외화예금
+- **ESCROW**: 에스크로
+- **TRUST**: 신탁
+- **OTHER**: 기타
+
+## 외래키 관계
+
+```
+partners (currency_code) -> adm.currencies (code)  [RESTRICT]
+partner_contacts (partner_id) -> partners (id)  [CASCADE]
+partner_addresses (partner_id) -> partners (id)  [CASCADE]
+partner_addresses (country_code) -> adm.countries (code)  [RESTRICT]
+partner_addresses (region_code) -> adm.regions (code)  [SET NULL]
+partner_managers (partner_id) -> partners (id)  [CASCADE]
+partner_managers (employee_id) -> adm.employees (id)  [RESTRICT]
+partner_banks (partner_id) -> partners (id)  [CASCADE]
+```
+
+## 주요 특징
+
+### 통합 거래처 관리 (Business Partner Pattern)
+**하나의 테이블로 모든 거래처 통합 관리:**
+- 고객 (CUSTOMER)
+- 공급업체 (SUPPLIER)
+- 고객이면서 공급업체 (BOTH)
+- 기타 거래처 (OTHER)
+
+**장점:**
+- 데이터 중복 제거
+- 마스터 데이터 통합 관리
+- 역할 전환 유연성
+- 통합 리포트 용이
+- SAP 등 글로벌 표준과 일치
+
+### 다중 담당자 관리
+- 거래처별 여러 담당자 등록
+- 담당 업무별 구분 (영업, 구매, 회계 등)
+- 주 담당자 지정 (is_primary)
+
+### 다중 주소 관리
+- 거래처별 여러 주소 등록
+- 주소 유형별 구분
+- 기본 주소 지정
+- 청구지/배송지 플래그
+
+### 신용 관리
+- 신용 한도 설정
+- 결제 조건 관리
+- 거래 상태 관리
+
+## 사용 예시
+
+### 거래처 조회
+
+```sql
+-- 활성 매출거래처 조회
+SELECT code, name, business_no, phone
+FROM crm.partners
+WHERE partner_type IN ('CUSTOMER', 'BOTH')
+  AND status = 'ACTIVE'
+  AND is_deleted = false
+ORDER BY name;
+
+-- 매입거래처 조회
+SELECT code, name, business_no, payment_terms
+FROM crm.partners
+WHERE partner_type IN ('SUPPLIER', 'BOTH')
+  AND status = 'ACTIVE'
+  AND is_deleted = false
+ORDER BY name;
+
+-- 겸업 거래처 조회
+SELECT code, name, business_no
+FROM crm.partners
+WHERE partner_type = 'BOTH'
+  AND status = 'ACTIVE'
+  AND is_deleted = false
+ORDER BY name;
+```
+
+### 담당자 조회
+
+```sql
+-- 거래처의 주 담당자 조회
+SELECT p.name as partner_name, c.name as contact_name, 
+       c.position, c.phone, c.email
+FROM crm.partners p
+JOIN crm.partner_contacts c ON p.id = c.partner_id
+WHERE c.is_primary = true
+  AND c.is_deleted = false
+ORDER BY p.name;
+
+-- 영업 담당자 조회
+SELECT p.name as partner_name, c.name as contact_name, 
+       c.phone, c.mobile
+FROM crm.partners p
+JOIN crm.partner_contacts c ON p.id = c.partner_id
+WHERE c.contact_type = 'SALES'
+  AND c.is_deleted = false
+ORDER BY p.name;
+
+-- 구매 담당자 조회
+SELECT p.name as partner_name, c.name as contact_name, 
+       c.department, c.email
+FROM crm.partners p
+JOIN crm.partner_contacts c ON p.id = c.partner_id
+WHERE c.contact_type = 'PURCHASING'
+  AND c.is_deleted = false
+ORDER BY p.name;
+```
+
+### 주소 조회
+
+```sql
+-- 거래처의 기본 주소 조회
+SELECT p.name, a.address_type, a.postcode, a.address1, a.address2
+FROM crm.partners p
+JOIN crm.partner_addresses a ON p.id = a.partner_id
+WHERE a.is_default = true
+  AND a.is_deleted = false;
+
+-- 배송지 주소 조회
+SELECT p.name, a.address1, a.address2, a.phone
+FROM crm.partners p
+JOIN crm.partner_addresses a ON p.id = a.partner_id
+WHERE a.is_shipping = true
+  AND a.is_deleted = false;
+
+-- 본사 주소 조회
+SELECT p.name, a.address_type, a.address1, a.city
+FROM crm.partners p
+JOIN crm.partner_addresses a ON p.id = a.partner_id
+WHERE a.address_type = 'HEADQUARTER'
+  AND a.is_deleted = false;
+```
+
+### 통합 정보 조회
+
+```sql
+-- 거래처 상세 정보 (담당자, 주소 포함)
+SELECT 
+    p.code,
+    p.name,
+    p.partner_type,
+    p.business_no,
+    c.name as contact_name,
+    c.phone as contact_phone,
+    c.email as contact_email,
+    a.address1,
+    a.phone as address_phone
+FROM crm.partners p
+LEFT JOIN crm.partner_contacts c 
+    ON p.id = c.partner_id AND c.is_primary = true
+LEFT JOIN crm.partner_addresses a 
+    ON p.id = a.partner_id AND a.is_default = true
+WHERE p.status = 'ACTIVE'
+  AND p.is_deleted = false
+ORDER BY p.name;
+
+-- 거래처별 담당자 수 및 주소 수
+SELECT 
+    p.code,
+    p.name,
+    p.partner_type,
+    COUNT(DISTINCT c.id) as contact_count,
+    COUNT(DISTINCT a.id) as address_count
+FROM crm.partners p
+LEFT JOIN crm.partner_contacts c ON p.id = c.partner_id AND c.is_deleted = false
+LEFT JOIN crm.partner_addresses a ON p.id = a.partner_id AND a.is_deleted = false
+WHERE p.is_deleted = false
+GROUP BY p.id, p.code, p.name, p.partner_type
+ORDER BY p.name;
+```
+
+### 분석 쿼리
+
+```sql
+-- 거래처 유형별 통계
+SELECT 
+    partner_type,
+    COUNT(*) as count,
+    AVG(credit_limit) as avg_credit_limit,
+    SUM(annual_revenue) as total_annual_revenue
+FROM crm.partners
+WHERE status = 'ACTIVE'
+  AND is_deleted = false
+GROUP BY partner_type
+ORDER BY count DESC;
+
+-- 업종별 거래처 수
+SELECT 
+    industry,
+    COUNT(*) as count,
+    AVG(employee_count) as avg_employees
+FROM crm.partners
+WHERE industry IS NOT NULL
+  AND is_deleted = false
+GROUP BY industry
+ORDER BY count DESC;
+
+-- 결제 조건별 거래처 수
+SELECT 
+    payment_terms,
+    COUNT(*) as count,
+    AVG(credit_limit) as avg_credit_limit
+FROM crm.partners
+WHERE payment_terms IS NOT NULL
+  AND is_deleted = false
+GROUP BY payment_terms
+ORDER BY count DESC;
+```
+
+## 거래처 관리 프로세스
+
+### 신규 거래처 등록
+
+```
+1. 거래처 기본 정보 등록 (partners)
+   - 거래처 코드 생성
+   - 거래처명, 거래처 유형 입력
+   - 사업자 정보 입력
+   ↓
+2. 담당자 등록 (partner_contacts)
+   - 최소 1명 이상
+   - 주 담당자 지정
+   - 담당 업무 유형 선택
+   ↓
+3. 주소 등록 (partner_addresses)
+   - 본사 주소 필수
+   - 배송지/청구지 지정
+   - 필요시 지사, 창고 추가
+   ↓
+4. 신용 한도 설정
+   - 신용 평가
+   - 한도 결정
+   ↓
+5. 거래처 활성화 (status = 'ACTIVE')
+```
+
+### 거래처 정보 변경
+
+```
+1. 기본 정보 수정
+   - 회사명, 주소 등 변경
+   ↓
+2. 변경 이력 기록 (updated_at, updated_by)
+   ↓
+3. 필요 시 승인 프로세스
+   - 중요 정보 변경 시
+   - 책임자 승인
+```
+
+### 거래처 비활성화
+
+```
+1. 거래 종료 확인
+   - 진행 중인 거래 확인
+   ↓
+2. 미수금/미지급금 정산 확인
+   - 채권/채무 확인
+   - 정산 완료
+   ↓
+3. 상태 변경 (INACTIVE 또는 CLOSED)
+   - INACTIVE: 일시 중지 (재활성화 가능)
+   - CLOSED: 영구 종료
+   ↓
+4. 논리적 삭제 (is_deleted = true)
+   - 데이터는 보관
+   - 검색에서 제외
+```
+
+### 역할 전환
+
+```
+시나리오: 공급업체가 고객으로도 전환
+
+1. 거래처 유형 변경
+   UPDATE partners 
+   SET partner_type = 'BOTH' 
+   WHERE id = 'xxx';
+   
+2. 담당자 추가
+   - 영업 담당자 추가
+   
+3. 신용 한도 설정
+   - 고객 신용 평가
+   - 한도 책정
+   
+4. 청구지/배송지 확인
+   - 기존 주소 활용 또는 신규 등록
+```
+
+## 데이터 무결성
+
+### 필수 정보
+- 거래처 코드 (중복 불가)
+- 거래처명
+- 거래처 유형
+- 사업자등록번호 (법인의 경우)
+
+### 유효성 검증
+- 거래처 코드 형식: `^[A-Z0-9_]{2,50}$`
+- 사업자등록번호 형식
+- 이메일 형식: `^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$`
+- 전화번호 형식: `^[0-9\-\+\(\)\s]{8,20}$`
+
+### 참조 무결성
+- 다른 테이블에서 참조 중인 거래처는 삭제 불가
+- 논리적 삭제(is_deleted) 사용
+- CASCADE 삭제: 담당자, 주소
+- RESTRICT 삭제: 통화, 국가
+
+## 뷰(View) 활용
+
+필요 시 뷰를 생성하여 역할별 분리된 인터페이스 제공:
+
+```sql
+-- 매출거래처 뷰
+CREATE VIEW v_customers AS 
+SELECT * FROM crm.partners 
+WHERE partner_type IN ('CUSTOMER', 'BOTH')
+  AND is_deleted = false;
+
+-- 매입거래처 뷰
+CREATE VIEW v_suppliers AS 
+SELECT * FROM crm.partners 
+WHERE partner_type IN ('SUPPLIER', 'BOTH')
+  AND is_deleted = false;
+```
+
+## DDL 작성 표준
+모든 파일은 `/docs/prompts/ddl_standard_prompt.md`의 표준을 따릅니다:
+
+- ✅ 표준 컬럼 형식 (id, created_at, created_by, updated_at, updated_by)
+- ✅ 짧은 네이밍 규칙 (code, name, name_en)
+- ✅ 줄 주석 및 정렬
+- ✅ COMMENT ON 문 작성
+- ✅ 인덱스 및 제약조건 주석
+- ✅ 외래키 제약조건 및 삭제 옵션
+
+## 네이밍 표준
+
+### 테이블명
+- `partners`: 거래처 (Business Partners)
+- `partner_contacts`: 거래처 담당자
+- `partner_addresses`: 거래처 주소
+
+### 한국어 용어
+- **거래처** = Business Partner
+- **매출거래처** = Customer (판매처)
+- **매입거래처** = Supplier (공급업체)
+- **겸업거래처** = Both (고객이자 공급업체)
+
+### 선택 배경
+SAP 등 글로벌 ERP 표준을 따라 `partners`로 명명:
+- 고객과 공급업체를 통합 관리
+- 데이터 중복 제거
+- 역할 전환 유연성
+- 확장 가능성 (OTHER 타입)
+
+## 작성 이력
+- 2025-01-20: 초기 작성 (customers)
+- 2025-10-23: partners 통합 관리로 전환
+  - customers → partners 테이블명 변경
+  - customer_type → partner_type 컬럼명 변경
+  - VENDOR → SUPPLIER 용어 통일
+  - OTHER 유형 추가
+  - contact_type 컬럼 추가 (담당 업무 구분)
+  - region_code 컬럼 추가
+  - is_primary → is_default 용어 통일 (주소)
+  - README 전체 재작성

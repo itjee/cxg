@@ -1,0 +1,44 @@
+Backend API 최종 구조 트리
+
+src/
+├── __init__.py
+├── main.py
+├── core/ (8개 파일)
+│   ├── __init__.py
+│   ├── config.py
+│   ├── database.py
+│   ├── security.py
+│   ├── exceptions.py
+│   ├── middleware.py
+│   ├── logging.py
+│   └── deps.py
+├── models/
+│   ├── __init__.py
+│   ├── base.py
+│   ├── manager/
+│   │   ├── __init__.py
+│   │   ├── idam/ (8개 모델)
+│   │   │   ├── user.py
+│   │   │   ├── role.py
+│   │   │   ├── permission.py
+│   │   │   ├── role_permission.py
+│   │   │   ├── user_role.py
+│   │   │   ├── api_key.py
+│   │   │   ├── session.py
+│   │   │   └── login_log.py
+│   │   └── tnnt/ (2개 모델)
+│   │       ├── tenant.py
+│   │       └── subscription.py
+│   └── tenants/ (예정)
+├── modules/
+│   ├── manager/
+│   │   └── auth/ (5개 파일)
+│   ├── tenants/
+│   └── shareds/
+│       ├── schemas/
+│       └── services/
+├── routers/
+│   ├── manager/v1.py
+│   └── tenants/v1.py
+├── ai/
+└── utils/

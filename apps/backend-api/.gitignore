@@ -1,7 +1,85 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
 .venv/
-.env
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
 .pytest_cache/
 .coverage
+htmlcov/
+.tox/
+.nox/
+
+# Linting & Type Checking
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
 *.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Alembic
+alembic/versions/__pycache__/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Generated documentation and reports (should be in docs/generated or docs/reports)
+*_COMPLETE.md
+*_REPORT.md
+MODELS.md
+API_DOCUMENTATION.md
+QUICK_START.md
+작업완료보고서.md
+IMPLEMENTATION_REPORT.md
+API_STRUCTURE.txt
+STRUCTURE_TREE.txt
+작업검증.txt

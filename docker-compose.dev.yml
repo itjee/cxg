@@ -1,0 +1,127 @@
+# Docker Compose v2 format (version field deprecated)
+# https://docs.docker.com/compose/compose-file/
+
+services:
+  # PostgreSQL - 관리자 DB와 테넌트 DB를 위한 단일 인스턴스
+  postgres:
+    image: postgres:16-alpine
+    container_name: cxg-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: cxg_platform
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: cxg2025!!
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d cxg_platform"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - cxg-network
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+
+  # Redis - 캐싱 및 세션 관리
+  redis:
+    image: redis:7-alpine
+    container_name: cxg-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: >
+      redis-server
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - cxg-network
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
+          memory: 512M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+
+  # pgAdmin - PostgreSQL 관리 도구
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: cxg-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@cxg.co.kr
+      PGADMIN_DEFAULT_PASSWORD: cxg2025!!
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - cxg-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+  # Redis Insight - Redis 관리 도구
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: cxg-redis-insight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis_insight_data:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - cxg-network
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  redis_insight_data:
+    driver: local
+
+networks:
+  cxg-network:
+    driver: bridge
+    name: cxg-network

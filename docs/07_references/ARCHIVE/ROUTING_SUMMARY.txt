@@ -1,0 +1,133 @@
+=============================================================================
+API 라우팅 리팩토링 요약
+=============================================================================
+
+변경 날짜: 2025-10-16
+작업자: Claude AI
+
+-----------------------------------------------------------------------------
+1. 라우팅 패턴 표준화
+-----------------------------------------------------------------------------
+
+새로운 패턴: /api/v1/{system}/{schema}/{entity}
+
+예시:
+  • /api/v1/manager/bill/invoices       (청구서)
+  • /api/v1/manager/tnnt/tenants        (테넌트)
+  • /api/v1/tenants/csm/customers       (고객)
+  • /api/v1/tenants/fim/accounts        (재무 계정)
+
+-----------------------------------------------------------------------------
+2. 관리자 시스템 스키마 (Manager System)
+-----------------------------------------------------------------------------
+
+auth  → 인증 및 토큰
+idam  → 사용자/역할/권한
+tnnt  → 테넌트/구독
+bill  → 요금제/청구서/거래
+ifra  → 인프라/리소스
+mntr  → 모니터링/메트릭
+audt  → 감사로그/정책
+bkup  → 백업/복구
+cnfg  → 설정/기능플래그
+intg  → 외부API/웹훅
+noti  → 알림/템플릿
+supt  → 지원티켓/피드백
+stat  → 통계
+auto  → 워크플로우/자동화
+
+-----------------------------------------------------------------------------
+3. 테넌트 시스템 스키마 (Tenant System)
+-----------------------------------------------------------------------------
+
+adm   → 사용자/조직 관리
+csm   → 고객/CRM
+fim   → 재무/회계
+ivm   → 재고/창고
+psm   → 구매/조달
+srm   → 판매/주문
+lwm   → 워크플로우/승인
+
+-----------------------------------------------------------------------------
+4. Swagger 그룹화 구조
+-----------------------------------------------------------------------------
+
+Manager System:
+  ├─ Manager > Auth
+  ├─ Manager > IDAM
+  ├─ Manager > TNNT
+  ├─ Manager > BILL
+  ├─ Manager > IFRA
+  ├─ Manager > MNTR
+  ├─ Manager > AUDT
+  ├─ Manager > BKUP
+  ├─ Manager > CNFG
+  ├─ Manager > INTG
+  ├─ Manager > NOTI
+  ├─ Manager > SUPT
+  ├─ Manager > STAT
+  └─ Manager > AUTO
+
+Tenant System:
+  ├─ Tenant > ADM
+  ├─ Tenant > CSM
+  ├─ Tenant > FIM
+  ├─ Tenant > IVM
+  ├─ Tenant > PSM
+  ├─ Tenant > SRM
+  └─ Tenant > LWM
+
+-----------------------------------------------------------------------------
+5. 주요 변경 파일
+-----------------------------------------------------------------------------
+
+✓ src/main.py
+  - OpenAPI 태그 메타데이터 재구성
+  - API 설명 업데이트
+
+✓ src/routers/manager/v1.py
+  - 모든 prefix를 스키마 약어로 변경
+  - tags를 "Manager > {SCHEMA}" 형식으로 변경
+
+✓ src/routers/tenants/v1.py
+  - 모든 prefix를 스키마 약어로 변경
+  - tags를 "Tenant > {SCHEMA}" 형식으로 변경
+
+✓ docs/API_ROUTING.md (신규)
+  - 라우팅 구조 상세 문서
+
+✓ docs/reports/API_ROUTING_REFACTORING.md (신규)
+  - 리팩토링 완료 보고서
+
+-----------------------------------------------------------------------------
+6. 경로 변경 예시
+-----------------------------------------------------------------------------
+
+BEFORE                                    AFTER
+--------------------------------------------+-----------------------------------
+/api/v1/manager/billing/invoices          | /api/v1/manager/bill/invoices
+/api/v1/manager/tenants                   | /api/v1/manager/tnnt/tenants
+/api/v1/manager/monitoring/metrics        | /api/v1/manager/mntr/system-metrics
+/api/v1/tenants/crm/customers             | /api/v1/tenants/csm/customers
+/api/v1/tenants/finance/accounts          | /api/v1/tenants/fim/accounts
+/api/v1/tenants/inventory/products        | /api/v1/tenants/ivm/products
+
+-----------------------------------------------------------------------------
+7. 테스트 방법
+-----------------------------------------------------------------------------
+
+1. 서버 실행:
+   cd apps/backend-api
+   source .venv/bin/activate
+   uvicorn src.main:app --reload --port 8100
+
+2. Swagger 확인:
+   http://localhost:8100/docs
+
+3. 경로 테스트:
+   curl http://localhost:8100/health
+   curl http://localhost:8100/api/v1/manager/auth/login
+
+-----------------------------------------------------------------------------
+주의사항: Breaking Change - 클라이언트 업데이트 필요
+-----------------------------------------------------------------------------

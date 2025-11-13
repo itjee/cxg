@@ -1,0 +1,252 @@
+
+
+-- Additional tables from legacy system
+-- Added: 2025-01-20
+
+-- tbs_ctrt_mst
+CREATE TABLE IF NOT EXISTS tbs_ctrt_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  ctrt_no CHAR(14) NOT NULL,
+  cust_cd CHAR(14) NOT NULL,
+  dept_cd CHAR(10) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  over_rat DECIMAL(17, 2) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  uncl_yn CHAR(1) NOT NULL,
+  uncl_reason TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_addr
+CREATE TABLE IF NOT EXISTS tbs_cust_addr (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  base_yn CHAR(1),
+  addr_tp CHAR(1),
+  addr_nm VARCHAR(100),
+  post_cd VARCHAR(10),
+  address VARCHAR(200),
+  bldg_nm VARCHAR(200),
+  rcvr_nm VARCHAR(100),
+  phne_no VARCHAR(100),
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_bank
+CREATE TABLE IF NOT EXISTS tbs_cust_bank (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  bank_tp CHAR(1) NOT NULL,
+  bank_cd CHAR(3) NOT NULL,
+  acct_no VARCHAR(30) NOT NULL,
+  dptr_nm VARCHAR(50) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_biz
+CREATE TABLE IF NOT EXISTS tbs_cust_biz (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  biz_no VARCHAR(20) NOT NULL,
+  biz_nm VARCHAR(100) NOT NULL,
+  biz_tp CHAR(1) NOT NULL,
+  open_dt CHAR(8),
+  biz_st CHAR(1),
+  reg_no VARCHAR(20),
+  ceo_nm VARCHAR(50),
+  biz_type VARCHAR(100),
+  biz_item VARCHAR(100),
+  post_cd VARCHAR(10),
+  address VARCHAR(100),
+  bldg_nm VARCHAR(100),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_eng
+CREATE TABLE IF NOT EXISTS tbs_cust_eng (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  cust_nm VARCHAR(100),
+  addr VARCHAR(200),
+  city VARCHAR(50),
+  state VARCHAR(50),
+  post_cd VARCHAR(10),
+  country_cd VARCHAR(10),
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_mgr
+CREATE TABLE IF NOT EXISTS tbs_cust_mgr (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_mgr_hist
+CREATE TABLE IF NOT EXISTS tbs_cust_mgr_hist (
+  hist_id SERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  empy_cd CHAR(10) NOT NULL,
+  base_dt CHAR(8) NOT NULL,
+  bend_dt CHAR(8) NOT NULL,
+  use_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (hist_id)
+);
+
+-- tbs_cust_mst
+CREATE TABLE IF NOT EXISTS tbs_cust_mst (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  cust_nm VARCHAR(100) NOT NULL,
+  cust_biz_tp CHAR(1) NOT NULL,
+  cust_trn_tp CHAR(1) NOT NULL,
+  cust_pur_tp CHAR(1),
+  cust_det_tp CHAR(2),
+  cust_pub_tp CHAR(1),
+  cust_biz_id INTEGER,
+  corp_reg_no VARCHAR(20),
+  biz_open_dt CHAR(8),
+  biz_reg_no VARCHAR(20),
+  biz_reg_nm VARCHAR(100),
+  biz_ceo_nm VARCHAR(50),
+  biz_type VARCHAR(100),
+  biz_item VARCHAR(100),
+  post_cd VARCHAR(10),
+  address VARCHAR(100),
+  bldg_nm VARCHAR(100),
+  tel_no VARCHAR(20),
+  fax_no VARCHAR(20),
+  email VARCHAR(100),
+  hpage VARCHAR(100),
+  cont_mng_tp VARCHAR(1),
+  use_yn CHAR(1) NOT NULL,
+  trn_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (id)
+);
+
+-- tbs_cust_mst_hist
+CREATE TABLE IF NOT EXISTS tbs_cust_mst_hist (
+  hist_id SERIAL,
+  hist_tp CHAR(1) NOT NULL,
+  hist_on TIMESTAMP NOT NULL,
+  id INTEGER NOT NULL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  cust_nm VARCHAR(100) NOT NULL,
+  cust_biz_tp CHAR(1) NOT NULL,
+  cust_trn_tp CHAR(1) NOT NULL,
+  cust_pur_tp CHAR(1),
+  cust_det_tp CHAR(2),
+  cust_pub_tp CHAR(1),
+  cust_biz_id INTEGER,
+  corp_reg_no VARCHAR(20),
+  biz_open_dt CHAR(8),
+  biz_reg_no VARCHAR(20),
+  biz_reg_nm VARCHAR(100),
+  biz_ceo_nm VARCHAR(50),
+  biz_type VARCHAR(100),
+  biz_item VARCHAR(100),
+  post_cd VARCHAR(10),
+  address VARCHAR(100),
+  bldg_nm VARCHAR(100),
+  tel_no VARCHAR(20),
+  fax_no VARCHAR(20),
+  email VARCHAR(100),
+  hpage VARCHAR(100),
+  cont_mng_tp VARCHAR(1),
+  use_yn CHAR(1) NOT NULL,
+  trn_yn CHAR(1) NOT NULL,
+  notes TEXT,
+  PRIMARY KEY (hist_id)
+);
+
+-- tbs_cust_staf
+CREATE TABLE IF NOT EXISTS tbs_cust_staf (
+  id SERIAL,
+  create_on TIMESTAMP,
+  create_by VARCHAR(50),
+  create_id INTEGER,
+  update_on TIMESTAMP,
+  update_by VARCHAR(50),
+  update_id INTEGER,
+  cust_cd CHAR(14) NOT NULL,
+  staf_nm VARCHAR(20),
+  posi_nm VARCHAR(50),
+  tel_no VARCHAR(30),
+  fax_no VARCHAR(30),
+  cel_no VARCHAR(30),
+  email VARCHAR(100),
+  staf_tp CHAR(1),
+  use_yn CHAR(1) NOT NULL,
+  pay_noti_yn CHAR(1),
+  ord_noti_yn CHAR(1),
+  out_noti_yn CHAR(1),
+  notes TEXT,
+  PRIMARY KEY (id)
+);
