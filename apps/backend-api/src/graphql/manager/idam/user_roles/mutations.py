@@ -1,6 +1,7 @@
 """Manager IDAM User Roles - Mutations
 
-공통 모듈을 사용한 Mutation 구현
+사용자-역할 할당/해제 Mutation 구현
+공통 모듈을 사용한 표준화된 변경 로직
 """
 
 from datetime import datetime
@@ -27,7 +28,20 @@ async def create_manager_user_role(
     input_data: ManagerUserRoleCreateInput,
     granted_by: UUID | None = None,
 ) -> ManagerUserRole:
-    """Manager 사용자에게 역할 할당"""
+    """
+    Manager 사용자에게 역할 할당
+
+    사용자에게 특정 역할을 부여합니다.
+    이미 동일한 역할이 활성 상태로 존재하면 기존 매핑을 반환합니다.
+
+    Args:
+        db: 데이터베이스 세션
+        input_data: 역할 할당 입력 데이터
+        granted_by: 역할을 부여하는 사용자 ID (선택)
+
+    Returns:
+        ManagerUserRole: 생성되거나 기존의 사용자-역할 매핑 객체
+    """
     user_id = UUID(input_data.user_id)
     role_id = UUID(input_data.role_id)
 
@@ -69,7 +83,20 @@ async def update_manager_user_role(
     user_role_id: UUID,
     input_data: ManagerUserRoleUpdateInput,
 ) -> ManagerUserRole | None:
-    """Manager 사용자-역할 매핑 수정"""
+    """
+    Manager 사용자-역할 매핑 수정
+
+    기존 사용자-역할 매핑의 속성을 업데이트합니다.
+    (예: 만료일, 상태, scope 등)
+
+    Args:
+        db: 데이터베이스 세션
+        user_role_id: 수정할 매핑 ID
+        input_data: 수정 입력 데이터
+
+    Returns:
+        ManagerUserRole: 수정된 매핑 객체 또는 None
+    """
     # expires_at 문자열을 datetime으로 변환
     prepared_data = {}
     for key, value in input_data.__dict__.items():
@@ -94,7 +121,19 @@ async def revoke_manager_user_role(
     db: AsyncSession,
     input_data: ManagerUserRoleRevokeInput,
 ) -> bool:
-    """Manager 사용자에서 역할 해제 (상태를 INACTIVE로 변경)"""
+    """
+    Manager 사용자에서 역할 해제
+
+    활성 상태의 사용자-역할 매핑을 INACTIVE 상태로 변경합니다.
+    실제 데이터는 삭제하지 않고 감사 목적으로 보존합니다.
+
+    Args:
+        db: 데이터베이스 세션
+        input_data: 역할 해제 입력 데이터 (user_id, role_id)
+
+    Returns:
+        bool: 해제 성공 여부
+    """
     user_id = UUID(input_data.user_id)
     role_id = UUID(input_data.role_id)
 
@@ -120,7 +159,19 @@ async def delete_manager_user_role(
     db: AsyncSession,
     input_data: ManagerUserRoleRevokeInput,
 ) -> bool:
-    """Manager 사용자에서 역할 완전 삭제 (물리적 삭제)"""
+    """
+    Manager 사용자에서 역할 완전 삭제
+
+    사용자-역할 매핑을 데이터베이스에서 완전히 삭제합니다.
+    일반적으로 해제(revoke)를 사용하고, 삭제는 관리 목적으로만 사용합니다.
+
+    Args:
+        db: 데이터베이스 세션
+        input_data: 역할 삭제 입력 데이터 (user_id, role_id)
+
+    Returns:
+        bool: 삭제 성공 여부
+    """
     user_id = UUID(input_data.user_id)
     role_id = UUID(input_data.role_id)
 
@@ -143,7 +194,21 @@ async def bulk_assign_roles_to_user(
     scope: str = "GLOBAL",
     granted_by: UUID | None = None,
 ) -> list[ManagerUserRole]:
-    """사용자에게 여러 역할을 한번에 할당"""
+    """
+    사용자에게 여러 역할을 한번에 할당
+
+    대량의 역할을 한 번에 할당하여 효율성을 높입니다.
+
+    Args:
+        db: 데이터베이스 세션
+        user_id: 대상 사용자 ID
+        role_ids: 할당할 역할 ID 리스트
+        scope: 권한 범위 (기본값: GLOBAL)
+        granted_by: 역할을 부여하는 사용자 ID (선택)
+
+    Returns:
+        list[ManagerUserRole]: 할당된 사용자-역할 매핑 리스트
+    """
     result = []
 
     for role_id in role_ids:
@@ -163,7 +228,19 @@ async def bulk_revoke_roles_from_user(
     user_id: UUID,
     role_ids: list[UUID],
 ) -> int:
-    """사용자에서 여러 역할을 한번에 해제"""
+    """
+    사용자에서 여러 역할을 한번에 해제
+
+    대량의 역할을 한 번에 해제하여 효율성을 높입니다.
+
+    Args:
+        db: 데이터베이스 세션
+        user_id: 대상 사용자 ID
+        role_ids: 해제할 역할 ID 리스트
+
+    Returns:
+        int: 실제로 해제된 역할의 개수
+    """
     count = 0
 
     for role_id in role_ids:
@@ -179,7 +256,11 @@ async def bulk_revoke_roles_from_user(
 
 @strawberry.type
 class ManagerUserRoleMutations:
-    """Manager IDAM User Roles Mutation"""
+    """
+    Manager IDAM User Roles Mutation
+
+    사용자-역할 할당/해제 관련 GraphQL Mutation을 제공합니다.
+    """
 
     @strawberry.mutation(description="Manager 사용자에게 역할 할당")
     async def assign_role_to_user(
@@ -187,7 +268,15 @@ class ManagerUserRoleMutations:
         info,
         input: ManagerUserRoleCreateInput,
     ) -> ManagerUserRole:
-        """Manager 사용자에게 역할 할당"""
+        """
+        사용자에게 역할 할당
+
+        Args:
+            input: 역할 할당 입력 데이터
+
+        Returns:
+            ManagerUserRole: 할당된 사용자-역할 매핑 객체
+        """
         db = info.context.manager_db_session
         # TODO: info.context에서 현재 사용자 ID 가져오기
         granted_by = None  # info.context.current_user.id
@@ -200,7 +289,16 @@ class ManagerUserRoleMutations:
         id: strawberry.ID,
         input: ManagerUserRoleUpdateInput,
     ) -> ManagerUserRole | None:
-        """Manager 사용자-역할 매핑 수정"""
+        """
+        사용자-역할 매핑 수정
+
+        Args:
+            id: 매핑 ID
+            input: 수정 입력 데이터
+
+        Returns:
+            ManagerUserRole: 수정된 매핑 객체 또는 None
+        """
         db = info.context.manager_db_session
         return await update_manager_user_role(db, UUID(id), input)
 
@@ -210,7 +308,15 @@ class ManagerUserRoleMutations:
         info,
         input: ManagerUserRoleRevokeInput,
     ) -> bool:
-        """Manager 사용자에서 역할 해제 (상태 변경)"""
+        """
+        사용자에서 역할 해제 (상태 변경)
+
+        Args:
+            input: 역할 해제 입력 데이터
+
+        Returns:
+            bool: 해제 성공 여부
+        """
         db = info.context.manager_db_session
         return await revoke_manager_user_role(db, input)
 
@@ -220,7 +326,15 @@ class ManagerUserRoleMutations:
         info,
         input: ManagerUserRoleRevokeInput,
     ) -> bool:
-        """Manager 사용자에서 역할 완전 삭제"""
+        """
+        사용자에서 역할 완전 삭제
+
+        Args:
+            input: 역할 삭제 입력 데이터
+
+        Returns:
+            bool: 삭제 성공 여부
+        """
         db = info.context.manager_db_session
         return await delete_manager_user_role(db, input)
 
@@ -232,7 +346,17 @@ class ManagerUserRoleMutations:
         role_ids: list[strawberry.ID],
         scope: str = "GLOBAL",
     ) -> list[ManagerUserRole]:
-        """사용자에게 여러 역할을 한번에 할당"""
+        """
+        사용자에게 여러 역할을 한번에 할당
+
+        Args:
+            user_id: 대상 사용자 ID
+            role_ids: 할당할 역할 ID 리스트
+            scope: 권한 범위
+
+        Returns:
+            list[ManagerUserRole]: 할당된 매핑 리스트
+        """
         db = info.context.manager_db_session
         granted_by = None  # info.context.current_user.id
         return await bulk_assign_roles_to_user(
@@ -250,7 +374,16 @@ class ManagerUserRoleMutations:
         user_id: strawberry.ID,
         role_ids: list[strawberry.ID],
     ) -> int:
-        """사용자에서 여러 역할을 한번에 해제"""
+        """
+        사용자에서 여러 역할을 한번에 해제
+
+        Args:
+            user_id: 대상 사용자 ID
+            role_ids: 해제할 역할 ID 리스트
+
+        Returns:
+            int: 실제로 해제된 역할의 개수
+        """
         db = info.context.manager_db_session
         return await bulk_revoke_roles_from_user(
             db,
