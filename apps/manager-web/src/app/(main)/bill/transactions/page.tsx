@@ -24,33 +24,33 @@ import {
   TransactionEdit,
 } from "@/features/bill/transactions/components";
 import { useTransactionStore } from "@/features/bill/transactions/stores";
-import { useTransactions, useDeleteTransaction } from "@/features/bill/transactions/hooks";
+import {
+  useTransactions,
+  useDeleteTransaction,
+} from "@/features/bill/transactions/hooks";
 
 export default function TransactionsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   // ========== Store & Hooks ==========
-  const {
-    formOpen,
-    editingId,
-    openForm,
-    closeForm,
-  } = useTransactionStore();
+  const { formOpen, editingId, openForm, closeForm } = useTransactionStore();
 
   // 쿼리 파라미터 (필터링, 페이지네이션)
-  const params = useMemo(() => ({
-    page: 1,
-    pageSize: 20,
-  }), []);
+  const params = useMemo(
+    () => ({
+      page: 1,
+      pageSize: 20,
+    }),
+    []
+  );
 
   // 거래 목록 조회
   const { data: listData, isLoading, error, refetch } = useTransactions(params);
 
   // 거래 삭제
-  const { mutate: deleteTransaction, isPending: isDeleting } = useDeleteTransaction(
-    editingId!
-  );
+  const { mutate: deleteTransaction, isPending: isDeleting } =
+    useDeleteTransaction(editingId!);
 
   // ========== Data Processing ==========
   const items = useMemo(() => listData?.items || [], [listData?.items]);
@@ -97,8 +97,7 @@ export default function TransactionsPage() {
         onError: (error: any) => {
           toast({
             title: "오류",
-            description:
-              error?.message || "거래 삭제에 실패했습니다",
+            description: error?.message || "거래 삭제에 실패했습니다",
             variant: "destructive",
           });
         },

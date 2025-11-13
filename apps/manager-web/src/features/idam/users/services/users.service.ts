@@ -1,28 +1,20 @@
 /**
  * @file users.service.ts
- * @description Users 서비스 레이어
+ * @description Users 서비스 레이어 (GraphQL)
+ * 
+ * REST API에서 GraphQL로 변경됨
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
+import { usersGraphQLService } from './users.service.graphql';
 import type {
   Users,
-  CreateUsersRequest,
-  UpdateUsersRequest,
   UsersListResponse,
   UsersQueryParams,
 } from "../types/users.types";
 
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-const ENDPOINT = "/api/v1/manager/idam/users";
-
 /**
  * Users 서비스 객체
+ * GraphQL 서비스를 래핑하여 기존 인터페이스 유지
  */
 export const usersService = {
   /**
@@ -32,64 +24,44 @@ export const usersService = {
     params?: UsersQueryParams,
     signal?: AbortSignal
   ): Promise<UsersListResponse> {
-    try {
-      const response = await api.get<ApiResponse<UsersListResponse>>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          active: params?.active,
-        },
-        signal,
-      });
-      
-      return response.data.data || { 
-        items: [], 
-        total: 0, 
-        page: 1, 
-        page_size: 10,
-        total_pages: 0
-      };
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "listUsers");
-    }
+    const result = await usersGraphQLService.listUsers({
+      page: params?.page,
+      pageSize: params?.pageSize,
+      search: params?.search,
+      status: params?.active === true ? 'ACTIVE' : params?.active === false ? 'INACTIVE' : undefined,
+      signal,
+    });
+
+    return {
+      items: result.items,
+      total: result.total,
+      page: params?.page || 1,
+      page_size: params?.pageSize || 20,
+      total_pages: Math.ceil(result.total / (params?.pageSize || 20)),
+    };
   },
 
   /**
    * 상세 조회
    */
   async getUsers(id: string, signal?: AbortSignal): Promise<Users> {
-    try {
-      const response = await api.get<ApiResponse<Users>>(
-        `${ENDPOINT}/${id}`,
-        { signal }
-      );
-      
-      if (!response.data.data) {
-        throw new Error('Users not found');
-      }
-      
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getUsers(${id})`);
-    }
+    return await usersGraphQLService.getUser(id, signal);
   },
 
   /**
    * 생성
    */
-  async createUsers(
-    data: CreateUsersRequest,
-    signal?: AbortSignal
-  ): Promise<Users> {
-    try {
-      const response = await api.post<ApiResponse<Users>>(ENDPOINT, data, {
-        signal,
-      });
-      return response.data.data || ({} as Users);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createUsers");
-    }
+  async createUsers(data: {
+    userType: string;
+    fullName: string;
+    email: string;
+    username: string;
+    password: string;
+    phone?: string;
+    department?: string;
+    position?: string;
+  }): Promise<Users> {
+    return await usersGraphQLService.createUser(data);
   },
 
   /**
@@ -97,29 +69,23 @@ export const usersService = {
    */
   async updateUsers(
     id: string,
-    data: UpdateUsersRequest,
-    signal?: AbortSignal
-  ): Promise<Users> {
-    try {
-      const response = await api.put<ApiResponse<Users>>(
-        `${ENDPOINT}/${id}`,
-        data,
-        { signal }
-      );
-      return response.data.data || ({} as Users);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateUsers(${id})`);
+    data: {
+      fullName?: string;
+      email?: string;
+      phone?: string;
+      department?: string;
+      position?: string;
+      status?: string;
+      mfaEnabled?: boolean;
     }
+  ): Promise<Users> {
+    return await usersGraphQLService.updateUser(id, data);
   },
 
   /**
    * 삭제
    */
-  async deleteUsers(id: string, signal?: AbortSignal): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`, { signal });
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteUsers(${id})`);
-    }
+  async deleteUsers(id: string): Promise<void> {
+    return await usersGraphQLService.deleteUser(id);
   },
 };
