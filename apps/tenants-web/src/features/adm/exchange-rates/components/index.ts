@@ -1,0 +1,9 @@
+// Standard Structure - All Plural
+export { ExchangeRatesHeader } from './exchange-rates-header';
+export { ExchangeRatesStats } from './exchange-rates-stats';
+export { ExchangeRatesFilters } from './exchange-rates-filters';
+export { ExchangeRatesList } from './exchange-rates-list';
+export { ExchangeRatesTable } from './exchange-rates-table';
+export { ExchangeRatesPaging } from './exchange-rates-paging';
+export { ExchangeRatesEdit } from './exchange-rates-edit';
+export { ExchangeRatesForm } from './exchange-rates-form';
