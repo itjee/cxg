@@ -119,8 +119,7 @@ export default function SignInPage() {
                   alt="ConexGrow Logo"
                   width={88}
                   height={44}
-                  className="object-contain"
-                  quality={100}
+                  style={{ objectFit: "contain" }}
                   priority
                 />
                 <div className="flex flex-col">

@@ -5,8 +5,6 @@ export type { ButtonProps } from './button';
 export { ButtonGroup } from './button-group';
 export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card';
 export { Checkbox } from './checkbox';
-export { DataTable } from './data-table';
-export type { DataTableProps } from './data-table';
 export {
   Dialog,
   DialogPortal,

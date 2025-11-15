@@ -127,11 +127,8 @@ export function Sidebar({
                 alt="CXG"
                 width={48}
                 height={48}
-                style={{ height: "auto" }}
-                className="object-contain"
-                quality={100}
+                style={{ width: "48px", height: "48px", objectFit: "contain" }}
                 priority
-                unoptimized
               />
               <div className="flex flex-col">
                 <span className="font-bold text-base leading-tight">
@@ -147,11 +144,8 @@ export function Sidebar({
                 alt="CXG"
                 width={32}
                 height={32}
-                style={{ height: "auto" }}
-                className="object-contain"
-                quality={100}
+                style={{ width: "32px", height: "32px", objectFit: "contain" }}
                 priority
-                unoptimized
               />
             </Link>
           )}

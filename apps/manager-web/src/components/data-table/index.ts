@@ -1,4 +1,6 @@
-export { DataTable } from './data-table';
-export type { DataTableProps } from './data-table';
-export { DataTableAdvanced, DataTableColumnHeader } from './data-table-advanced';
-export { DataTableWithPagination } from './data-table-with-pagination';
+export { DataTable, DataTableColumnHeader } from "./data-table";
+export type { DataTableProps } from "./data-table";
+
+// 하위 호환성을 위한 별칭
+export { DataTable as DataTableAdvanced } from "./data-table";
+export { DataTable as DataTableWithPagination } from "./data-table";

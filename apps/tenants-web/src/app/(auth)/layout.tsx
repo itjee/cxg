@@ -37,9 +37,7 @@ export default function AuthLayout({
             alt="ConexGrow Logo"
             width={44}
             height={44}
-            style={{ height: "auto" }}
-            className="object-contain"
-            quality={100}
+            style={{ objectFit: "contain" }}
             priority
           />
           <div className="flex flex-col">

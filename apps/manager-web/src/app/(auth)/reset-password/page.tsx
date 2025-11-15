@@ -18,13 +18,10 @@ function ResetPasswordContent() {
           <Image
             src="/logo/manager_logo.png"
             alt="CXG Logo"
-            width={0}
+            width={32}
             height={32}
-            className="object-contain w-auto h-8"
-            style={{ opacity: 0.5 }}
-            quality={100}
+            style={{ width: "32px", height: "32px", objectFit: "contain", opacity: 0.5 }}
             priority
-            unoptimized
           />
           <div className="flex flex-col">
             <span className="text-xl font-bold text-white">ConexGrow</span>
