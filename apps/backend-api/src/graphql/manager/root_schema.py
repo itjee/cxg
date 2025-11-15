@@ -21,6 +21,11 @@ from .auth.types import (
 )
 from .dashboard import Activity, DashboardQueries, DashboardStats, TenantGrowthData
 from .schema import ManagerMutation, ManagerQuery
+from .idam.users import User
+from .idam.roles import Role
+from .idam.permissions import Permission
+from .idam.role_permissions import RolePermission
+from .idam.user_roles import UserRole
 
 
 @strawberry.type(description="Manager 시스템 GraphQL Query")
@@ -78,76 +83,76 @@ class Query:
 
     # ===== IDAM - Users =====
     @strawberry.field(description="사용자 조회 (ID)")
-    async def user(self, info, id: strawberry.ID):
+    async def user(self, info, id: strawberry.ID) -> User | None:
         manager_query = ManagerQuery()
         return await manager_query.user(info, id)
 
     @strawberry.field(description="사용자 목록 조회")
-    async def users(self, info, limit: int = 20, offset: int = 0, user_type: str | None = None, status: str | None = None):
+    async def users(self, info, limit: int = 20, offset: int = 0, user_type: str | None = None, status: str | None = None) -> list[User]:
         manager_query = ManagerQuery()
         return await manager_query.users(info, limit, offset, user_type, status)
 
     # ===== IDAM - Roles =====
     @strawberry.field(description="역할 조회 (ID)")
-    async def role(self, info, id: strawberry.ID):
+    async def role(self, info, id: strawberry.ID) -> Role | None:
         manager_query = ManagerQuery()
         return await manager_query.role(info, id)
 
     @strawberry.field(description="역할 목록 조회")
-    async def roles(self, info, limit: int = 20, offset: int = 0, category: str | None = None, status: str | None = None):
+    async def roles(self, info, limit: int = 20, offset: int = 0, category: str | None = None, status: str | None = None) -> list[Role]:
         manager_query = ManagerQuery()
         return await manager_query.roles(info, limit, offset, category, status)
 
     # ===== IDAM - Permissions =====
     @strawberry.field(description="권한 조회 (ID)")
-    async def permission(self, info, id: strawberry.ID):
+    async def permission(self, info, id: strawberry.ID) -> Permission | None:
         manager_query = ManagerQuery()
         return await manager_query.permission(info, id)
 
     @strawberry.field(description="권한 목록 조회")
-    async def permissions(self, info, limit: int = 20, offset: int = 0, category: str | None = None, resource: str | None = None):
+    async def permissions(self, info, limit: int = 20, offset: int = 0, category: str | None = None, resource: str | None = None) -> list[Permission]:
         manager_query = ManagerQuery()
         return await manager_query.permissions(info, limit, offset, category, resource)
 
     # ===== IDAM - Role Permissions =====
     @strawberry.field(description="역할-권한 조회 (ID)")
-    async def role_permission(self, info, id: strawberry.ID):
+    async def role_permission(self, info, id: strawberry.ID) -> RolePermission | None:
         manager_query = ManagerQuery()
         return await manager_query.role_permission(info, id)
 
     @strawberry.field(description="역할-권한 목록 조회")
-    async def role_permissions(self, info, limit: int = 20, offset: int = 0):
+    async def role_permissions(self, info, limit: int = 20, offset: int = 0) -> list[RolePermission]:
         manager_query = ManagerQuery()
         return await manager_query.role_permissions(info, limit, offset)
 
     @strawberry.field(description="역할별 권한 목록")
-    async def permissions_by_role(self, info, role_id: strawberry.ID):
+    async def permissions_by_role(self, info, role_id: strawberry.ID) -> list[Permission]:
         manager_query = ManagerQuery()
         return await manager_query.permissions_by_role(info, role_id)
 
     @strawberry.field(description="권한별 역할 목록")
-    async def roles_by_permission(self, info, permission_id: strawberry.ID):
+    async def roles_by_permission(self, info, permission_id: strawberry.ID) -> list[Role]:
         manager_query = ManagerQuery()
         return await manager_query.roles_by_permission(info, permission_id)
 
     # ===== IDAM - User Roles =====
     @strawberry.field(description="사용자-역할 조회 (ID)")
-    async def user_role(self, info, id: strawberry.ID):
+    async def user_role(self, info, id: strawberry.ID) -> UserRole | None:
         manager_query = ManagerQuery()
         return await manager_query.user_role(info, id)
 
     @strawberry.field(description="사용자-역할 목록 조회")
-    async def user_roles(self, info, limit: int = 20, offset: int = 0):
+    async def user_roles(self, info, limit: int = 20, offset: int = 0) -> list[UserRole]:
         manager_query = ManagerQuery()
         return await manager_query.user_roles(info, limit, offset)
 
     @strawberry.field(description="사용자별 역할 목록")
-    async def roles_by_user(self, info, user_id: strawberry.ID):
+    async def roles_by_user(self, info, user_id: strawberry.ID) -> list[Role]:
         manager_query = ManagerQuery()
         return await manager_query.roles_by_user(info, user_id)
 
     @strawberry.field(description="역할별 사용자 목록")
-    async def users_by_role(self, info, role_id: strawberry.ID):
+    async def users_by_role(self, info, role_id: strawberry.ID) -> list[User]:
         manager_query = ManagerQuery()
         return await manager_query.users_by_role(info, role_id)
 
