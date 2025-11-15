@@ -181,7 +181,7 @@ export const authService = {
       });
     } catch (error: any) {
       // 로그아웃 오류는 클라이언트 상태 정리를 방해하지 않음
-      console.warn("Logout error:", error);
+      console.warn("로그아웃 오류:", error);
     }
   },
 
