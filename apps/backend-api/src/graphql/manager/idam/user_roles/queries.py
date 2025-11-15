@@ -12,20 +12,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.user_role import UserRole as UserRoleModel
 
-from .types import ManagerUserRole
+from .types import UserRole
 
 
-def user_role_to_graphql(user_role: UserRoleModel) -> ManagerUserRole:
+def user_role_to_graphql(user_role: UserRoleModel) -> UserRole:
     """
-    UserRoleModel(DB 모델)을 ManagerUserRole(GraphQL 타입)으로 변환
+    UserRoleModel(DB 모델)을 UserRole(GraphQL 타입)으로 변환
 
     Args:
         user_role: 데이터베이스 사용자-역할 매핑 모델
 
     Returns:
-        ManagerUserRole: GraphQL 사용자-역할 매핑 타입
+        UserRole: GraphQL 사용자-역할 매핑 타입
     """
-    return ManagerUserRole(
+    return UserRole(
         id=strawberry.ID(str(user_role.id)),
         user_id=strawberry.ID(str(user_role.user_id)),
         role_id=strawberry.ID(str(user_role.role_id)),
@@ -42,9 +42,7 @@ def user_role_to_graphql(user_role: UserRoleModel) -> ManagerUserRole:
     )
 
 
-async def get_manager_user_role_by_id(
-    db: AsyncSession, user_role_id: UUID
-) -> ManagerUserRole | None:
+async def get_user_role_by_id(db: AsyncSession, user_role_id: UUID) -> UserRole | None:
     """
     ID로 Manager 사용자-역할 매핑 단건 조회
 
@@ -53,7 +51,7 @@ async def get_manager_user_role_by_id(
         user_role_id: 조회할 매핑 ID
 
     Returns:
-        ManagerUserRole: 매핑 객체 또는 None
+        UserRole: 매핑 객체 또는 None
     """
     return await get_by_id(
         db=db,
@@ -63,7 +61,7 @@ async def get_manager_user_role_by_id(
     )
 
 
-async def get_manager_user_roles(
+async def get_user_roles(
     db: AsyncSession,
     limit: int = 50,
     offset: int = 0,
@@ -71,7 +69,7 @@ async def get_manager_user_roles(
     role_id: UUID | None = None,
     scope: str | None = None,
     status: str | None = None,
-) -> list[ManagerUserRole]:
+) -> list[UserRole]:
     """
     Manager 사용자-역할 매핑 목록 조회
 
@@ -85,7 +83,7 @@ async def get_manager_user_roles(
         status: 상태 필터 (선택)
 
     Returns:
-        list[ManagerUserRole]: 매핑 객체 리스트
+        list[UserRole]: 매핑 객체 리스트
     """
     # 필터 조건 구성
     filters = {}
@@ -110,7 +108,7 @@ async def get_manager_user_roles(
     )
 
 
-async def get_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[ManagerUserRole]:
+async def get_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[UserRole]:
     """
     특정 사용자에게 할당된 모든 역할 조회
 
@@ -121,9 +119,9 @@ async def get_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[ManagerU
         user_id: 조회할 사용자 ID
 
     Returns:
-        list[ManagerUserRole]: 사용자에게 할당된 역할 매핑 리스트
+        list[UserRole]: 사용자에게 할당된 역할 매핑 리스트
     """
-    return await get_manager_user_roles(
+    return await get_user_roles(
         db=db,
         user_id=user_id,
         status="ACTIVE",
@@ -131,7 +129,7 @@ async def get_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[ManagerU
     )
 
 
-async def get_users_by_role_id(db: AsyncSession, role_id: UUID) -> list[ManagerUserRole]:
+async def get_users_by_role_id(db: AsyncSession, role_id: UUID) -> list[UserRole]:
     """
     특정 역할이 할당된 모든 사용자 조회
 
@@ -142,9 +140,9 @@ async def get_users_by_role_id(db: AsyncSession, role_id: UUID) -> list[ManagerU
         role_id: 조회할 역할 ID
 
     Returns:
-        list[ManagerUserRole]: 역할이 할당된 사용자 매핑 리스트
+        list[UserRole]: 역할이 할당된 사용자 매핑 리스트
     """
-    return await get_manager_user_roles(
+    return await get_user_roles(
         db=db,
         role_id=role_id,
         status="ACTIVE",
@@ -153,7 +151,7 @@ async def get_users_by_role_id(db: AsyncSession, role_id: UUID) -> list[ManagerU
 
 
 @strawberry.type
-class ManagerUserRoleQueries:
+class UserRoleQueries:
     """
     Manager IDAM User Roles Query
 
@@ -161,7 +159,7 @@ class ManagerUserRoleQueries:
     """
 
     @strawberry.field(description="Manager 사용자-역할 매핑 조회 (ID)")
-    async def manager_user_role(self, info, id: strawberry.ID) -> ManagerUserRole | None:
+    async def manager_user_role(self, info, id: strawberry.ID) -> UserRole | None:
         """
         ID로 사용자-역할 매핑 단건 조회
 
@@ -169,10 +167,10 @@ class ManagerUserRoleQueries:
             id: 매핑 ID
 
         Returns:
-            ManagerUserRole: 매핑 객체 또는 None
+            UserRole: 매핑 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await get_manager_user_role_by_id(db, UUID(id))
+        return await get_user_role_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 사용자-역할 매핑 목록")
     async def manager_user_roles(
@@ -184,7 +182,7 @@ class ManagerUserRoleQueries:
         role_id: strawberry.ID | None = None,
         scope: str | None = None,
         status: str | None = None,
-    ) -> list[ManagerUserRole]:
+    ) -> list[UserRole]:
         """
         사용자-역할 매핑 목록 조회 (페이징 및 필터링 지원)
 
@@ -197,10 +195,10 @@ class ManagerUserRoleQueries:
             status: 상태 필터
 
         Returns:
-            list[ManagerUserRole]: 매핑 객체 리스트
+            list[UserRole]: 매핑 객체 리스트
         """
         db = info.context.manager_db_session
-        return await get_manager_user_roles(
+        return await get_user_roles(
             db,
             limit,
             offset,
@@ -211,7 +209,7 @@ class ManagerUserRoleQueries:
         )
 
     @strawberry.field(description="사용자에게 할당된 역할 목록")
-    async def manager_roles_by_user(self, info, user_id: strawberry.ID) -> list[ManagerUserRole]:
+    async def roles_by_user(self, info, user_id: strawberry.ID) -> list[UserRole]:
         """
         특정 사용자에게 할당된 모든 역할 조회
 
@@ -219,13 +217,13 @@ class ManagerUserRoleQueries:
             user_id: 사용자 ID
 
         Returns:
-            list[ManagerUserRole]: 사용자에게 할당된 역할 매핑 리스트
+            list[UserRole]: 사용자에게 할당된 역할 매핑 리스트
         """
         db = info.context.manager_db_session
         return await get_roles_by_user_id(db, UUID(user_id))
 
     @strawberry.field(description="역할이 할당된 사용자 목록")
-    async def manager_users_by_role(self, info, role_id: strawberry.ID) -> list[ManagerUserRole]:
+    async def users_by_role(self, info, role_id: strawberry.ID) -> list[UserRole]:
         """
         특정 역할이 할당된 모든 사용자 조회
 
@@ -233,7 +231,7 @@ class ManagerUserRoleQueries:
             role_id: 역할 ID
 
         Returns:
-            list[ManagerUserRole]: 역할이 할당된 사용자 매핑 리스트
+            list[UserRole]: 역할이 할당된 사용자 매핑 리스트
         """
         db = info.context.manager_db_session
         return await get_users_by_role_id(db, UUID(role_id))

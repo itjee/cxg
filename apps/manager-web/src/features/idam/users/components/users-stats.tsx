@@ -10,7 +10,7 @@
 import { useMemo } from "react";
 import { Users as UsersIcon, UserCheck, UserX, Shield } from "lucide-react";
 import { StatsCards } from "@/components/stats/stats-cards";
-import type { ManagerUser } from "../types/users.types";
+import type { User } from "../types/users.types";
 
 interface StatCardData {
   title: string;
@@ -26,7 +26,7 @@ interface StatCardData {
 }
 
 interface UsersStatsProps {
-  data: ManagerUser[];
+  data: User[];
 }
 
 export function UsersStats({ data }: UsersStatsProps) {

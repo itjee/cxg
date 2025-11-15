@@ -1,21 +1,21 @@
 """Manager IDAM Role Permissions"""
 
-from .mutations import ManagerRolePermissionMutations
-from .queries import ManagerRolePermissionQueries
+from .mutations import RolePermissionMutations
+from .queries import RolePermissionQueries
 from .resolvers import resolve_role_permission_permission, resolve_role_permission_role
 from .types import (
-    ManagerRolePermission,
-    ManagerRolePermissionCreateInput,
-    ManagerRolePermissionDeleteInput,
+    RolePermission,
+    RolePermissionCreateInput,
+    RolePermissionDeleteInput,
 )
 
 
 __all__ = [
-    "ManagerRolePermission",
-    "ManagerRolePermissionCreateInput",
-    "ManagerRolePermissionDeleteInput",
-    "ManagerRolePermissionQueries",
-    "ManagerRolePermissionMutations",
+    "RolePermission",
+    "RolePermissionCreateInput",
+    "RolePermissionDeleteInput",
+    "RolePermissionQueries",
+    "RolePermissionMutations",
     "resolve_role_permission_role",
     "resolve_role_permission_permission",
 ]

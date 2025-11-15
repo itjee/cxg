@@ -19,12 +19,12 @@ async def resolve_session_user(user_id: UUID, info):
         info: GraphQL 실행 컨텍스트
 
     Returns:
-        ManagerUser: 사용자 GraphQL 객체 또는 None
+        User: 사용자 GraphQL 객체 또는 None
     """
     db = info.context.manager_db_session
 
     # 1. Context에 등록된 전역 DataLoader 사용 시도 (최적화)
-    loader = info.context.loaders.get("manager_user_loader")
+    loader = info.context.loaders.get("user_loader")
     if loader:
         user = await loader.load(user_id)
         if user:

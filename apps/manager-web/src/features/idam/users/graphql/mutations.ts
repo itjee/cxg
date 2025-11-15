@@ -9,29 +9,29 @@ import { gql } from "@apollo/client";
 /**
  * 사용자 생성
  */
-export const CREATE_MANAGER_USER = gql`
-  mutation CreateManagerUser($input: CreateManagerUserInput!) {
-    create_manager_user(input: $input) {
+export const CREATE_USER = gql`
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
       id
-      user_type
-      full_name
+      userType
+      fullName
       email
       phone
       username
-      sso_provider
-      sso_subject
-      mfa_enabled
+      ssoProvider
+      ssoSubject
+      mfaEnabled
       status
-      last_login_at
-      last_login_ip
-      failed_login_attempts
-      force_password_change
+      lastLoginAt
+      lastLoginIp
+      failedLoginAttempts
+      forcePasswordChange
       timezone
       locale
       department
       position
-      created_at
-      updated_at
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -39,36 +39,36 @@ export const CREATE_MANAGER_USER = gql`
 /**
  * 사용자 수정
  */
-export const UPDATE_MANAGER_USER = gql`
-  mutation UpdateManagerUser($id: ID!, $input: UpdateManagerUserInput!) {
-    update_manager_user(id: $id, input: $input) {
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+    updateUser(id: $id, input: $input) {
       id
-      user_type
-      full_name
+      userType
+      fullName
       email
       phone
       username
-      sso_provider
-      sso_subject
-      mfa_enabled
+      ssoProvider
+      ssoSubject
+      mfaEnabled
       status
-      last_login_at
-      last_login_ip
-      failed_login_attempts
-      force_password_change
+      lastLoginAt
+      lastLoginIp
+      failedLoginAttempts
+      forcePasswordChange
       timezone
       locale
       department
       position
-      created_at
-      updated_at
+      createdAt
+      updatedAt
     }
   }
 `;
 
 // ===== 뮤테이션 변수 타입 =====
 
-export interface CreateManagerUserVariables {
+export interface CreateUserVariables {
   input: {
     user_type: string;
     full_name: string;
@@ -81,7 +81,7 @@ export interface CreateManagerUserVariables {
   };
 }
 
-export interface UpdateManagerUserVariables {
+export interface UpdateUserVariables {
   id: string;
   input: {
     full_name?: string;

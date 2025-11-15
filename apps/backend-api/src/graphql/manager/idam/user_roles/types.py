@@ -15,12 +15,12 @@ from src.graphql.common import Node
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from ..roles.types import ManagerRole
-    from ..users.types import ManagerUser
+    from ..roles.types import Role
+    from ..users.types import User
 
 
 @strawberry.type(description="Manager 사용자-역할 매핑")
-class ManagerUserRole(Node):
+class UserRole(Node):
     """
     Manager 사용자-역할 매핑
 
@@ -60,7 +60,7 @@ class ManagerUserRole(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="사용자 정보")
-    async def user(self, info) -> ManagerUser | None:
+    async def user(self, info) -> User | None:
         """
         매핑된 사용자 정보를 조회하는 필드 resolver
 
@@ -73,7 +73,7 @@ class ManagerUserRole(Node):
         return await resolve_user_role_user(UUID(self.user_id), info)
 
     @strawberry.field(description="역할 정보")
-    async def role(self, info) -> ManagerRole | None:
+    async def role(self, info) -> Role | None:
         """
         매핑된 역할 정보를 조회하는 필드 resolver
 
@@ -86,7 +86,7 @@ class ManagerUserRole(Node):
         return await resolve_user_role_role(UUID(self.role_id), info)
 
     @strawberry.field(description="역할 부여자 정보")
-    async def granter(self, info) -> ManagerUser | None:
+    async def granter(self, info) -> User | None:
         """
         역할을 부여한 관리자 정보를 조회하는 필드 resolver
 
@@ -103,7 +103,7 @@ class ManagerUserRole(Node):
 
 
 @strawberry.input(description="Manager 사용자-역할 할당 입력")
-class ManagerUserRoleCreateInput:
+class UserRoleCreateInput:
     """
     Manager 사용자에게 역할 할당
 
@@ -118,7 +118,7 @@ class ManagerUserRoleCreateInput:
 
 
 @strawberry.input(description="Manager 사용자-역할 수정 입력")
-class ManagerUserRoleUpdateInput:
+class UserRoleUpdateInput:
     """
     Manager 사용자-역할 매핑 수정
 
@@ -133,7 +133,7 @@ class ManagerUserRoleUpdateInput:
 
 
 @strawberry.input(description="Manager 사용자-역할 해제 입력")
-class ManagerUserRoleRevokeInput:
+class UserRoleRevokeInput:
     """
     Manager 사용자에서 역할 해제
 

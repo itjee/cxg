@@ -12,21 +12,21 @@ import { EntityDrawer } from "@/components/features";
 import { UsersForm } from "./users-form";
 import { useUsersStore } from "../stores/users.store";
 import {
-  useManagerUser,
-  useCreateManagerUser,
-  useUpdateManagerUser,
+  useUser,
+  useCreateUser,
+  useUpdateUser,
 } from "../hooks";
 
 export function UsersEdit() {
   const { formOpen, selectedId, closeForm } = useUsersStore();
 
   // 수정 모드: 선택된 사용자 조회
-  const { data: userResponse } = useManagerUser(selectedId || "");
+  const { data: userResponse } = useUser(selectedId || "");
   const editingUser = userResponse?.manager_user;
 
   // Apollo Mutation Hooks
-  const [createUser, { loading: createLoading }] = useCreateManagerUser();
-  const [updateUser, { loading: updateLoading }] = useUpdateManagerUser();
+  const [createUser, { loading: createLoading }] = useCreateUser();
+  const [updateUser, { loading: updateLoading }] = useUpdateUser();
 
   const isLoading = createLoading || updateLoading;
 

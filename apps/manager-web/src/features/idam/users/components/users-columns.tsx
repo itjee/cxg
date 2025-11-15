@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2 } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
-import type { ManagerUser } from "../types/users.types";
+import type { User } from "../types/users.types";
 
 /**
  * 상수 정의 - 상태별 색상
@@ -47,8 +47,8 @@ const getStatusColor = (status: string) => {
  * 액션 핸들러 타입
  */
 interface GetColumnsParams {
-  onEdit?: (user: ManagerUser) => void;
-  onDelete?: (user: ManagerUser) => void;
+  onEdit?: (user: User) => void;
+  onDelete?: (user: User) => void;
 }
 
 /**
@@ -57,7 +57,7 @@ interface GetColumnsParams {
 export const getUsersColumns = ({
   onEdit,
   onDelete,
-}: GetColumnsParams = {}): ColumnDef<ManagerUser>[] => [
+}: GetColumnsParams = {}): ColumnDef<User>[] => [
   // NO 컬럼
   {
     id: "rowNumber",

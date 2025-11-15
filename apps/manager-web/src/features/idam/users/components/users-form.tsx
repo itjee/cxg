@@ -16,7 +16,7 @@ import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { EntityFormButtons } from "@/components/features";
-import type { ManagerUser } from "../types/users.types";
+import type { User } from "../types/users.types";
 
 /**
  * 폼 유효성 검증 스키마
@@ -32,8 +32,8 @@ const userFormSchema = z.object({
 
 type UserFormData = z.infer<typeof userFormSchema>;
 
-interface ManagerUserFormProps {
-  initialData?: ManagerUser;
+interface UserFormProps {
+  initialData?: User;
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -44,7 +44,7 @@ export function UsersForm({
   onSubmit,
   onCancel,
   isLoading = false,
-}: ManagerUserFormProps) {
+}: UserFormProps) {
   const isEditing = !!initialData;
 
   const {

@@ -189,7 +189,7 @@ export const apolloClient = new ApolloClient({
       Query: {
         fields: {
           // 페이지네이션 정책
-          managerUsers: {
+          users: {
             // key arguments로 페이지 관련 파라미터 지정
             keyArgs: ['userType', 'status'],
             // merge 함수로 기존 데이터와 새 데이터 병합
@@ -197,19 +197,19 @@ export const apolloClient = new ApolloClient({
               return incoming;
             },
           },
-          managerRoles: {
+          roles: {
             keyArgs: ['category', 'status'],
             merge(existing = [], incoming) {
               return incoming;
             },
           },
-          managerSessions: {
+          sessions: {
             keyArgs: ['userId', 'status'],
             merge(existing = [], incoming) {
               return incoming;
             },
           },
-          managerPermissions: {
+          permissions: {
             keyArgs: ['category', 'resource'],
             merge(existing = [], incoming) {
               return incoming;

@@ -13,12 +13,12 @@ from src.graphql.common import create_entity, update_entity
 from src.models.manager.idam.permission import Permission as PermissionModel
 
 from .queries import permission_to_graphql
-from .types import ManagerPermission, ManagerPermissionCreateInput, ManagerPermissionUpdateInput
+from .types import Permission, PermissionCreateInput, PermissionUpdateInput
 
 
-async def create_manager_permission(
-    db: AsyncSession, input_data: ManagerPermissionCreateInput
-) -> ManagerPermission:
+async def create_permission(
+    db: AsyncSession, input_data: PermissionCreateInput
+) -> Permission:
     """
     Manager 권한 생성
 
@@ -30,7 +30,7 @@ async def create_manager_permission(
         input_data: 권한 생성 입력 데이터
 
     Returns:
-        ManagerPermission: 생성된 권한 객체
+        Permission: 생성된 권한 객체
 
     Note:
         - code는 시스템 전체에서 고유해야 합니다
@@ -48,9 +48,9 @@ async def create_manager_permission(
     )
 
 
-async def update_manager_permission(
-    db: AsyncSession, permission_id: UUID, input_data: ManagerPermissionUpdateInput
-) -> ManagerPermission | None:
+async def update_permission(
+    db: AsyncSession, permission_id: UUID, input_data: PermissionUpdateInput
+) -> Permission | None:
     """
     Manager 권한 수정
 
@@ -62,7 +62,7 @@ async def update_manager_permission(
         input_data: 권한 수정 입력 데이터
 
     Returns:
-        ManagerPermission: 수정된 권한 객체 또는 None
+        Permission: 수정된 권한 객체 또는 None
 
     제약사항:
         - is_system=True인 권한은 수정할 수 없습니다
@@ -82,7 +82,7 @@ async def update_manager_permission(
 
 
 @strawberry.type
-class ManagerPermissionMutations:
+class PermissionMutations:
     """
     Manager IDAM Permissions Mutation
 
@@ -90,9 +90,9 @@ class ManagerPermissionMutations:
     """
 
     @strawberry.mutation(description="Manager 권한 생성")
-    async def create_manager_permission(
-        self, info, input: ManagerPermissionCreateInput
-    ) -> ManagerPermission:
+    async def create_permission(
+        self, info, input: PermissionCreateInput
+    ) -> Permission:
         """
         Manager 권한 생성
 
@@ -102,7 +102,7 @@ class ManagerPermissionMutations:
             input: 권한 생성 정보
 
         Returns:
-            ManagerPermission: 생성된 권한 객체
+            Permission: 생성된 권한 객체
 
         Important:
             - code는 고유해야 하며, {resource}.{action} 형식을 권장합니다
@@ -110,7 +110,7 @@ class ManagerPermissionMutations:
 
         사용 예:
             mutation {
-              createManagerPermission(input: {
+              createPermission(input: {
                 code: "products.create"
                 name: "제품 생성"
                 description: "새로운 제품을 생성할 수 있는 권한"
@@ -126,12 +126,12 @@ class ManagerPermissionMutations:
             }
         """
         db = info.context.manager_db_session
-        return await create_manager_permission(db, input)
+        return await create_permission(db, input)
 
     @strawberry.mutation(description="Manager 권한 수정")
-    async def update_manager_permission(
-        self, info, id: strawberry.ID, input: ManagerPermissionUpdateInput
-    ) -> ManagerPermission | None:
+    async def update_permission(
+        self, info, id: strawberry.ID, input: PermissionUpdateInput
+    ) -> Permission | None:
         """
         Manager 권한 수정
 
@@ -142,7 +142,7 @@ class ManagerPermissionMutations:
             input: 권한 수정 정보
 
         Returns:
-            ManagerPermission: 수정된 권한 객체 또는 None
+            Permission: 수정된 권한 객체 또는 None
 
         제약사항:
             - 시스템 권한(is_system=true)은 수정 불가
@@ -150,7 +150,7 @@ class ManagerPermissionMutations:
 
         사용 예:
             mutation {
-              updateManagerPermission(
+              updatePermission(
                 id: "xxx"
                 input: {
                   name: "제품 생성 (수정됨)"
@@ -162,4 +162,4 @@ class ManagerPermissionMutations:
             }
         """
         db = info.context.manager_db_session
-        return await update_manager_permission(db, UUID(id), input)
+        return await update_permission(db, UUID(id), input)

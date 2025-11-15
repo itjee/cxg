@@ -14,7 +14,7 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import ManagerUser
+    from ..users.types import User
 
 
 @strawberry.type(description="Manager API 키")
@@ -48,7 +48,7 @@ class ManagerApiKey(Node):
     )
 
     @strawberry.field(description="API 키 소유자")
-    async def user(self, info) -> "ManagerUser | None":
+    async def user(self, info) -> "User | None":
         """
         API 키 소유자 정보 조회
 

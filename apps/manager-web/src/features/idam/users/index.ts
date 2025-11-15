@@ -9,10 +9,10 @@
  * import { UsersTable } from '@/features/idam/users';
  *
  * // Hook
- * import { useManagerUsers, useCreateManagerUser } from '@/features/idam/users';
+ * import { useUsers, useCreateUser } from '@/features/idam/users';
  *
  * // Type
- * import type { ManagerUser } from '@/features/idam/users';
+ * import type { User } from '@/features/idam/users';
  *
  * // Store
  * import { useUsersStore } from '@/features/idam/users';
@@ -23,25 +23,25 @@ export * from "./components";
 
 // ===== GraphQL (Hooks & Queries) =====
 export {
-  useManagerUsers,
-  useManagerUser,
-  useCreateManagerUser,
-  useUpdateManagerUser,
+  useUsers,
+  useUser,
+  useCreateUser,
+  useUpdateUser,
 } from "./hooks";
 export type {
-  GetManagerUsersVariables,
-  GetManagerUserVariables,
-  CreateManagerUserVariables,
-  UpdateManagerUserVariables,
+  GetUsersVariables,
+  GetUserVariables,
+  CreateUserVariables,
+  UpdateUserVariables,
 } from "./graphql";
 
 // ===== Types =====
 export type {
-  ManagerUser,
-  CreateManagerUserRequest,
-  UpdateManagerUserRequest,
-  ManagerUsersListResponse,
-  ManagerUsersQueryParams,
+  User,
+  CreateUserRequest,
+  UpdateUserRequest,
+  UsersListResponse,
+  UsersQueryParams,
   // Deprecated types (compatibility)
   Users,
   UsersListResponse,

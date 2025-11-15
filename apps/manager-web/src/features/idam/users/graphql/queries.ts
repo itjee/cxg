@@ -9,9 +9,9 @@ import { gql } from "@apollo/client";
 /**
  * 사용자 목록 조회
  */
-export const GET_MANAGER_USERS = gql`
-  query GetManagerUsers($limit: Int, $offset: Int, $user_type: String, $status: String) {
-    managerUsers(limit: $limit, offset: $offset, userType: $user_type, status: $status) {
+export const GET_USERS = gql`
+  query GetUsers($limit: Int, $offset: Int, $user_type: String, $status: String) {
+    users(limit: $limit, offset: $offset, userType: $user_type, status: $status) {
       id
       userType
       fullName
@@ -39,9 +39,9 @@ export const GET_MANAGER_USERS = gql`
 /**
  * 사용자 상세 조회
  */
-export const GET_MANAGER_USER = gql`
-  query GetManagerUser($id: ID!) {
-    managerUser(id: $id) {
+export const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
       id
       userType
       fullName
@@ -68,13 +68,13 @@ export const GET_MANAGER_USER = gql`
 
 // ===== 쿼리 변수 타입 =====
 
-export interface GetManagerUsersVariables {
+export interface GetUsersVariables {
   limit?: number;
   offset?: number;
   userType?: string;
   status?: string;
 }
 
-export interface GetManagerUserVariables {
+export interface GetUserVariables {
   id: string;
 }

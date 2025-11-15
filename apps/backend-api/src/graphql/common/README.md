@@ -25,34 +25,36 @@ src/graphql/common/
 N+1 쿼리 문제를 해결하는 공통 DataLoader 클래스
 
 #### BaseDataLoader
+
 ID 기반 배치 로딩
 
 ```python
 from src.graphql.common import BaseDataLoader
 from src.models.manager.idam.user import User as UserModel
 
-class ManagerUserLoader(BaseDataLoader[UserModel]):
+class UserLoader(BaseDataLoader[UserModel]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, UserModel)
 
 # 사용
-loader = ManagerUserLoader(db)
+loader = UserLoader(db)
 user = await loader.load("user-id")
 users = await loader.load_many(["id1", "id2", "id3"])
 ```
 
 #### BaseFieldLoader
+
 특정 필드 기반 배치 로딩
 
 ```python
 from src.graphql.common import BaseFieldLoader
 
-class ManagerUserByEmailLoader(BaseFieldLoader[UserModel]):
+class UserByEmailLoader(BaseFieldLoader[UserModel]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, UserModel, "email")
 
 # 사용
-loader = ManagerUserByEmailLoader(db)
+loader = UserByEmailLoader(db)
 user = await loader.load("user@example.com")
 ```
 
@@ -60,10 +62,10 @@ user = await loader.load("user@example.com")
 
 ```python
 # 이전 (88줄)
-class ManagerUserLoader:
+class UserLoader:
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+
     async def load_many(self, user_ids: list[str]) -> list[UserModel | None]:
         if not user_ids:
             return []
@@ -73,13 +75,13 @@ class ManagerUserLoader:
         users = result.scalars().all()
         user_map = {str(user.id): user for user in users}
         return [user_map.get(uid) for uid in user_ids]
-    
+
     async def load(self, user_id: str) -> UserModel | None:
         result = await self.load_many([user_id])
         return result[0] if result else None
 
 # 이후 (3줄)
-class ManagerUserLoader(BaseDataLoader[UserModel]):
+class UserLoader(BaseDataLoader[UserModel]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, UserModel)
 ```
@@ -89,6 +91,7 @@ class ManagerUserLoader(BaseDataLoader[UserModel]):
 공통 조회 로직
 
 #### get_by_id
+
 단일 엔티티 조회
 
 ```python
@@ -105,6 +108,7 @@ async def get_user_by_id(db: AsyncSession, user_id: UUID):
 ```
 
 #### get_list
+
 목록 조회 (페이징, 필터링, 정렬)
 
 ```python
@@ -124,6 +128,7 @@ async def get_users(db: AsyncSession, status: str = None):
 ```
 
 #### get_count
+
 개수 조회
 
 ```python
@@ -136,15 +141,15 @@ count = await get_count(db, UserModel, is_deleted=False)
 
 ```python
 # 이전 (45줄)
-async def get_manager_user_by_id(db: AsyncSession, user_id: UUID):
+async def get_user_by_id(db: AsyncSession, user_id: UUID):
     stmt = select(UserModel).where(UserModel.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if not user:
         return None
-    
-    return ManagerUser(
+
+    return User(
         id=strawberry.ID(str(user.id)),
         user_type=user.user_type,
         full_name=user.full_name,
@@ -152,7 +157,7 @@ async def get_manager_user_by_id(db: AsyncSession, user_id: UUID):
     )
 
 # 이후 (7줄)
-async def get_manager_user_by_id(db: AsyncSession, user_id: UUID):
+async def get_user_by_id(db: AsyncSession, user_id: UUID):
     return await get_by_id(
         db=db,
         model_class=UserModel,
@@ -166,6 +171,7 @@ async def get_manager_user_by_id(db: AsyncSession, user_id: UUID):
 공통 생성/수정/삭제 로직
 
 #### create_entity
+
 엔티티 생성
 
 ```python
@@ -183,6 +189,7 @@ async def create_user(db: AsyncSession, input_data):
 ```
 
 #### update_entity
+
 엔티티 수정
 
 ```python
@@ -200,6 +207,7 @@ async def update_user(db: AsyncSession, user_id: UUID, input_data):
 ```
 
 #### delete_entity
+
 엔티티 삭제
 
 ```python
@@ -220,9 +228,9 @@ success = await delete_entity(
 
 ```python
 # 이전 (59줄)
-async def create_manager_user(db: AsyncSession, input_data):
+async def create_user(db: AsyncSession, input_data):
     password_hash = hash_password(input_data.password)
-    
+
     user = UserModel(
         user_type=input_data.user_type,
         full_name=input_data.full_name,
@@ -231,22 +239,22 @@ async def create_manager_user(db: AsyncSession, input_data):
         password=password_hash,
         # ... 더 많은 필드
     )
-    
+
     db.add(user)
     await db.commit()
     await db.refresh(user)
-    
-    return ManagerUser(
+
+    return User(
         id=strawberry.ID(str(user.id)),
         # ... 20+ 필드 매핑
     )
 
 # 이후 (11줄)
 def prepare_data(input_data):
-    return {**input_data.__dict__, 
+    return {**input_data.__dict__,
             "password": hash_password(input_data.password)}
 
-async def create_manager_user(db: AsyncSession, input_data):
+async def create_user(db: AsyncSession, input_data):
     return await create_entity(
         db=db,
         model_class=UserModel,
@@ -272,7 +280,7 @@ class CanViewUsers(CanView):
     resource = "users"
     message = "사용자를 조회할 권한이 없습니다"
 
-class CanManageUsers(CanManage):
+class CanUsers(CanManage):
     resource = "users"
 ```
 
@@ -298,7 +306,7 @@ class Query:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def users(self, info) -> list[User]:
         ...
-    
+
     @strawberry.field(permission_classes=[IsMaster])
     async def admin_users(self, info) -> list[User]:
         ...
@@ -308,27 +316,27 @@ class Query:
 
 ```python
 # 이전 (각 엔티티마다 55줄 반복)
-class CanViewManagerUsers(BasePermission):
+class CanViewUsers(BasePermission):
     message = "Manager 사용자 목록을 조회할 권한이 없습니다"
-    
+
     async def has_permission(self, source, info, **kwargs):
         # TODO: 실제 권한 체크
         return True
 
-class CanManageManagerUsers(BasePermission):
+class CanManageUsers(BasePermission):
     message = "Manager 사용자를 관리할 권한이 없습니다"
-    
+
     async def has_permission(self, source, info, **kwargs):
         # TODO: 실제 권한 체크
         return True
 # ... 3개 더
 
 # 이후 (3줄)
-class CanViewManagerUsers(CanView):
-    resource = "manager_users"
+class CanViewUsers(CanView):
+    resource = "users"
 
-class CanManageManagerUsers(CanManage):
-    resource = "manager_users"
+class CanManageUsers(CanManage):
+    resource = "users"
 ```
 
 ### 5. Converter 유틸리티 (converters.py)
@@ -343,7 +351,7 @@ from src.graphql.common import (
 )
 
 # 자동 변환기 생성
-to_graphql_user = model_to_graphql_converter(ManagerUser)
+to_graphql_user = model_to_graphql_converter(User)
 user_graphql = to_graphql_user(user_model)
 
 # UUID 변환
@@ -359,7 +367,7 @@ id_field = safe_uuid_to_id(uuid_value)
 
 ```python
 # loaders.py (88줄)
-class ManagerUserLoader:
+class UserLoader:
     def __init__(self, db: AsyncSession):
         self.db = db
     async def load_many(self, user_ids: list[str]):
@@ -367,38 +375,38 @@ class ManagerUserLoader:
     async def load(self, user_id: str):
         # 3줄의 구현
 
-class ManagerUserByUsernameLoader:
+class UserByUsernameLoader:
     # 25줄 반복
-    
-class ManagerUserByEmailLoader:
+
+class UserByEmailLoader:
     # 25줄 반복
 
 # queries.py (97줄)
-async def get_manager_user_by_id(db, user_id):
+async def get_user_by_id(db, user_id):
     # 45줄 구현
-    
-async def get_manager_users(db, limit, offset):
+
+async def get_users(db, limit, offset):
     # 35줄 구현
-    
+
 @strawberry.type
-class ManagerUserQueries:
+class UserQueries:
     # 17줄 래퍼
 
 # mutations.py (133줄)
-async def create_manager_user(db, input_data):
+async def create_user(db, input_data):
     # 59줄 구현
-    
-async def update_manager_user(db, user_id, input_data):
+
+async def update_user(db, user_id, input_data):
     # 54줄 구현
-    
+
 @strawberry.type
-class ManagerUserMutations:
+class UserMutations:
     # 20줄 래퍼
 
 # permissions.py (55줄)
-class CanViewManagerUsers(BasePermission):
+class CanViewUsers(BasePermission):
     # 10줄
-class CanManageManagerUsers(BasePermission):
+class CanManageUsers(BasePermission):
     # 10줄
 # ... 3개 더
 ```
@@ -409,19 +417,19 @@ class CanManageManagerUsers(BasePermission):
 # loaders.py (10줄)
 from src.graphql.common import BaseDataLoader, BaseFieldLoader
 
-class ManagerUserLoader(BaseDataLoader[UserModel]):
+class UserLoader(BaseDataLoader[UserModel]):
     def __init__(self, db): super().__init__(db, UserModel)
 
-class ManagerUserByUsernameLoader(BaseFieldLoader[UserModel]):
+class UserByUsernameLoader(BaseFieldLoader[UserModel]):
     def __init__(self, db): super().__init__(db, UserModel, "username")
 
-class ManagerUserByEmailLoader(BaseFieldLoader[UserModel]):
+class UserByEmailLoader(BaseFieldLoader[UserModel]):
     def __init__(self, db): super().__init__(db, UserModel, "email")
 
 # queries.py (35줄)
 from src.graphql.common import get_by_id, get_list
 
-def user_to_graphql(user): 
+def user_to_graphql(user):
     # 15줄 매핑
 
 async def get_user_by_id(db, user_id):
@@ -431,7 +439,7 @@ async def get_users(db, limit, offset):
     return await get_list(db, UserModel, user_to_graphql, limit, offset)
 
 @strawberry.type
-class ManagerUserQueries:
+class UserQueries:
     # 10줄 래퍼
 
 # mutations.py (40줄)
@@ -441,47 +449,49 @@ def prepare_data(input_data):
     # 5줄
 
 async def create_user(db, input_data):
-    return await create_entity(db, UserModel, input_data, 
+    return await create_entity(db, UserModel, input_data,
                               user_to_graphql, prepare_data)
 
 async def update_user(db, user_id, input_data):
-    return await update_entity(db, UserModel, user_id, 
+    return await update_entity(db, UserModel, user_id,
                               input_data, user_to_graphql)
 
 @strawberry.type
-class ManagerUserMutations:
+class UserMutations:
     # 15줄 래퍼
 
 # permissions.py (15줄)
 from src.graphql.common import CanView, CanManage
 
-class CanViewManagerUsers(CanView):
-    resource = "manager_users"
+class CanViewUsers(CanView):
+    resource = "users"
 
-class CanManageManagerUsers(CanManage):
-    resource = "manager_users"
+class CanManageUsers(CanManage):
+    resource = "users"
 ```
 
 ## 코드 감소 효과
 
 ### 파일별 비교
 
-| 파일 | 이전 | 이후 | 감소율 |
-|-----|------|------|--------|
-| loaders.py | 88줄 | 10줄 | 89% ↓ |
-| queries.py | 97줄 | 35줄 | 64% ↓ |
-| mutations.py | 133줄 | 40줄 | 70% ↓ |
-| permissions.py | 55줄 | 15줄 | 73% ↓ |
-| **합계** | **373줄** | **100줄** | **73% ↓** |
+| 파일           | 이전      | 이후      | 감소율    |
+| -------------- | --------- | --------- | --------- |
+| loaders.py     | 88줄      | 10줄      | 89% ↓     |
+| queries.py     | 97줄      | 35줄      | 64% ↓     |
+| mutations.py   | 133줄     | 40줄      | 70% ↓     |
+| permissions.py | 55줄      | 15줄      | 73% ↓     |
+| **합계**       | **373줄** | **100줄** | **73% ↓** |
 
 ### 전체 시스템 적용 시
 
 현재 시스템에는 약 20개 이상의 엔티티가 있습니다:
+
 - Manager: users, roles, permissions, sessions, login_logs, api_keys
 - Tenants: users, roles, permissions, menus, departments, branches
 - 기타: workflows, tasks, executions, resources, audit_logs, compliances, policies
 
 **예상 효과:**
+
 - 이전: 20 엔티티 × 373줄 = **7,460줄**
 - 이후: 20 엔티티 × 100줄 = **2,000줄**
 - **절감: 5,460줄 (73% 감소)**

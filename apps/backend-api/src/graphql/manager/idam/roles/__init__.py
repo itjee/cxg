@@ -6,17 +6,17 @@
 역할은 권한(Permission)을 그룹화하여 사용자에게 할당됩니다.
 """
 
-from .mutations import ManagerRoleMutations
-from .queries import ManagerRoleQueries
+from .mutations import RoleMutations
+from .queries import RoleQueries
 from .resolvers import resolve_role_permissions
-from .types import ManagerRole, ManagerRoleCreateInput, ManagerRoleUpdateInput
+from .types import Role, RoleCreateInput, RoleUpdateInput
 
 
 __all__ = [
-    "ManagerRole",
-    "ManagerRoleCreateInput",
-    "ManagerRoleUpdateInput",
-    "ManagerRoleQueries",
-    "ManagerRoleMutations",
+    "Role",
+    "RoleCreateInput",
+    "RoleUpdateInput",
+    "RoleQueries",
+    "RoleMutations",
     "resolve_role_permissions",
 ]

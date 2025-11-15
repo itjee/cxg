@@ -5,15 +5,15 @@
  */
 
 export {
-  GET_MANAGER_USERS,
-  GET_MANAGER_USER,
-  type GetManagerUsersVariables,
-  type GetManagerUserVariables,
+  GET_USERS,
+  GET_USER,
+  type GetUsersVariables,
+  type GetUserVariables,
 } from "./queries";
 
 export {
-  CREATE_MANAGER_USER,
-  UPDATE_MANAGER_USER,
-  type CreateManagerUserVariables,
-  type UpdateManagerUserVariables,
+  CREATE_USER,
+  UPDATE_USER,
+  type CreateUserVariables,
+  type UpdateUserVariables,
 } from "./mutations";

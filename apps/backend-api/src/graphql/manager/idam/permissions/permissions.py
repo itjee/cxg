@@ -6,17 +6,17 @@
 from src.graphql.common import CanManage, CanView, IsMaster
 
 
-class CanViewManagerPermissions(CanView):
+class CanViewPermissions(CanView):
     """Manager 권한 목록 조회 권한"""
 
-    resource = "manager_permissions"
+    resource = "permissions"
     message = "Manager 권한 목록을 조회할 권한이 없습니다"
 
 
-class CanManageManagerPermissions(CanManage):
+class CanManagePermissions(CanManage):
     """Manager 권한 관리(생성/수정) 권한"""
 
-    resource = "manager_permissions"
+    resource = "permissions"
     message = "Manager 권한을 관리할 권한이 없습니다"
 
 

@@ -14,11 +14,11 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import ManagerUser
+    from ..users.types import User
 
 
 @strawberry.type(description="Manager 로그인 이력")
-class ManagerLoginLog(Node):
+class LoginLog(Node):
     """
     Manager 시스템 로그인 이력
 
@@ -46,7 +46,7 @@ class ManagerLoginLog(Node):
     )
 
     @strawberry.field(description="로그인 사용자")
-    async def user(self, info) -> "ManagerUser | None":
+    async def user(self, info) -> "User | None":
         """
         로그인 이력 사용자 정보 조회
 
@@ -93,7 +93,7 @@ class ManagerLoginLog(Node):
 
 
 @strawberry.input(description="Manager 로그인 이력 생성 입력")
-class ManagerLoginLogCreateInput:
+class LoginLogCreateInput:
     """
     Manager 로그인 이력 생성 입력 타입
 

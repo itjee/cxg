@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @strawberry.type(description="Manager 권한")
-class ManagerPermission(Node):
+class Permission(Node):
     """
     Manager 시스템 권한
 
@@ -98,7 +98,7 @@ class ManagerPermission(Node):
 
 
 @strawberry.input(description="Manager 권한 생성 입력")
-class ManagerPermissionCreateInput:
+class PermissionCreateInput:
     """
     Manager 권한 생성 입력 타입
 
@@ -125,7 +125,7 @@ class ManagerPermissionCreateInput:
 
 
 @strawberry.input(description="Manager 권한 수정 입력")
-class ManagerPermissionUpdateInput:
+class PermissionUpdateInput:
     """
     Manager 권한 수정 입력 타입
 

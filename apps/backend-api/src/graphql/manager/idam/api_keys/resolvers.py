@@ -23,7 +23,7 @@ async def resolve_api_key_user(user_id: UUID, info):
         info: GraphQL 실행 컨텍스트
 
     Returns:
-        ManagerUser: 사용자 GraphQL 객체 또는 None
+        User: 사용자 GraphQL 객체 또는 None
 
     Note:
         - Context에 user_by_id_loader가 등록되어 있으면 사용

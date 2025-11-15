@@ -7,16 +7,16 @@
 
 import { useQuery, useMutation } from "@apollo/client";
 import {
-  GET_MANAGER_USERS,
-  GET_MANAGER_USER,
-  CREATE_MANAGER_USER,
-  UPDATE_MANAGER_USER,
-  type GetManagerUsersVariables,
-  type GetManagerUserVariables,
-  type CreateManagerUserVariables,
-  type UpdateManagerUserVariables,
+  GET_USERS,
+  GET_USER,
+  CREATE_USER,
+  UPDATE_USER,
+  type GetUsersVariables,
+  type GetUserVariables,
+  type CreateUserVariables,
+  type UpdateUserVariables,
 } from "../graphql";
-import type { ManagerUser } from "../types/users.types";
+import type { User } from "../types/users.types";
 
 // ========== useQuery Hooks ==========
 
@@ -24,13 +24,13 @@ import type { ManagerUser } from "../types/users.types";
  * 사용자 목록 조회
  *
  * @example
- * const { data, loading, error, refetch } = useManagerUsers({ limit: 20, offset: 0 });
+ * const { data, loading, error, refetch } = useUsers({ limit: 20, offset: 0 });
  */
-export function useManagerUsers(variables?: GetManagerUsersVariables) {
+export function useUsers(variables?: GetUsersVariables) {
   return useQuery<
-    { manager_users: ManagerUser[] },
-    GetManagerUsersVariables
-  >(GET_MANAGER_USERS, {
+    { users: User[] },
+    GetUsersVariables
+  >(GET_USERS, {
     variables: {
       limit: 20,
       offset: 0,
@@ -44,11 +44,11 @@ export function useManagerUsers(variables?: GetManagerUsersVariables) {
  * 사용자 상세 조회
  *
  * @example
- * const { data, loading, error } = useManagerUser("user-id");
+ * const { data, loading, error } = useUser("user-id");
  */
-export function useManagerUser(id: string) {
-  return useQuery<{ manager_user: ManagerUser }, GetManagerUserVariables>(
-    GET_MANAGER_USER,
+export function useUser(id: string) {
+  return useQuery<{ user: User }, GetUserVariables>(
+    GET_USER,
     {
       variables: { id },
       skip: !id, // id가 없으면 쿼리 실행 안 함
@@ -62,21 +62,21 @@ export function useManagerUser(id: string) {
  * 사용자 생성
  *
  * @example
- * const [createUser, { loading, error }] = useCreateManagerUser();
+ * const [createUser, { loading, error }] = useCreateUser();
  * await createUser({
  *   variables: {
  *     input: { username, email, password, ... }
  *   }
  * });
  */
-export function useCreateManagerUser() {
+export function useCreateUser() {
   return useMutation<
-    { create_manager_user: ManagerUser },
-    CreateManagerUserVariables
-  >(CREATE_MANAGER_USER, {
+    { createUser: User },
+    CreateUserVariables
+  >(CREATE_USER, {
     refetchQueries: [
       {
-        query: GET_MANAGER_USERS,
+        query: GET_USERS,
         variables: { limit: 20, offset: 0 },
       },
     ],
@@ -87,7 +87,7 @@ export function useCreateManagerUser() {
  * 사용자 수정
  *
  * @example
- * const [updateUser, { loading, error }] = useUpdateManagerUser();
+ * const [updateUser, { loading, error }] = useUpdateUser();
  * await updateUser({
  *   variables: {
  *     id: "user-id",
@@ -95,14 +95,14 @@ export function useCreateManagerUser() {
  *   }
  * });
  */
-export function useUpdateManagerUser() {
+export function useUpdateUser() {
   return useMutation<
-    { update_manager_user: ManagerUser },
-    UpdateManagerUserVariables
-  >(UPDATE_MANAGER_USER, {
+    { updateUser: User },
+    UpdateUserVariables
+  >(UPDATE_USER, {
     refetchQueries: [
       {
-        query: GET_MANAGER_USERS,
+        query: GET_USERS,
         variables: { limit: 20, offset: 0 },
       },
     ],

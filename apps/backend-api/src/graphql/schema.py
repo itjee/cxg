@@ -16,9 +16,8 @@ from .manager.auth.types import (
     TokenResponse,
 )
 from .manager.dashboard import Activity, DashboardQueries, DashboardStats, TenantGrowthData
-from .manager.idam.users import ManagerUser, ManagerUserQueries
-from .manager.schema import ManagerMutation, ManagerQuery
-from .tenants.schema import TenantsMutation, TenantsQuery
+from .manager.schema import ManagerQuery, User, UserQueries
+from .tenants.schema import TenantsQuery
 
 
 @strawberry.type(description="GraphQL Root Query")
@@ -73,10 +72,10 @@ class Query:
 
     # IDAM - Users
     @strawberry.field(description="Manager 사용자 조회 (ID)")
-    async def manager_user(self, info, id: strawberry.ID) -> ManagerUser | None:
+    async def manager_user(self, info, id: strawberry.ID) -> User | None:
         """Manager 사용자 단건 조회"""
-        manager_queries = ManagerUserQueries()
-        return await manager_queries.manager_user(info, id)
+        manager_queries = UserQueries()
+        return await manager_queries.user(info, id)
 
     @strawberry.field(description="Manager 사용자 목록")
     async def manager_users(
@@ -86,24 +85,24 @@ class Query:
         offset: int = 0,
         user_type: str | None = None,
         status: str | None = None,
-    ) -> list[ManagerUser]:
+    ) -> list[User]:
         """Manager 사용자 목록 조회 (페이징 및 필터링 지원)"""
-        manager_queries = ManagerUserQueries()
-        return await manager_queries.manager_users(info, limit, offset, user_type, status)
+        manager_queries = UserQueries()
+        return await manager_queries.users(info, limit, offset, user_type, status)
 
     # IDAM - Roles
-    manager_role = ManagerQuery.manager_role
-    manager_roles = ManagerQuery.manager_roles
+    manager_role = ManagerQuery.role
+    manager_roles = ManagerQuery.roles
 
     # IDAM - Permissions
-    manager_permission = ManagerQuery.manager_permission
-    manager_permissions = ManagerQuery.manager_permissions
+    manager_permission = ManagerQuery.permission
+    manager_permissions = ManagerQuery.permissions
 
     # IDAM - Role Permissions
-    manager_role_permission = ManagerQuery.manager_role_permission
-    manager_role_permissions = ManagerQuery.manager_role_permissions
-    manager_permissions_by_role = ManagerQuery.manager_permissions_by_role
-    manager_roles_by_permission = ManagerQuery.manager_roles_by_permission
+    manager_role_permission = ManagerQuery.role_permission
+    manager_role_permissions = ManagerQuery.role_permissions
+    manager_permissions_by_role = ManagerQuery.permissions_by_role
+    manager_roles_by_permission = ManagerQuery.roles_by_permission
 
     # ===== Tenants 시스템 =====
     # SYS - Users

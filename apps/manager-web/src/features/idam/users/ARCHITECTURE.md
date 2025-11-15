@@ -21,12 +21,12 @@ users/
 │   └── index.ts
 │
 ├── graphql/                 # GraphQL 쿼리/뮤테이션 (Feature별 관리)
-│   ├── queries.ts           # GET_MANAGER_USERS, GET_MANAGER_USER
-│   ├── mutations.ts         # CREATE/UPDATE_MANAGER_USER
+│   ├── queries.ts           # GET_USERS, GET_USER
+│   ├── mutations.ts         # CREATE/UPDATE_USER
 │   └── index.ts
 │
 ├── hooks/                   # GraphQL Hooks (Apollo Client)
-│   ├── use-users.ts         # useManagerUsers, useCreateManagerUser 등
+│   ├── use-users.ts         # useUsers, useCreateUser 등
 │   └── index.ts
 │
 ├── services/                # GraphQL Service Layer (선택)
@@ -38,7 +38,7 @@ users/
 │   └── index.ts
 │
 ├── types/                   # TypeScript 타입 (GraphQL 네이티브)
-│   ├── users.types.ts       # ManagerUser, CreateManagerUserRequest 등
+│   ├── users.types.ts       # User, CreateUserRequest 등
 │   └── index.ts
 │
 ├── index.ts                 # Public API (공개 인터페이스)
@@ -54,9 +54,9 @@ Page
   ↓
 Component (UI 렌더링)
   ↓
-Hook: useManagerUsers (GraphQL)
+Hook: useUsers (GraphQL)
   ↓
-Apollo Client Query (GET_MANAGER_USERS)
+Apollo Client Query (GET_USERS)
   ↓
 Backend GraphQL API
   ↓
@@ -70,9 +70,9 @@ Component로 데이터 전달
 ```
 Component (폼 제출)
   ↓
-Hook: useUpdateManagerUser (GraphQL)
+Hook: useUpdateUser (GraphQL)
   ↓
-Apollo Client Mutation (UPDATE_MANAGER_USER)
+Apollo Client Mutation (UPDATE_USER)
   ↓
 Backend GraphQL API
   ↓
@@ -89,9 +89,9 @@ Feature 내부에서 관리하는 GraphQL 정의입니다.
 
 ```typescript
 // graphql/queries.ts
-export const GET_MANAGER_USERS = gql`
-  query GetManagerUsers($limit: Int, $offset: Int, ...) {
-    managerUsers(...) {
+export const GET_USERS = gql`
+  query GetUsers($limit: Int, $offset: Int, ...) {
+    Users(...) {
       id
       username
       email
@@ -100,7 +100,7 @@ export const GET_MANAGER_USERS = gql`
   }
 `;
 
-export interface GetManagerUsersVariables {
+export interface GetUsersVariables {
   limit?: number;
   offset?: number;
   // ...
@@ -113,8 +113,8 @@ Apollo Client의 useQuery/useMutation을 래핑한 Hooks입니다.
 
 ```typescript
 // hooks/use-users.ts
-export function useManagerUsers(variables?: GetManagerUsersVariables) {
-  return useQuery<{ managerUsers: ManagerUser[] }>(GET_MANAGER_USERS, {
+export function useUsers(variables?: GetUsersVariables) {
+  return useQuery<{ Users: User[] }>(GET_USERS, {
     variables: { limit: 20, offset: 0, ...variables },
     fetchPolicy: "cache-and-network",
   });
@@ -124,7 +124,7 @@ export function useManagerUsers(variables?: GetManagerUsersVariables) {
 **컴포넌트에서 사용:**
 
 ```typescript
-const { data, loading, error, refetch } = useManagerUsers({ limit: 20 });
+const { data, loading, error, refetch } = useUsers({ limit: 20 });
 ```
 
 ### 3. 타입 정의 (types/)
@@ -132,7 +132,7 @@ const { data, loading, error, refetch } = useManagerUsers({ limit: 20 });
 GraphQL 스키마와 직접 매칭되는 camelCase 타입입니다.
 
 ```typescript
-export interface ManagerUser {
+export interface User {
   id: string;
   username: string;
   email: string;
@@ -154,7 +154,7 @@ export interface ManagerUser {
 // stores/users.store.ts
 interface UsersStore {
   // UI 상태
-  selectedStatus: 'ACTIVE' | 'INACTIVE' | '';
+  selectedStatus: "ACTIVE" | "INACTIVE" | "";
   currentPage: number;
   itemsPerPage: number;
   globalFilter: string;
@@ -171,12 +171,12 @@ interface UsersStore {
 
 **서버 상태 vs UI 상태:**
 
-| 항목 | 관리자 | 저장 위치 | 동기화 |
-|------|--------|---------|--------|
-| 사용자 데이터 | Apollo | Cache | 쿼리/뮤테이션 |
-| 필터 상태 | Zustand | Store | setSelectedStatus() |
-| 현재 페이지 | Zustand | Store | setCurrentPage() |
-| 폼 열림/닫힘 | Zustand | Store | openForm() |
+| 항목          | 관리자  | 저장 위치 | 동기화              |
+| ------------- | ------- | --------- | ------------------- |
+| 사용자 데이터 | Apollo  | Cache     | 쿼리/뮤테이션       |
+| 필터 상태     | Zustand | Store     | setSelectedStatus() |
+| 현재 페이지   | Zustand | Store     | setCurrentPage()    |
+| 폼 열림/닫힘  | Zustand | Store     | openForm()          |
 
 ### 5. Service Layer (services/) - 선택사항
 
@@ -185,7 +185,7 @@ Apollo를 직접 호출하는 대신 Service를 통해 호출할 수 있습니�
 
 ```typescript
 // 일반적인 방식 (권장)
-const { data } = useManagerUsers();
+const { data } = useUsers();
 
 // Service를 통한 방식 (테스트용)
 const users = await usersService.listUsers({ limit: 20 });
@@ -198,27 +198,23 @@ const users = await usersService.listUsers({ limit: 20 });
 ```typescript
 "use client";
 
-import { useManagerUsers, useUpdateManagerUser } from "@/features/idam/users";
+import { useUsers, useUpdateUser } from "@/features/idam/users";
 import { useUsersStore } from "@/features/idam/users";
-import {
-  UsersTable,
-  UsersFilters,
-  UsersHeader,
-} from "@/features/idam/users";
+import { UsersTable, UsersFilters, UsersHeader } from "@/features/idam/users";
 
 export default function UsersPage() {
   // 1. Store에서 UI 상태 가져오기
   const { selectedStatus, currentPage, itemsPerPage } = useUsersStore();
 
   // 2. GraphQL 쿼리 (Apollo Hooks)
-  const { data, loading, error, refetch } = useManagerUsers({
+  const { data, loading, error, refetch } = useUsers({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
     status: selectedStatus || undefined,
   });
 
   // 3. GraphQL 뮤테이션 (수정)
-  const [updateUser, { loading: updating }] = useUpdateManagerUser();
+  const [updateUser, { loading: updating }] = useUpdateUser();
 
   const handleUpdate = async (id: string, data: any) => {
     try {
@@ -239,7 +235,7 @@ export default function UsersPage() {
       <UsersHeader onRefresh={() => refetch()} />
       <UsersFilters />
       <UsersTable
-        data={data?.managerUsers || []}
+        data={data?.Users || []}
         onUpdate={handleUpdate}
         isLoading={updating}
       />
@@ -254,21 +250,21 @@ export default function UsersPage() {
 
 ```typescript
 // 목록 조회
-const { data, loading, error, refetch } = useManagerUsers({
+const { data, loading, error, refetch } = useUsers({
   limit: 20,
   offset: 0,
-  status: 'ACTIVE'
+  status: "ACTIVE",
 });
 
 // 상세 조회
-const { data, loading, error } = useManagerUser("user-id");
+const { data, loading, error } = useUser("user-id");
 ```
 
 ### 수정 Hooks
 
 ```typescript
 // 생성
-const [createUser, { loading }] = useCreateManagerUser();
+const [createUser, { loading }] = useCreateUser();
 await createUser({
   variables: {
     input: {
@@ -282,7 +278,7 @@ await createUser({
 });
 
 // 수정
-const [updateUser, { loading }] = useUpdateManagerUser();
+const [updateUser, { loading }] = useUpdateUser();
 await updateUser({
   variables: {
     id: "user-id",
@@ -297,10 +293,10 @@ await updateUser({
 
 ```typescript
 // 1. Hook 사용 (권장)
-const { data } = useManagerUsers();
+const { data } = useUsers();
 
 // 2. GraphQL 네이티브 타입 사용
-const user: ManagerUser = { id: '1', ... };
+const user: User = { id: '1', ... };
 
 // 3. Apollo Cache 활용
 // refetchQueries로 자동 캐시 갱신
@@ -324,7 +320,7 @@ if (error) {
 // apollo.cache.modify(...)
 
 // 4. 직접 Apollo 호출 (Hooks 사용)
-// useQuery(GET_MANAGER_USERS)
+// useQuery(GET_USERS)
 ```
 
 ## 타입 안전성
@@ -332,18 +328,18 @@ if (error) {
 ### GraphQL 응답 타입
 
 ```typescript
-interface GetManagerUsersResponse {
-  managerUsers: ManagerUser[];
+interface GetUsersResponse {
+  Users: User[];
 }
 
-const { data } = useManagerUsers();
-// data: { managerUsers: ManagerUser[] } | undefined
+const { data } = useUsers();
+// data: { Users: User[] } | undefined
 ```
 
 ### 변수 타입
 
 ```typescript
-interface GetManagerUsersVariables {
+interface GetUsersVariables {
   limit?: number;
   offset?: number;
   userType?: string;
@@ -362,17 +358,17 @@ interface GetManagerUsersVariables {
 ### 2. 페이지네이션
 
 ```typescript
-const { data, refetch } = useManagerUsers({
+const { data, refetch } = useUsers({
   limit: itemsPerPage,
-  offset: currentPage * itemsPerPage
+  offset: currentPage * itemsPerPage,
 });
 ```
 
 ### 3. 필터링
 
 ```typescript
-const { data } = useManagerUsers({
-  status: selectedStatus || undefined
+const { data } = useUsers({
+  status: selectedStatus || undefined,
 });
 ```
 
@@ -381,7 +377,7 @@ const { data } = useManagerUsers({
 ### 기존 코드 (React Query)
 
 ```typescript
-import { useUsers } from '@/features/idam/users';
+import { useUsers } from "@/features/idam/users";
 
 const { data } = useUsers({ page: 1 });
 ```
@@ -389,9 +385,9 @@ const { data } = useUsers({ page: 1 });
 ### 새로운 코드 (Apollo GraphQL)
 
 ```typescript
-import { useManagerUsers } from '@/features/idam/users';
+import { useUsers } from "@/features/idam/users";
 
-const { data } = useManagerUsers({ limit: 20, offset: 0 });
+const { data } = useUsers({ limit: 20, offset: 0 });
 ```
 
 ## 참고자료

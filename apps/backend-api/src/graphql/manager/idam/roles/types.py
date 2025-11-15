@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 
 @strawberry.type(description="Manager 역할")
-class ManagerRole(Node):
+class Role(Node):
     """
     Manager 시스템 역할
 
@@ -63,7 +63,7 @@ class ManagerRole(Node):
 
 
 @strawberry.input(description="Manager 역할 생성 입력")
-class ManagerRoleCreateInput:
+class RoleCreateInput:
     """
     Manager 역할 생성 입력 타입
 
@@ -81,7 +81,7 @@ class ManagerRoleCreateInput:
 
 
 @strawberry.input(description="Manager 역할 수정 입력")
-class ManagerRoleUpdateInput:
+class RoleUpdateInput:
     """
     Manager 역할 수정 입력 타입
 

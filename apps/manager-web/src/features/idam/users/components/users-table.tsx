@@ -12,13 +12,13 @@
 
 import { DataTable } from "@/components/data-table";
 import { getUsersColumns } from "./users-columns";
-import type { ManagerUser } from "../types/users.types";
+import type { User } from "../types/users.types";
 
-interface ManagerUserTableProps {
-  data: ManagerUser[];
+interface UserTableProps {
+  data: User[];
   isLoading?: boolean;
-  onEdit?: (user: ManagerUser) => void;
-  onDelete: (user: ManagerUser) => void;
+  onEdit?: (user: User) => void;
+  onDelete: (user: User) => void;
 }
 
 export function UsersTable({
@@ -26,7 +26,7 @@ export function UsersTable({
   isLoading,
   onEdit,
   onDelete,
-}: ManagerUserTableProps) {
+}: UserTableProps) {
   const columns = getUsersColumns({ onEdit, onDelete });
 
   return (

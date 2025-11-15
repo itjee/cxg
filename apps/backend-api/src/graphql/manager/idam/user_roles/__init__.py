@@ -6,24 +6,24 @@
 사용자에게 역할을 할당하여 권한을 부여하고, 필요시 해제할 수 있습니다.
 """
 
-from .mutations import ManagerUserRoleMutations
-from .queries import ManagerUserRoleQueries
+from .mutations import UserRoleMutations
+from .queries import UserRoleQueries
 from .resolvers import resolve_granted_by_user, resolve_user_role_role, resolve_user_role_user
 from .types import (
-    ManagerUserRole,
-    ManagerUserRoleCreateInput,
-    ManagerUserRoleRevokeInput,
-    ManagerUserRoleUpdateInput,
+    UserRole,
+    UserRoleCreateInput,
+    UserRoleRevokeInput,
+    UserRoleUpdateInput,
 )
 
 
 __all__ = [
-    "ManagerUserRole",
-    "ManagerUserRoleCreateInput",
-    "ManagerUserRoleUpdateInput",
-    "ManagerUserRoleRevokeInput",
-    "ManagerUserRoleQueries",
-    "ManagerUserRoleMutations",
+    "UserRole",
+    "UserRoleCreateInput",
+    "UserRoleUpdateInput",
+    "UserRoleRevokeInput",
+    "UserRoleQueries",
+    "UserRoleMutations",
     "resolve_user_role_user",
     "resolve_user_role_role",
     "resolve_granted_by_user",

@@ -12,20 +12,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.permission import Permission as PermissionModel
 
-from .types import ManagerPermission
+from .types import Permission
 
 
-def permission_to_graphql(permission: PermissionModel) -> ManagerPermission:
+def permission_to_graphql(permission: PermissionModel) -> Permission:
     """
-    PermissionModel(DB 모델)을 ManagerPermission(GraphQL 타입)으로 변환
+    PermissionModel(DB 모델)을 Permission(GraphQL 타입)으로 변환
 
     Args:
         permission: 데이터베이스 권한 모델
 
     Returns:
-        ManagerPermission: GraphQL 타입
+        Permission: GraphQL 타입
     """
-    return ManagerPermission(
+    return Permission(
         id=strawberry.ID(str(permission.id)),
         code=permission.code,
         name=permission.name,
@@ -42,9 +42,9 @@ def permission_to_graphql(permission: PermissionModel) -> ManagerPermission:
     )
 
 
-async def get_manager_permission_by_id(
+async def get_permission_by_id(
     db: AsyncSession, permission_id: UUID
-) -> ManagerPermission | None:
+) -> Permission | None:
     """
     ID로 Manager 권한 단건 조회
 
@@ -53,7 +53,7 @@ async def get_manager_permission_by_id(
         permission_id: 조회할 권한 ID
 
     Returns:
-        ManagerPermission: 권한 객체 또는 None
+        Permission: 권한 객체 또는 None
     """
     return await get_by_id(
         db=db,
@@ -63,14 +63,14 @@ async def get_manager_permission_by_id(
     )
 
 
-async def get_manager_permissions(
+async def get_permissions(
     db: AsyncSession,
     limit: int = 50,
     offset: int = 0,
     category: str | None = None,
     resource: str | None = None,
     status: str | None = None,
-) -> list[ManagerPermission]:
+) -> list[Permission]:
     """
     Manager 권한 목록 조회
 
@@ -86,7 +86,7 @@ async def get_manager_permissions(
         status: 상태 필터 (ACTIVE, INACTIVE)
 
     Returns:
-        list[ManagerPermission]: 권한 객체 리스트
+        list[Permission]: 권한 객체 리스트
 
     Note:
         카테고리 → 리소스 → 액션 순으로 정렬됩니다.
@@ -94,10 +94,10 @@ async def get_manager_permissions(
 
     사용 예:
         # 사용자 관리 관련 권한만 조회
-        perms = await get_manager_permissions(db, category="사용자 관리")
+        perms = await get_permissions(db, category="사용자 관리")
 
         # users 리소스의 활성 권한 조회
-        perms = await get_manager_permissions(db, resource="users", status="ACTIVE")
+        perms = await get_permissions(db, resource="users", status="ACTIVE")
     """
     # 필터 조건 구성
     filters = {}
@@ -124,7 +124,7 @@ async def get_manager_permissions(
 
 
 @strawberry.type
-class ManagerPermissionQueries:
+class PermissionQueries:
     """
     Manager IDAM Permissions Query
 
@@ -132,7 +132,7 @@ class ManagerPermissionQueries:
     """
 
     @strawberry.field(description="Manager 권한 조회 (ID)")
-    async def manager_permission(self, info, id: strawberry.ID) -> ManagerPermission | None:
+    async def permission(self, info, id: strawberry.ID) -> Permission | None:
         """
         ID로 권한 단건 조회
 
@@ -140,13 +140,13 @@ class ManagerPermissionQueries:
             id: 권한 ID
 
         Returns:
-            ManagerPermission: 권한 객체 또는 None
+            Permission: 권한 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await get_manager_permission_by_id(db, UUID(id))
+        return await get_permission_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 권한 목록")
-    async def manager_permissions(
+    async def permissions(
         self,
         info,
         limit: int = 50,
@@ -154,7 +154,7 @@ class ManagerPermissionQueries:
         category: str | None = None,
         resource: str | None = None,
         status: str | None = None,
-    ) -> list[ManagerPermission]:
+    ) -> list[Permission]:
         """
         권한 목록 조회 (페이징 및 필터링 지원)
 
@@ -168,7 +168,7 @@ class ManagerPermissionQueries:
             status: 상태 필터 (선택)
 
         Returns:
-            list[ManagerPermission]: 권한 객체 리스트
+            list[Permission]: 권한 객체 리스트
 
         사용 예:
             # 모든 활성 권한 조회
@@ -187,4 +187,4 @@ class ManagerPermissionQueries:
             }
         """
         db = info.context.manager_db_session
-        return await get_manager_permissions(db, limit, offset, category, resource, status)
+        return await get_permissions(db, limit, offset, category, resource, status)

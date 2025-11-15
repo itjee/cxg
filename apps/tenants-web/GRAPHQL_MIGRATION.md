@@ -17,16 +17,19 @@ manager-web 애플리케이션이 REST API에서 **Apollo Client 기반 GraphQL*
 ### 새로 추가된 파일
 
 1. **Apollo Client 설정**
+
    - `src/lib/apollo-client.ts` - Apollo Client 인스턴스 및 설정
    - `src/lib/apollo-provider.tsx` - Apollo Provider 컴포넌트
 
 2. **GraphQL 쿼리/뮤테이션** (Apollo Client용)
+
    - `src/lib/graphql/users.graphql.ts` - Users 쿼리 및 뮤테이션
    - `src/lib/graphql/roles.graphql.ts` - Roles 쿼리 및 뮤테이션
    - `src/lib/graphql/sessions.graphql.ts` - Sessions 쿼리 및 뮤테이션
    - `src/lib/graphql/permissions.graphql.ts` - Permissions 쿼리
 
 3. **Apollo Hooks**
+
    - `src/features/idam/users/hooks/use-users.hooks.ts` - Users React Hooks
 
 4. **GraphQL 서비스** (하위 호환용)
@@ -35,6 +38,7 @@ manager-web 애플리케이션이 REST API에서 **Apollo Client 기반 GraphQL*
 ### 수정된 파일
 
 1. **패키지**
+
    - `package.json` - Apollo Client 의존성 추가:
      - `@apollo/client` ^3.11.8
      - `graphql` ^16.9.0
@@ -72,15 +76,13 @@ NEXT_PUBLIC_APP_NAME=CXG Platform Manager
 
 ```typescript
 // app/layout.tsx
-import { ApolloProvider } from '@/lib/apollo-provider';
+import { ApolloProvider } from "@/lib/apollo-provider";
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
-        <ApolloProvider>
-          {children}
-        </ApolloProvider>
+        <ApolloProvider>{children}</ApolloProvider>
       </body>
     </html>
   );
@@ -90,30 +92,33 @@ export default function RootLayout({ children }) {
 ### 2. React Hooks 사용 (권장)
 
 ```typescript
-import { useManagerUsers, useCreateManagerUser } from '@/features/idam/users/hooks/use-users.hooks';
+import {
+  useUsers,
+  useCreateUser,
+} from "@/features/idam/users/hooks/use-users.hooks";
 
 function UsersPage() {
   // 목록 조회
-  const { data, loading, error, refetch } = useManagerUsers({
+  const { data, loading, error, refetch } = useUsers({
     limit: 20,
     offset: 0,
-    status: 'ACTIVE'
+    status: "ACTIVE",
   });
 
   // 생성
-  const [createUser, { loading: creating }] = useCreateManagerUser();
+  const [createUser, { loading: creating }] = useCreateUser();
 
   const handleCreate = async () => {
     const result = await createUser({
       variables: {
         input: {
-          userType: 'TENANT',
-          fullName: '홍길동',
-          email: 'hong@example.com',
-          username: 'hong',
-          password: 'password123'
-        }
-      }
+          userType: "TENANT",
+          fullName: "홍길동",
+          email: "hong@example.com",
+          username: "hong",
+          password: "password123",
+        },
+      },
     });
   };
 
@@ -122,7 +127,7 @@ function UsersPage() {
 
   return (
     <div>
-      {data?.managerUsers.map(user => (
+      {data?.users.map((user) => (
         <div key={user.id}>{user.fullName}</div>
       ))}
     </div>
@@ -133,25 +138,25 @@ function UsersPage() {
 ### 3. 서비스 레이어 사용 (기존 코드 호환)
 
 ```typescript
-import { usersService } from '@/features/idam/users/services';
+import { usersService } from "@/features/idam/users/services";
 
 // 기존 코드 그대로 사용 가능
 const result = await usersService.listUsers({
   page: 1,
   pageSize: 20,
-  active: true
+  active: true,
 });
 ```
 
 ### 4. Apollo Client 직접 사용
 
 ```typescript
-import { apolloClient } from '@/lib/apollo-client';
-import { GET_MANAGER_USERS } from '@/lib/graphql';
+import { apolloClient } from "@/lib/apollo-client";
+import { GET_USERS } from "@/lib/graphql";
 
 const { data } = await apolloClient.query({
-  query: GET_MANAGER_USERS,
-  variables: { limit: 20 }
+  query: GET_USERS,
+  variables: { limit: 20 },
 });
 ```
 
@@ -163,10 +168,10 @@ Apollo Client가 자동으로 데이터를 캐싱합니다:
 
 ```typescript
 // 첫 번째 호출 - 서버에서 데이터 가져옴
-const { data } = useManagerUser('user-id');
+const { data } = useUser("user-id");
 
 // 두 번째 호출 - 캐시에서 즉시 반환
-const { data } = useManagerUser('user-id');
+const { data } = useUser("user-id");
 ```
 
 ### 2. 옵티미스틱 UI
@@ -174,15 +179,15 @@ const { data } = useManagerUser('user-id');
 사용자 경험 향상을 위한 낙관적 업데이트:
 
 ```typescript
-const [updateUser] = useUpdateManagerUser({
+const [updateUser] = useUpdateUser({
   optimisticResponse: {
-    updateManagerUser: {
-      __typename: 'ManagerUser',
+    updateUser: {
+      __typename: "User",
       id: userId,
       fullName: newName,
       // ... 나머지 필드
-    }
-  }
+    },
+  },
 });
 ```
 
@@ -191,8 +196,8 @@ const [updateUser] = useUpdateManagerUser({
 주기적으로 데이터 갱신:
 
 ```typescript
-const { data } = useManagerUsers(
-  { status: 'ACTIVE' },
+const { data } = useUsers(
+  { status: "ACTIVE" },
   { pollInterval: 5000 } // 5초마다 갱신
 );
 ```
@@ -202,25 +207,25 @@ const { data } = useManagerUsers(
 Mutation 후 캐시 자동 업데이트:
 
 ```typescript
-const [createUser] = useCreateManagerUser({
+const [createUser] = useCreateUser({
   update(cache, { data }) {
     cache.modify({
       fields: {
-        managerUsers(existingUsers = []) {
+        Users(existingUsers = []) {
           const newUserRef = cache.writeFragment({
-            data: data.createManagerUser,
+            data: data.createUser,
             fragment: gql`
-              fragment NewUser on ManagerUser {
+              fragment NewUser on User {
                 id
                 fullName
               }
-            `
+            `,
           });
           return [newUserRef, ...existingUsers];
-        }
-      }
+        },
+      },
     });
-  }
+  },
 });
 ```
 
@@ -232,34 +237,41 @@ const [createUser] = useCreateManagerUser({
 ### 주요 쿼리
 
 #### Users
-- `managerUsers` - 사용자 목록 조회
-- `managerUser(id)` - 사용자 상세 조회
+
+- `Users` - 사용자 목록 조회
+- `User(id)` - 사용자 상세 조회
 
 #### Roles
-- `managerRoles` - 역할 목록 조회
-- `managerRole(id)` - 역할 상세 조회
+
+- `Roles` - 역할 목록 조회
+- `Role(id)` - 역할 상세 조회
 
 #### Sessions
-- `managerSessions` - 세션 목록 조회
-- `managerSession(id)` - 세션 상세 조회
+
+- `Sessions` - 세션 목록 조회
+- `Session(id)` - 세션 상세 조회
 
 #### Permissions
-- `managerPermissions` - 권한 목록 조회
-- `managerPermission(id)` - 권한 상세 조회
+
+- `Permissions` - 권한 목록 조회
+- `Permission(id)` - 권한 상세 조회
 
 ### 주요 뮤테이션
 
 #### Users
-- `createManagerUser` - 사용자 생성
-- `updateManagerUser` - 사용자 수정
+
+- `createUser` - 사용자 생성
+- `updateUser` - 사용자 수정
 
 #### Roles
-- `createManagerRole` - 역할 생성
-- `updateManagerRole` - 역할 수정
+
+- `createRole` - 역할 생성
+- `updateRole` - 역할 수정
 
 #### Sessions
-- `revokeManagerSession` - 세션 폐기
-- `deleteManagerSession` - 세션 삭제
+
+- `revokeSession` - 세션 폐기
+- `deleteSession` - 세션 삭제
 
 ## Apollo Client DevTools
 
@@ -267,6 +279,7 @@ Chrome 확장 프로그램 설치:
 https://chrome.google.com/webstore/detail/apollo-client-devtools
 
 기능:
+
 - GraphQL 쿼리 실행
 - 캐시 상태 확인
 - Mutation 실행
@@ -280,7 +293,7 @@ https://chrome.google.com/webstore/detail/apollo-client-devtools
 
 ```typescript
 // src/lib/graphql/[module].graphql.ts
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_ITEMS = gql`
   query GetItems($limit: Int) {
@@ -296,12 +309,12 @@ export const GET_ITEMS = gql`
 
 ```typescript
 // src/features/[module]/hooks/use-[module].hooks.ts
-import { useQuery } from '@apollo/client';
-import { GET_ITEMS } from '@/lib/graphql/[module].graphql';
+import { useQuery } from "@apollo/client";
+import { GET_ITEMS } from "@/lib/graphql/[module].graphql";
 
 export function useItems(limit?: number) {
   return useQuery(GET_ITEMS, {
-    variables: { limit }
+    variables: { limit },
   });
 }
 ```
@@ -311,10 +324,10 @@ export function useItems(limit?: number) {
 ```typescript
 function ItemsPage() {
   const { data, loading, error } = useItems(20);
-  
+
   if (loading) return <Loading />;
   if (error) return <Error message={error.message} />;
-  
+
   return <ItemsList items={data.items} />;
 }
 ```
@@ -322,14 +335,17 @@ function ItemsPage() {
 ## 주의사항
 
 1. **인증 토큰**
+
    - Apollo Client가 자동으로 JWT 토큰을 헤더에 추가
    - localStorage 또는 쿠키에서 `access_token`을 가져옴
 
 2. **에러 처리**
+
    - `onError` Link를 통한 전역 에러 처리
    - 401 에러 시 자동 로그인 페이지 리다이렉트
 
 3. **캐싱 정책**
+
    - `cache-and-network`: 캐시 먼저 보여주고 서버 데이터로 업데이트
    - `network-only`: 항상 서버에서 최신 데이터 가져오기
    - `cache-first`: 캐시 우선, 없으면 서버 요청
@@ -344,7 +360,7 @@ function ItemsPage() {
 
 ```typescript
 const USER_FRAGMENT = gql`
-  fragment UserFields on ManagerUser {
+  fragment UserFields on User {
     id
     fullName
     email
@@ -353,7 +369,7 @@ const USER_FRAGMENT = gql`
 
 const GET_USERS = gql`
   query GetUsers {
-    managerUsers {
+    Users {
       ...UserFields
     }
   }
@@ -364,13 +380,13 @@ const GET_USERS = gql`
 ### 2. Batch 요청
 
 ```typescript
-import { ApolloLink } from '@apollo/client';
-import { BatchHttpLink } from '@apollo/client/link/batch-http';
+import { ApolloLink } from "@apollo/client";
+import { BatchHttpLink } from "@apollo/client/link/batch-http";
 
 const batchLink = new BatchHttpLink({
   uri: GRAPHQL_ENDPOINT,
   batchMax: 10,
-  batchInterval: 20
+  batchInterval: 20,
 });
 ```
 

@@ -1,14 +1,14 @@
 """Manager IDAM Permissions"""
 
-from .mutations import ManagerPermissionMutations
-from .queries import ManagerPermissionQueries
+from .mutations import PermissionMutations
+from .queries import PermissionQueries
 from .resolvers import resolve_permission_roles
-from .types import ManagerPermission
+from .types import Permission
 
 
 __all__ = [
-    "ManagerPermission",
-    "ManagerPermissionQueries",
-    "ManagerPermissionMutations",
+    "Permission",
+    "PermissionQueries",
+    "PermissionMutations",
     "resolve_permission_roles",
 ]

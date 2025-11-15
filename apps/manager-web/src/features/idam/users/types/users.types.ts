@@ -11,7 +11,7 @@
  * Manager User (ID&Access Management)
  * GraphQL 필드는 camelCase입니다 (Strawberry 자동 변환)
  */
-export interface ManagerUser {
+export interface User {
   id: string;
   userType: string; // MASTER, TENANT, SYSTEM
   fullName: string;
@@ -39,7 +39,7 @@ export interface ManagerUser {
 /**
  * 사용자 생성 요청
  */
-export interface CreateManagerUserRequest {
+export interface CreateUserRequest {
   userType: string;
   fullName: string;
   email: string;
@@ -53,7 +53,7 @@ export interface CreateManagerUserRequest {
 /**
  * 사용자 수정 요청
  */
-export interface UpdateManagerUserRequest {
+export interface UpdateUserRequest {
   fullName?: string;
   email?: string;
   phone?: string;
@@ -66,8 +66,8 @@ export interface UpdateManagerUserRequest {
 /**
  * 사용자 목록 응답
  */
-export interface ManagerUsersListResponse {
-  items: ManagerUser[];
+export interface UsersListResponse {
+  items: User[];
   total: number;
   page: number;
   pageSize: number;
@@ -79,7 +79,7 @@ export interface ManagerUsersListResponse {
 /**
  * 사용자 목록 조회 파라미터
  */
-export interface ManagerUsersQueryParams {
+export interface UsersQueryParams {
   limit?: number;
   offset?: number;
   userType?: string;
@@ -89,26 +89,26 @@ export interface ManagerUsersQueryParams {
 // ===== 호환성 타입 (기존 코드 지원) =====
 
 /**
- * @deprecated ManagerUser 사용 권장
+ * @deprecated User 사용 권장
  */
-export type Users = ManagerUser;
+export type Users = User;
 
 /**
- * @deprecated CreateManagerUserRequest 사용 권장
+ * @deprecated CreateUserRequest 사용 권장
  */
-export type CreateUsersRequest = CreateManagerUserRequest;
+export type CreateUsersRequest = CreateUserRequest;
 
 /**
- * @deprecated UpdateManagerUserRequest 사용 권장
+ * @deprecated UpdateUserRequest 사용 권장
  */
-export type UpdateUsersRequest = UpdateManagerUserRequest;
+export type UpdateUsersRequest = UpdateUserRequest;
 
 /**
- * @deprecated ManagerUsersListResponse 사용 권장
+ * @deprecated UsersListResponse 사용 권장
  */
-export type UsersListResponse = ManagerUsersListResponse;
+export type UsersListResponse = UsersListResponse;
 
 /**
- * @deprecated ManagerUsersQueryParams 사용 권장
+ * @deprecated UsersQueryParams 사용 권장
  */
-export type UsersQueryParams = ManagerUsersQueryParams;
+export type UsersQueryParams = UsersQueryParams;

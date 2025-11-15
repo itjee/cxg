@@ -3,14 +3,24 @@
  * @description Manager IDAM Users GraphQL queries and mutations (Apollo Client)
  */
 
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 /**
  * 사용자 목록 조회 쿼리
  */
-export const GET_MANAGER_USERS = gql`
-  query GetManagerUsers($limit: Int, $offset: Int, $userType: String, $status: String) {
-    managerUsers(limit: $limit, offset: $offset, userType: $userType, status: $status) {
+export const GET_USERS = gql`
+  query GetUsers(
+    $limit: Int
+    $offset: Int
+    $userType: String
+    $status: String
+  ) {
+    Users(
+      limit: $limit
+      offset: $offset
+      userType: $userType
+      status: $status
+    ) {
       id
       userType
       fullName
@@ -38,9 +48,9 @@ export const GET_MANAGER_USERS = gql`
 /**
  * 사용자 단건 조회 쿼리
  */
-export const GET_MANAGER_USER = gql`
-  query GetManagerUser($id: ID!) {
-    managerUser(id: $id) {
+export const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
       id
       userType
       fullName
@@ -95,9 +105,9 @@ export const GET_MANAGER_USER = gql`
 /**
  * 사용자 생성 뮤테이션
  */
-export const CREATE_MANAGER_USER = gql`
-  mutation CreateManagerUser($input: ManagerUserCreateInput!) {
-    createManagerUser(input: $input) {
+export const CREATE_USER = gql`
+  mutation CreateUser($input: UserCreateInput!) {
+    createUser(input: $input) {
       id
       userType
       fullName
@@ -112,9 +122,9 @@ export const CREATE_MANAGER_USER = gql`
 /**
  * 사용자 수정 뮤테이션
  */
-export const UPDATE_MANAGER_USER = gql`
-  mutation UpdateManagerUser($id: ID!, $input: ManagerUserUpdateInput!) {
-    updateManagerUser(id: $id, input: $input) {
+export const UPDATE_USER = gql`
+  mutation UpdateUser($id: ID!, $input: UserUpdateInput!) {
+    updateUser(id: $id, input: $input) {
       id
       userType
       fullName
@@ -132,18 +142,18 @@ export const UPDATE_MANAGER_USER = gql`
 /**
  * GraphQL 변수 타입 정의
  */
-export interface GetManagerUsersVariables {
+export interface GetUsersVariables {
   limit?: number;
   offset?: number;
   userType?: string;
   status?: string;
 }
 
-export interface GetManagerUserVariables {
+export interface GetUserVariables {
   id: string;
 }
 
-export interface CreateManagerUserVariables {
+export interface CreateUserVariables {
   input: {
     userType: string;
     fullName: string;
@@ -156,7 +166,7 @@ export interface CreateManagerUserVariables {
   };
 }
 
-export interface UpdateManagerUserVariables {
+export interface UpdateUserVariables {
   id: string;
   input: {
     fullName?: string;

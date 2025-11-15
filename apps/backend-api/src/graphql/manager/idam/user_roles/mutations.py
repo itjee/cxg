@@ -16,18 +16,18 @@ from src.models.manager.idam.user_role import UserRole as UserRoleModel
 
 from .queries import user_role_to_graphql
 from .types import (
-    ManagerUserRole,
-    ManagerUserRoleCreateInput,
-    ManagerUserRoleRevokeInput,
-    ManagerUserRoleUpdateInput,
+    UserRole,
+    UserRoleCreateInput,
+    UserRoleRevokeInput,
+    UserRoleUpdateInput,
 )
 
 
-async def create_manager_user_role(
+async def create_user_role(
     db: AsyncSession,
-    input_data: ManagerUserRoleCreateInput,
+    input_data: UserRoleCreateInput,
     granted_by: UUID | None = None,
-) -> ManagerUserRole:
+) -> UserRole:
     """
     Manager 사용자에게 역할 할당
 
@@ -40,7 +40,7 @@ async def create_manager_user_role(
         granted_by: 역할을 부여하는 사용자 ID (선택)
 
     Returns:
-        ManagerUserRole: 생성되거나 기존의 사용자-역할 매핑 객체
+        UserRole: 생성되거나 기존의 사용자-역할 매핑 객체
     """
     user_id = UUID(input_data.user_id)
     role_id = UUID(input_data.role_id)
@@ -78,11 +78,11 @@ async def create_manager_user_role(
     return user_role_to_graphql(user_role)
 
 
-async def update_manager_user_role(
+async def update_user_role(
     db: AsyncSession,
     user_role_id: UUID,
-    input_data: ManagerUserRoleUpdateInput,
-) -> ManagerUserRole | None:
+    input_data: UserRoleUpdateInput,
+) -> UserRole | None:
     """
     Manager 사용자-역할 매핑 수정
 
@@ -95,7 +95,7 @@ async def update_manager_user_role(
         input_data: 수정 입력 데이터
 
     Returns:
-        ManagerUserRole: 수정된 매핑 객체 또는 None
+        UserRole: 수정된 매핑 객체 또는 None
     """
     # expires_at 문자열을 datetime으로 변환
     prepared_data = {}
@@ -117,9 +117,9 @@ async def update_manager_user_role(
     )
 
 
-async def revoke_manager_user_role(
+async def revoke_user_role(
     db: AsyncSession,
-    input_data: ManagerUserRoleRevokeInput,
+    input_data: UserRoleRevokeInput,
 ) -> bool:
     """
     Manager 사용자에서 역할 해제
@@ -155,9 +155,9 @@ async def revoke_manager_user_role(
     return False
 
 
-async def delete_manager_user_role(
+async def delete_user_role(
     db: AsyncSession,
-    input_data: ManagerUserRoleRevokeInput,
+    input_data: UserRoleRevokeInput,
 ) -> bool:
     """
     Manager 사용자에서 역할 완전 삭제
@@ -193,7 +193,7 @@ async def bulk_assign_roles_to_user(
     role_ids: list[UUID],
     scope: str = "GLOBAL",
     granted_by: UUID | None = None,
-) -> list[ManagerUserRole]:
+) -> list[UserRole]:
     """
     사용자에게 여러 역할을 한번에 할당
 
@@ -207,17 +207,17 @@ async def bulk_assign_roles_to_user(
         granted_by: 역할을 부여하는 사용자 ID (선택)
 
     Returns:
-        list[ManagerUserRole]: 할당된 사용자-역할 매핑 리스트
+        list[UserRole]: 할당된 사용자-역할 매핑 리스트
     """
     result = []
 
     for role_id in role_ids:
-        input_data = ManagerUserRoleCreateInput(
+        input_data = UserRoleCreateInput(
             user_id=strawberry.ID(str(user_id)),
             role_id=strawberry.ID(str(role_id)),
             scope=scope,
         )
-        user_role = await create_manager_user_role(db, input_data, granted_by)
+        user_role = await create_user_role(db, input_data, granted_by)
         result.append(user_role)
 
     return result
@@ -244,18 +244,18 @@ async def bulk_revoke_roles_from_user(
     count = 0
 
     for role_id in role_ids:
-        input_data = ManagerUserRoleRevokeInput(
+        input_data = UserRoleRevokeInput(
             user_id=strawberry.ID(str(user_id)),
             role_id=strawberry.ID(str(role_id)),
         )
-        if await revoke_manager_user_role(db, input_data):
+        if await revoke_user_role(db, input_data):
             count += 1
 
     return count
 
 
 @strawberry.type
-class ManagerUserRoleMutations:
+class UserRoleMutations:
     """
     Manager IDAM User Roles Mutation
 
@@ -266,8 +266,8 @@ class ManagerUserRoleMutations:
     async def assign_role_to_user(
         self,
         info,
-        input: ManagerUserRoleCreateInput,
-    ) -> ManagerUserRole:
+        input: UserRoleCreateInput,
+    ) -> UserRole:
         """
         사용자에게 역할 할당
 
@@ -275,20 +275,20 @@ class ManagerUserRoleMutations:
             input: 역할 할당 입력 데이터
 
         Returns:
-            ManagerUserRole: 할당된 사용자-역할 매핑 객체
+            UserRole: 할당된 사용자-역할 매핑 객체
         """
         db = info.context.manager_db_session
         # TODO: info.context에서 현재 사용자 ID 가져오기
         granted_by = None  # info.context.current_user.id
-        return await create_manager_user_role(db, input, granted_by)
+        return await create_user_role(db, input, granted_by)
 
     @strawberry.mutation(description="Manager 사용자-역할 매핑 수정")
     async def update_user_role(
         self,
         info,
         id: strawberry.ID,
-        input: ManagerUserRoleUpdateInput,
-    ) -> ManagerUserRole | None:
+        input: UserRoleUpdateInput,
+    ) -> UserRole | None:
         """
         사용자-역할 매핑 수정
 
@@ -297,16 +297,16 @@ class ManagerUserRoleMutations:
             input: 수정 입력 데이터
 
         Returns:
-            ManagerUserRole: 수정된 매핑 객체 또는 None
+            UserRole: 수정된 매핑 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await update_manager_user_role(db, UUID(id), input)
+        return await update_user_role(db, UUID(id), input)
 
     @strawberry.mutation(description="Manager 사용자에서 역할 해제")
     async def revoke_role_from_user(
         self,
         info,
-        input: ManagerUserRoleRevokeInput,
+        input: UserRoleRevokeInput,
     ) -> bool:
         """
         사용자에서 역할 해제 (상태 변경)
@@ -318,13 +318,13 @@ class ManagerUserRoleMutations:
             bool: 해제 성공 여부
         """
         db = info.context.manager_db_session
-        return await revoke_manager_user_role(db, input)
+        return await revoke_user_role(db, input)
 
     @strawberry.mutation(description="Manager 사용자에서 역할 삭제")
     async def delete_user_role(
         self,
         info,
-        input: ManagerUserRoleRevokeInput,
+        input: UserRoleRevokeInput,
     ) -> bool:
         """
         사용자에서 역할 완전 삭제
@@ -336,7 +336,7 @@ class ManagerUserRoleMutations:
             bool: 삭제 성공 여부
         """
         db = info.context.manager_db_session
-        return await delete_manager_user_role(db, input)
+        return await delete_user_role(db, input)
 
     @strawberry.mutation(description="Manager 사용자에게 여러 역할 일괄 할당")
     async def bulk_assign_roles_to_user(
@@ -345,7 +345,7 @@ class ManagerUserRoleMutations:
         user_id: strawberry.ID,
         role_ids: list[strawberry.ID],
         scope: str = "GLOBAL",
-    ) -> list[ManagerUserRole]:
+    ) -> list[UserRole]:
         """
         사용자에게 여러 역할을 한번에 할당
 
@@ -355,7 +355,7 @@ class ManagerUserRoleMutations:
             scope: 권한 범위
 
         Returns:
-            list[ManagerUserRole]: 할당된 매핑 리스트
+            list[UserRole]: 할당된 매핑 리스트
         """
         db = info.context.manager_db_session
         granted_by = None  # info.context.current_user.id

@@ -33,19 +33,21 @@ scripts/
 ### 1. BaseDataLoader - N+1 쿼리 해결
 
 **이전 (88줄):**
+
 ```python
-class ManagerUserLoader:
+class UserLoader:
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+
     async def load_many(self, user_ids: list[str]):
         # 35줄의 반복 코드
         ...
 ```
 
 **이후 (3줄):**
+
 ```python
-class ManagerUserLoader(BaseDataLoader[UserModel]):
+class UserLoader(BaseDataLoader[UserModel]):
     def __init__(self, db: AsyncSession):
         super().__init__(db, UserModel)
 ```
@@ -53,19 +55,21 @@ class ManagerUserLoader(BaseDataLoader[UserModel]):
 ### 2. Query 헬퍼 - 조회 로직 단순화
 
 **이전 (45줄):**
+
 ```python
-async def get_manager_user_by_id(db, user_id):
+async def get_user_by_id(db, user_id):
     stmt = select(UserModel).where(UserModel.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     if not user:
         return None
-    return ManagerUser(...)  # 20+ 필드 매핑
+    return User(...)  # 20+ 필드 매핑
 ```
 
 **이후 (7줄):**
+
 ```python
-async def get_manager_user_by_id(db, user_id):
+async def get_user_by_id(db, user_id):
     return await get_by_id(
         db, UserModel, user_id, user_to_graphql
     )
@@ -74,8 +78,9 @@ async def get_manager_user_by_id(db, user_id):
 ### 3. Mutation 헬퍼 - CUD 로직 단순화
 
 **이전 (59줄):**
+
 ```python
-async def create_manager_user(db, input_data):
+async def create_user(db, input_data):
     user = UserModel(
         field1=input_data.field1,
         # ... 많은 필드
@@ -83,12 +88,13 @@ async def create_manager_user(db, input_data):
     db.add(user)
     await db.commit()
     await db.refresh(user)
-    return ManagerUser(...)  # 20+ 필드 매핑
+    return User(...)  # 20+ 필드 매핑
 ```
 
 **이후 (11줄):**
+
 ```python
-async def create_manager_user(db, input_data):
+async def create_user(db, input_data):
     return await create_entity(
         db, UserModel, input_data,
         user_to_graphql, prepare_data
@@ -98,6 +104,7 @@ async def create_manager_user(db, input_data):
 ### 4. Permission 베이스 클래스 - 권한 체크 표준화
 
 **이전 (55줄 - 5개 클래스):**
+
 ```python
 class CanViewUsers(BasePermission):
     message = "..."
@@ -107,6 +114,7 @@ class CanViewUsers(BasePermission):
 ```
 
 **이후 (6줄):**
+
 ```python
 class CanViewUsers(CanView):
     resource = "users"
@@ -134,6 +142,7 @@ $ ./scripts/verify-graphql-common.sh
 ### 엔티티별 현황
 
 #### 구현 완료된 엔티티 (8개)
+
 - ✅ manager/idam/users (369줄)
 - ✅ manager/idam/roles (214줄)
 - ✅ manager/idam/permissions (354줄)
@@ -144,10 +153,11 @@ $ ./scripts/verify-graphql-common.sh
 - ✅ tenants/sys/roles (217줄)
 
 #### 미구현 엔티티 (15개)
+
 - ⏳ manager/idam/role_permissions
 - ⏳ manager/idam/user_roles
-- ⏳ manager/tenant_mgmt/subscriptions
-- ⏳ manager/tenant_mgmt/tenants
+- ⏳ manager/tnnt/subscriptions
+- ⏳ manager/tnnt/tenants
 - ⏳ tenants/sys/departments
 - ⏳ tenants/sys/branches
 - ⏳ tenants/sys/menus
@@ -163,12 +173,12 @@ $ ./scripts/verify-graphql-common.sh
 
 ### 파일별 코드 감소율
 
-| 파일 | 이전 | 이후 | 감소율 |
-|-----|------|------|--------|
-| loaders.py | 88줄 | 10줄 | **89% ↓** |
-| queries.py | 97줄 | 35줄 | **64% ↓** |
-| mutations.py | 133줄 | 40줄 | **70% ↓** |
-| permissions.py | 55줄 | 15줄 | **73% ↓** |
+| 파일              | 이전      | 이후      | 감소율    |
+| ----------------- | --------- | --------- | --------- |
+| loaders.py        | 88줄      | 10줄      | **89% ↓** |
+| queries.py        | 97줄      | 35줄      | **64% ↓** |
+| mutations.py      | 133줄     | 40줄      | **70% ↓** |
+| permissions.py    | 55줄      | 15줄      | **73% ↓** |
 | **엔티티당 합계** | **373줄** | **100줄** | **73% ↓** |
 
 ### 전체 시스템 적용 시 (23개 엔티티)
@@ -185,18 +195,21 @@ $ ./scripts/verify-graphql-common.sh
 ## 📚 문서
 
 ### 1. README.md (상세 가이드)
+
 - 각 모듈별 사용법
 - 이전 vs 이후 코드 비교
 - 전체 사용 예제
 - 주의사항 및 확장 가능성
 
 ### 2. MIGRATION_GUIDE.md (마이그레이션)
+
 - Phase별 마이그레이션 계획
 - 단계별 체크리스트
 - 파일럿 프로젝트 (roles)
 - 리스크 관리 및 롤백 계획
 
 ### 3. USAGE_EXAMPLE.py (실전 예제)
+
 - 완전한 CRUD 구현 예제
 - 각 모듈 사용법 데모
 - 주석으로 설명
@@ -206,21 +219,25 @@ $ ./scripts/verify-graphql-common.sh
 ### Quick Start
 
 1. **문서 읽기**
+
 ```bash
 cat apps/backend-api/src/graphql/common/README.md
 ```
 
 2. **검증 실행**
+
 ```bash
 ./scripts/verify-graphql-common.sh
 ```
 
 3. **예제 확인**
+
 ```bash
 cat apps/backend-api/src/graphql/common/USAGE_EXAMPLE.py
 ```
 
 4. **마이그레이션 가이드**
+
 ```bash
 cat apps/backend-api/src/graphql/common/MIGRATION_GUIDE.md
 ```
@@ -230,11 +247,11 @@ cat apps/backend-api/src/graphql/common/MIGRATION_GUIDE.md
 ```python
 # 1. Loader (3줄)
 class UserLoader(BaseDataLoader[UserModel]):
-    def __init__(self, db): 
+    def __init__(self, db):
         super().__init__(db, UserModel)
 
 # 2. Converter (15줄)
-def user_to_graphql(user): 
+def user_to_graphql(user):
     return User(id=..., name=...)
 
 # 3. Query (7줄)
@@ -257,17 +274,20 @@ class CanViewUsers(CanView):
 ## 🔄 다음 단계
 
 ### Phase 2: 파일럿 마이그레이션 (예상 2시간)
+
 1. ✅ 공통 모듈 구현
 2. ⏳ manager/idam/roles 마이그레이션
 3. ⏳ 테스트 및 검증
 4. ⏳ 팀 리뷰
 
 ### Phase 3: 전체 적용 (예상 3일)
+
 1. ⏳ Low Risk 엔티티 5개 (1일)
-2. ⏳ Medium Risk 엔티티 3개 (1일)  
+2. ⏳ Medium Risk 엔티티 3개 (1일)
 3. ⏳ High Risk 엔티티 3개 (1일)
 
 ### Phase 4: 안정화 (예상 1일)
+
 1. ⏳ 통합 테스트
 2. ⏳ 성능 테스트
 3. ⏳ 문서 업데이트
@@ -294,6 +314,7 @@ class CanViewUsers(CanView):
 ### 커스터마이징
 
 특수한 로직이 필요한 경우:
+
 - `prepare_data`: 입력 데이터 전처리
 - `before_commit`: 커밋 전 후킹
 - `update_fields`: 업데이트 필드 제한

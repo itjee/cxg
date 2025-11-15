@@ -14,12 +14,12 @@ import { Plus, RefreshCw, Download } from "lucide-react";
 import { PageHeader } from "@/components/layouts/page-header";
 import { useUsersStore } from "../stores/users.store";
 
-interface ManagerUserHeaderProps {
+interface UserHeaderProps {
   onRefresh?: () => void;
   onExport?: () => void;
 }
 
-export function UsersHeader({ onRefresh, onExport }: ManagerUserHeaderProps) {
+export function UsersHeader({ onRefresh, onExport }: UserHeaderProps) {
   const { openForm } = useUsersStore();
 
   const actions = [

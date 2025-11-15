@@ -7,81 +7,81 @@ entity:
   schema: idam
   table: users
   model_class: src.models.manager.idam.user.User
-  
+
   # GraphQL 설정
   graphql:
-    type_name: ManagerUser
+    type_name: User
     description: "Manager 시스템 사용자"
-    
+
   # 필드 정의
   fields:
     - name: id
       type: uuid
       graphql_type: ID!
       description: "사용자 ID"
-      
+
     - name: user_type
       type: string
       graphql_type: String!
       description: "사용자 타입 (MASTER, TENANT, SYSTEM)"
-      
+
     - name: full_name
       type: string
       graphql_type: String!
       description: "전체 이름"
-      
+
     - name: email
       type: string
       graphql_type: String!
       description: "이메일"
-      
+
     - name: phone
       type: string
       graphql_type: String
       description: "전화번호"
-      
+
     - name: username
       type: string
       graphql_type: String!
       description: "사용자명"
-      
+
     - name: sso_provider
       type: string
       graphql_type: String
       description: "SSO 제공자"
-      
+
     - name: mfa_enabled
       type: boolean
       graphql_type: Boolean!
       description: "MFA 활성화 여부"
       default: false
-      
+
     - name: status
       type: string
       graphql_type: String!
       description: "상태 (ACTIVE, INACTIVE, LOCKED, SUSPENDED)"
       default: "ACTIVE"
-      
+
     - name: last_login_at
       type: datetime
       graphql_type: DateTime
       description: "마지막 로그인 시간"
-      
+
     - name: department
       type: string
       graphql_type: String
       description: "부서"
-      
+
     - name: position
       type: string
       graphql_type: String
       description: "직급"
-      
+
     - name: created_at
       type: datetime
       graphql_type: DateTime!
       description: "생성일시"
-      
+
     - name: updated_at
       type: datetime
       graphql_type: DateTime
@@ -93,7 +93,7 @@ entity:
       - name: get_by_id
         enabled: true
         description: "ID로 사용자 조회"
-        
+
       - name: list
         enabled: true
         description: "사용자 목록 조회"
@@ -102,7 +102,7 @@ entity:
           - user_type
           - status
           - department
-          
+
       - name: search
         enabled: true
         description: "사용자 검색"
@@ -110,7 +110,7 @@ entity:
           - full_name
           - email
           - username
-          
+
     mutations:
       - name: create
         enabled: true
@@ -123,7 +123,7 @@ entity:
           - password
         hooks:
           before_commit: hash_password
-          
+
       - name: update
         enabled: true
         description: "사용자 수정"
@@ -135,26 +135,26 @@ entity:
           - position
           - status
           - mfa_enabled
-          
+
       - name: delete
         enabled: true
         description: "사용자 삭제"
         soft_delete: true
-        
+
   # 권한 설정
   permissions:
-    view: CanViewManagerUsers
-    create: CanManageManagerUsers
-    update: CanManageManagerUsers
-    delete: CanDeleteManagerUsers
-    
+    view: CanViewUsers
+    create: CanManageUsers
+    update: CanManageUsers
+    delete: CanDeleteUsers
+
   # 관계 정의 (자동 DataLoader 생성)
   relations:
     - name: roles
       type: many_to_many
       target: Role
       description: "사용자 역할 목록"
-      
+
   # 커스텀 로직 필요 여부
   custom:
     enabled: true

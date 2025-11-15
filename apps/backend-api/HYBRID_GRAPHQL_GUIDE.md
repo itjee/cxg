@@ -75,24 +75,24 @@ entity:
   database: manager
   schema: idam
   model_class: src.models.manager.idam.role.Role
-  
+
   graphql:
     type_name: ManagerRole
     description: "Manager 역할"
-    
+
   fields:
     - name: id
       type: uuid
       graphql_type: ID!
-      
+
     - name: code
       type: string
       graphql_type: String!
-      
+
     - name: name
       type: string
       graphql_type: String!
-      
+
     - name: status
       type: string
       graphql_type: String!
@@ -102,24 +102,24 @@ entity:
     queries:
       - name: get_by_id
         enabled: true
-        
+
       - name: list
         enabled: true
         filters: [status]
-        
+
     mutations:
       - name: create
         enabled: true
-        
+
       - name: update
         enabled: true
-        
+
   permissions:
     view: CanViewManagerRoles
     manage: CanManageManagerRoles
-    
+
   custom:
-    enabled: false  # 단순 CRUD이므로 불필요
+    enabled: false # 단순 CRUD이므로 불필요
 ```
 
 ### 2. 복잡한 엔티티 (User 예시)
@@ -130,28 +130,28 @@ entity:
 entity:
   name: User
   # ... 기본 설정 ...
-  
+
   operations:
     queries:
       - name: get_by_id
         enabled: true
-        
+
       - name: list
         enabled: true
-        
+
       # 복잡한 검색은 custom에서 구현
-      
+
     mutations:
       - name: create
         enabled: true
         hooks:
-          before_commit: hash_password  # 자동 호출
-          
+          before_commit: hash_password # 자동 호출
+
       - name: update
         enabled: true
-        
+
   custom:
-    enabled: true  # 복잡한 로직은 여기서
+    enabled: true # 복잡한 로직은 여기서
     path: src.graphql.custom.manager.idam.users
 ```
 
@@ -192,13 +192,13 @@ from sqlalchemy import select
 from src.models.manager.idam.user import User
 
 async def search_users_by_criteria(
-    db, 
+    db,
     query: str,
     filters: dict
 ):
     """복잡한 검색 로직"""
     stmt = select(User)
-    
+
     # 여러 필드에서 검색
     if query:
         stmt = stmt.where(
@@ -208,10 +208,10 @@ async def search_users_by_criteria(
                 User.username.ilike(f"%{query}%")
             )
         )
-    
+
     # 복잡한 필터링
     # ...
-    
+
     return stmt
 ```
 
@@ -222,8 +222,8 @@ async def search_users_by_criteria(
 # custom 코드는 명시적으로 import
 
 from src.graphql.generated.manager.idam.user import (
-    ManagerUserQueries,  # 기본 CRUD
-    ManagerUserMutations
+    UserQueries,  # 기본 CRUD
+    UserMutations
 )
 from src.graphql.custom.manager.idam.users import (
     search_users_by_criteria  # 복잡한 로직
@@ -276,25 +276,25 @@ from src.graphql.custom.manager.idam.users import (
 
 ### Manager Schema
 
-| 엔티티 | 분류 | 이유 |
-|--------|------|------|
-| User | 하이브리드 | 비밀번호 해싱, 복잡한 검색 |
-| Role | 자동 생성 | 단순 CRUD |
-| Permission | 자동 생성 | 단순 CRUD |
-| Session | 하이브리드 | 세션 관리 로직 |
-| LoginLog | 자동 생성 | 읽기 전용 로그 |
-| ApiKey | 하이브리드 | 키 생성 로직 |
+| 엔티티     | 분류       | 이유                       |
+| ---------- | ---------- | -------------------------- |
+| User       | 하이브리드 | 비밀번호 해싱, 복잡한 검색 |
+| Role       | 자동 생성  | 단순 CRUD                  |
+| Permission | 자동 생성  | 단순 CRUD                  |
+| Session    | 하이브리드 | 세션 관리 로직             |
+| LoginLog   | 자동 생성  | 읽기 전용 로그             |
+| ApiKey     | 하이브리드 | 키 생성 로직               |
 
 ### Tenants Schema
 
-| 엔티티 | 분류 | 이유 |
-|--------|------|------|
-| User | 하이브리드 | 복잡한 권한 체크 |
-| Role | 자동 생성 | 단순 CRUD |
-| Permission | 자동 생성 | 단순 CRUD |
-| Department | 자동 생성 | 단순 계층 구조 |
-| Branch | 자동 생성 | 단순 CRUD |
-| Menu | 자동 생성 | 단순 계층 구조 |
+| 엔티티     | 분류       | 이유             |
+| ---------- | ---------- | ---------------- |
+| User       | 하이브리드 | 복잡한 권한 체크 |
+| Role       | 자동 생성  | 단순 CRUD        |
+| Permission | 자동 생성  | 단순 CRUD        |
+| Department | 자동 생성  | 단순 계층 구조   |
+| Branch     | 자동 생성  | 단순 CRUD        |
+| Menu       | 자동 생성  | 단순 계층 구조   |
 
 ---
 
@@ -303,14 +303,17 @@ from src.graphql.custom.manager.idam.users import (
 ### ✅ DO
 
 1. **스키마 파일을 Single Source of Truth로**
+
    - 모든 변경은 스키마에서 시작
    - 코드 생성 후 확인
 
 2. **자동 생성 코드는 절대 수정 금지**
+
    - 주석에 경고 표시
    - 스키마 수정 후 재생성
 
 3. **커스텀 로직은 별도 디렉토리에**
+
    - generated/와 custom/ 명확히 분리
    - import 경로로 구분
 
@@ -342,7 +345,7 @@ from src.graphql.custom.manager.idam.users import (
 ```
 1. 새 엔티티는 무조건 새 방식 적용
 2. 기존 엔티티는 점진적 마이그레이션:
-   
+
    Week 1-2: 스키마 정의 작성 (5개)
    Week 3-4: 코드 생성 및 검증 (5개)
    Week 5-6: 나머지 마이그레이션 (13개)

@@ -7,34 +7,34 @@
 
 import { apolloClient } from "@/lib/apollo-client";
 import {
-  GET_MANAGER_USERS,
-  GET_MANAGER_USER,
-  CREATE_MANAGER_USER,
-  UPDATE_MANAGER_USER,
-  type GetManagerUsersVariables,
-  type GetManagerUserVariables,
-  type CreateManagerUserVariables,
-  type UpdateManagerUserVariables,
+  GET_USERS,
+  GET_USER,
+  CREATE_USER,
+  UPDATE_USER,
+  type GetUsersVariables,
+  type GetUserVariables,
+  type CreateUserVariables,
+  type UpdateUserVariables,
 } from "../graphql";
-import type { ManagerUser, ManagerUsersListResponse } from "../types/users.types";
+import type { User, UsersListResponse } from "../types/users.types";
 
 /**
  * GraphQL 응답 타입
  */
-interface GetManagerUsersResponse {
-  managerUsers: ManagerUser[];
+interface GetUsersResponse {
+  users: User[];
 }
 
-interface GetManagerUserResponse {
-  managerUser: ManagerUser;
+interface GetUserResponse {
+  user: User;
 }
 
-interface CreateManagerUserResponse {
-  createManagerUser: ManagerUser;
+interface CreateUserResponse {
+  createUser: User;
 }
 
-interface UpdateManagerUserResponse {
-  updateManagerUser: ManagerUser;
+interface UpdateUserResponse {
+  updateUser: User;
 }
 
 /**
@@ -49,23 +49,23 @@ export const usersService = {
    * 사용자 목록 조회
    */
   async listUsers(
-    params?: GetManagerUsersVariables
-  ): Promise<{ items: ManagerUser[]; total: number }> {
+    params?: GetUsersVariables
+  ): Promise<{ items: User[]; total: number }> {
     try {
-      const variables: GetManagerUsersVariables = {
+      const variables: GetUsersVariables = {
         limit: params?.limit || 20,
         offset: params?.offset || 0,
         userType: params?.userType,
         status: params?.status,
       };
 
-      const { data } = await apolloClient.query<GetManagerUsersResponse>({
-        query: GET_MANAGER_USERS,
+      const { data } = await apolloClient.query<GetUsersResponse>({
+        query: GET_USERS,
         variables,
         fetchPolicy: "network-only",
       });
 
-      const items = data?.managerUsers || [];
+      const items = data?.users || [];
 
       return {
         items,
@@ -74,7 +74,9 @@ export const usersService = {
     } catch (error) {
       console.error("listUsers error:", error);
       throw new Error(
-        `Failed to fetch users: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to fetch users: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -82,25 +84,27 @@ export const usersService = {
   /**
    * 사용자 상세 조회
    */
-  async getUser(id: string): Promise<ManagerUser> {
+  async getUser(id: string): Promise<User> {
     try {
-      const variables: GetManagerUserVariables = { id };
+      const variables: GetUserVariables = { id };
 
-      const { data } = await apolloClient.query<GetManagerUserResponse>({
-        query: GET_MANAGER_USER,
+      const { data } = await apolloClient.query<GetUserResponse>({
+        query: GET_USER,
         variables,
         fetchPolicy: "network-only",
       });
 
-      if (!data?.manager_user) {
+      if (!data?.user) {
         throw new Error("User not found");
       }
 
-      return data.manager_user;
+      return data.user;
     } catch (error) {
       console.error(`getUser(${id}) error:`, error);
       throw new Error(
-        `Failed to fetch user: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to fetch user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -108,32 +112,33 @@ export const usersService = {
   /**
    * 사용자 생성
    */
-  async createUser(
-    data: CreateManagerUserVariables["input"]
-  ): Promise<ManagerUser> {
+  async createUser(data: CreateUserVariables["input"]): Promise<User> {
     try {
-      const variables: CreateManagerUserVariables = { input: data };
+      const variables: CreateUserVariables = { input: data };
 
-      const { data: responseData } = await apolloClient.mutate<CreateManagerUserResponse>({
-        mutation: CREATE_MANAGER_USER,
-        variables,
-        refetchQueries: [
-          {
-            query: GET_MANAGER_USERS,
-            variables: { limit: 20, offset: 0 },
-          },
-        ],
-      });
+      const { data: responseData } =
+        await apolloClient.mutate<CreateUserResponse>({
+          mutation: CREATE_USER,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_USERS,
+              variables: { limit: 20, offset: 0 },
+            },
+          ],
+        });
 
-      if (!responseData?.create_manager_user) {
+      if (!responseData?.createUser) {
         throw new Error("Failed to create user");
       }
 
-      return responseData.create_manager_user;
+      return responseData.createUser;
     } catch (error) {
       console.error("createUser error:", error);
       throw new Error(
-        `Failed to create user: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to create user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },
@@ -143,31 +148,34 @@ export const usersService = {
    */
   async updateUser(
     id: string,
-    data: UpdateManagerUserVariables["input"]
-  ): Promise<ManagerUser> {
+    data: UpdateUserVariables["input"]
+  ): Promise<User> {
     try {
-      const variables: UpdateManagerUserVariables = { id, input: data };
+      const variables: UpdateUserVariables = { id, input: data };
 
-      const { data: responseData } = await apolloClient.mutate<UpdateManagerUserResponse>({
-        mutation: UPDATE_MANAGER_USER,
-        variables,
-        refetchQueries: [
-          {
-            query: GET_MANAGER_USER,
-            variables: { id },
-          },
-        ],
-      });
+      const { data: responseData } =
+        await apolloClient.mutate<UpdateUserResponse>({
+          mutation: UPDATE_USER,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_USER,
+              variables: { id },
+            },
+          ],
+        });
 
-      if (!responseData?.update_manager_user) {
+      if (!responseData?.updateUser) {
         throw new Error("Failed to update user");
       }
 
-      return responseData.update_manager_user;
+      return responseData.updateUser;
     } catch (error) {
       console.error(`updateUser(${id}) error:`, error);
       throw new Error(
-        `Failed to update user: ${error instanceof Error ? error.message : "Unknown error"}`
+        `Failed to update user: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   },

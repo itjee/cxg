@@ -32,7 +32,7 @@ def model_to_graphql_converter(
 
     사용 예:
         # 변환 함수 생성
-        to_graphql_user = model_to_graphql_converter(ManagerUser)
+        to_graphql_user = model_to_graphql_converter(User)
 
         # 사용
         user_model = await db.get(User, user_id)

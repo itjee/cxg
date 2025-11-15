@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @strawberry.type(description="Manager 사용자")
-class ManagerUser(Node):
+class User(Node):
     """
     Manager 시스템 사용자
 
@@ -101,7 +101,7 @@ class ManagerUser(Node):
 
 
 @strawberry.input(description="Manager 사용자 생성 입력")
-class ManagerUserCreateInput:
+class UserCreateInput:
     """
     Manager 사용자 생성
 
@@ -119,7 +119,7 @@ class ManagerUserCreateInput:
 
 
 @strawberry.input(description="Manager 사용자 수정 입력")
-class ManagerUserUpdateInput:
+class UserUpdateInput:
     """
     Manager 사용자 수정
 

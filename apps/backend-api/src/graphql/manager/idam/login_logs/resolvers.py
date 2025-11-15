@@ -23,7 +23,7 @@ async def resolve_login_log_user(user_id: UUID | None, info):
         info: GraphQL 실행 컨텍스트
 
     Returns:
-        ManagerUser: 사용자 GraphQL 객체 또는 None
+        User: 사용자 GraphQL 객체 또는 None
 
     Note:
         - user_id가 None이면 즉시 None 반환 (로그인 실패 시)

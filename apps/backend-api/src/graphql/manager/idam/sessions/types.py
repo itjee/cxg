@@ -13,11 +13,11 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import ManagerUser
+    from ..users.types import User
 
 
 @strawberry.type(description="Manager 세션")
-class ManagerSession(Node):
+class Session(Node):
     """
     Manager 시스템 세션
 
@@ -64,7 +64,7 @@ class ManagerSession(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="세션 소유자 (사용자)")
-    async def user(self, info) -> "ManagerUser | None":
+    async def user(self, info) -> "User | None":
         """
         세션 소유자(사용자) 정보를 조회하는 필드 resolver
 

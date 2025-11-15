@@ -14,8 +14,8 @@ import {
   UsersFilters,
   UsersTable,
   UsersEdit,
-  useManagerUsers,
-  useUpdateManagerUser,
+  useUsers,
+  useUpdateUser,
   useUsersStore,
 } from "@/features/idam/users";
 
@@ -29,7 +29,7 @@ export default function UsersPage() {
     data: usersResponse,
     loading,
     refetch,
-  } = useManagerUsers({
+  } = useUsers({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
     userType: undefined,
@@ -37,10 +37,10 @@ export default function UsersPage() {
   });
 
   // GraphQL 뮤테이션 - 수정
-  const [updateUser, { loading: updating }] = useUpdateManagerUser();
+  const [updateUser, { loading: updating }] = useUpdateUser();
 
   // 사용자 데이터
-  const users = usersResponse?.manager_users || [];
+  const users = usersResponse?.users || [];
 
   const handleDelete = async (user: any) => {
     if (confirm(`'${user.fullName}' 사용자를 삭제하시겠습니까?`)) {
