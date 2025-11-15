@@ -5,8 +5,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from graphql.common.base_loader import BaseFieldLoader
-from src.graphql.common import BaseDataLoader
+from src.graphql.common import BaseDataLoader, BaseFieldLoader
 from src.models.manager.idam.api_key import ApiKey as ApiKeyModel
 
 
