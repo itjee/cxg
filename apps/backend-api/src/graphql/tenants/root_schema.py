@@ -8,6 +8,7 @@ import strawberry
 
 from .schema import TenantsMutation, TenantsQuery
 from .sys.users.types import User, UserCreateInput, UserUpdateInput
+from .sys.users.queries import UserQueries
 
 
 @strawberry.type(description="Tenants System GraphQL Query")
@@ -34,8 +35,15 @@ class Query:
         return "healthy"
 
     # ===== SYS - Users =====
-    user = TenantsQuery.user
-    users = TenantsQuery.users
+    @strawberry.field(description="Tenant 사용자 조회 (ID)")
+    async def user(self, info, id: strawberry.ID):
+        user_queries = UserQueries()
+        return await user_queries.user(info, id)
+
+    @strawberry.field(description="Tenant 사용자 목록 조회")
+    async def users(self, info, limit: int = 20, offset: int = 0):
+        user_queries = UserQueries()
+        return await user_queries.users(info, limit, offset)
 
 
 @strawberry.type(description="Tenants 시스템 GraphQL Mutation")
