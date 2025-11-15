@@ -3,7 +3,7 @@
 /**
  * @file workflows-table.tsx
  * @description 워크플로우 관리 테이블 컴포넌트
- * 
+ *
  * 역할:
  * - columns 파일에서 컬럼 정의 import
  * - DataTable 컴포넌트 설정
@@ -11,7 +11,7 @@
  * - 페이지네이션/필터 설정
  */
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useWorkflowsStore } from "../stores";
 import { getWorkflowsColumns } from "./workflows-columns";
 import type { Workflows } from "../types";
@@ -26,9 +26,9 @@ interface WorkflowsTableProps {
 /**
  * 워크플로우 관리 데이터 테이블 컴포넌트
  */
-export function WorkflowsTable({ 
-  data, 
-  onEdit, 
+export function WorkflowsTable({
+  data,
+  onEdit,
   onDelete,
   onToggle,
 }: WorkflowsTableProps) {

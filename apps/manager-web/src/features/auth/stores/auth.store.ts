@@ -17,17 +17,18 @@ interface AuthState {
   isLoading: boolean;
 
   // Actions
-  login: (username: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string, fullName?: string) => Promise<void>;
+  signin: (username: string, password: string) => Promise<void>;
+  signup: (
+    username: string,
+    email: string,
+    password: string,
+    fullName?: string
+  ) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => Promise<void>;
   setUser: (user: User | null) => void;
   setTokens: (accessToken: string, refreshToken: string) => void;
   clearAuth: () => void;
-
-  // Aliases for consistency
-  signin: (username: string, password: string) => Promise<void>;
-  signup: (username: string, email: string, password: string, fullName?: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -41,20 +42,20 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
 
       // 로그인
-      login: async (username: string, password: string) => {
+      signin: async (username: string, password: string) => {
         set({ isLoading: true });
         try {
           const tokenData = await authService.signin({ username, password });
 
           // 토큰 저장 (localStorage + Cookie)
-          localStorage.setItem("access_token", tokenData.access_token);
-          localStorage.setItem("refresh_token", tokenData.refresh_token);
-          setCookie("access_token", tokenData.access_token, 7);
-          setCookie("refresh_token", tokenData.refresh_token, 7);
+          localStorage.setItem("access_token", tokenData.accessToken);
+          localStorage.setItem("refresh_token", tokenData.refreshToken);
+          setCookie("access_token", tokenData.accessToken, 7);
+          setCookie("refresh_token", tokenData.refreshToken, 7);
 
           set({
-            accessToken: tokenData.access_token,
-            refreshToken: tokenData.refresh_token,
+            accessToken: tokenData.accessToken,
+            refreshToken: tokenData.refreshToken,
             isAuthenticated: true,
           });
 
@@ -62,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
           const user = await authService.getCurrentUser();
           set({ user });
         } catch (error) {
-          console.error("Login failed:", error);
+          console.error("Signin failed:", error);
           throw error;
         } finally {
           set({ isLoading: false });
@@ -70,7 +71,7 @@ export const useAuthStore = create<AuthState>()(
       },
 
       // 회원가입
-      register: async (
+      signup: async (
         username: string,
         email: string,
         password: string,
@@ -82,31 +83,17 @@ export const useAuthStore = create<AuthState>()(
             username,
             email,
             password,
-            ...(fullName && { full_name: fullName }),
+            fullName,
           });
 
           // 회원가입 후 자동 로그인
-          await get().login(username, password);
+          await get().signin(username, password);
         } catch (error) {
-          console.error("Registration failed:", error);
+          console.error("Signup failed:", error);
           throw error;
         } finally {
           set({ isLoading: false });
         }
-      },
-
-      // Aliases for consistency
-      signin: async (username: string, password: string) => {
-        await get().login(username, password);
-      },
-
-      signup: async (
-        username: string,
-        email: string,
-        password: string,
-        fullName?: string
-      ) => {
-        await get().register(username, email, password, fullName);
       },
 
       // 로그아웃
@@ -133,14 +120,14 @@ export const useAuthStore = create<AuthState>()(
           const tokenData = await authService.refreshToken(refreshToken);
 
           // 토큰 저장 (localStorage + Cookie)
-          localStorage.setItem("access_token", tokenData.access_token);
-          localStorage.setItem("refresh_token", tokenData.refresh_token);
-          setCookie("access_token", tokenData.access_token, 7);
-          setCookie("refresh_token", tokenData.refresh_token, 7);
+          localStorage.setItem("access_token", tokenData.accessToken);
+          localStorage.setItem("refresh_token", tokenData.refreshToken);
+          setCookie("access_token", tokenData.accessToken, 7);
+          setCookie("refresh_token", tokenData.refreshToken, 7);
 
           set({
-            accessToken: tokenData.access_token,
-            refreshToken: tokenData.refresh_token,
+            accessToken: tokenData.accessToken,
+            refreshToken: tokenData.refreshToken,
             isAuthenticated: true,
           });
 

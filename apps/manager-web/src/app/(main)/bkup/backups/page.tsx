@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { CheckCircle, Clock, Database, HardDrive } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function BackupsPage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="백업 관리"
       description="시스템 백업을 관리합니다"
       
@@ -53,6 +53,6 @@ export default function BackupsPage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

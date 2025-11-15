@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useCompliancesStore } from "../stores/compliances.store";
 import { getCompliancesColumns } from "./compliances-columns";
 import type { Compliance } from "../types/compliances.types";
@@ -9,10 +9,10 @@ interface CompliancesTableProps {
   onDownload?: (compliance: Compliance) => void;
 }
 
-export function CompliancesTable({ 
-  data, 
+export function CompliancesTable({
+  data,
   onViewDetails,
-  onDownload 
+  onDownload,
 }: CompliancesTableProps) {
   const { sorting, setSorting } = useCompliancesStore();
   const columns = getCompliancesColumns({ onViewDetails, onDownload });

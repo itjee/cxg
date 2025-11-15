@@ -3,20 +3,15 @@
 /**
  * @file users-filters.tsx
  * @description 사용자 검색 및 필터 컴포넌트
- * 
+ *
  * ListFilter 컴포넌트를 사용하여 검색 및 필터 기능 제공
  */
 
 import { useMemo } from "react";
-import { ListFilter } from "@/components/filters/list-filter";
+import { Filters } from "@/components/filters/filters";
 import { useUsersStore } from "../stores/users.store";
-import type { Users } from "../types/users.types";
 
-interface UsersFiltersProps {
-  users: Users[];
-}
-
-export function UsersFilters({ users }: UsersFiltersProps) {
+export function UsersFilters() {
   const {
     selectedStatus,
     globalFilter,
@@ -25,42 +20,52 @@ export function UsersFilters({ users }: UsersFiltersProps) {
     resetFilters,
   } = useUsersStore();
 
-  const filterFields = useMemo(() => [
-    {
-      name: "globalFilter",
-      type: "text" as const,
-      label: "검색",
-      placeholder: "사용자명 검색...",
-    },
-    {
-      name: "selectedStatus",
-      type: "select" as const,
-      label: "상태",
-      placeholder: "전체",
-      options: [
-        { label: "전체", value: "" },
-        { label: "활성", value: "active" },
-        { label: "비활성", value: "inactive" },
-      ],
-    },
-  ], []);
+  const filterFields = useMemo(
+    () => [
+      {
+        key: "globalFilter",
+        type: "search" as const,
+        label: "검색",
+        placeholder: "사용자명 검색...",
+      },
+      {
+        key: "selectedStatus",
+        type: "select" as const,
+        label: "상태",
+        placeholder: "전체",
+        options: [
+          { label: "활성", value: "ACTIVE" },
+          { label: "비활성", value: "INACTIVE" },
+          { label: "잠금", value: "LOCKED" },
+        ],
+      },
+    ],
+    []
+  );
 
-  const filterValues = useMemo(() => ({
-    globalFilter,
-    selectedStatus,
-  }), [globalFilter, selectedStatus]);
+  const filterValues = useMemo(
+    () => ({
+      globalFilter,
+      selectedStatus: selectedStatus || "",
+    }),
+    [globalFilter, selectedStatus]
+  );
 
-  const handleFilter = (values: Record<string, any>) => {
-    setGlobalFilter(values.globalFilter || "");
-    setSelectedStatus(values.selectedStatus || "");
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === "globalFilter") {
+      setGlobalFilter(value);
+    } else if (key === "selectedStatus") {
+      setSelectedStatus(value);
+    }
   };
 
   return (
-    <ListFilter
-      fields={filterFields}
-      defaultValues={filterValues}
-      onFilter={handleFilter}
+    <Filters
+      filters={filterFields}
+      values={filterValues}
+      onChange={handleFilterChange}
       onReset={resetFilters}
+      title="검색필터"
     />
   );
 }

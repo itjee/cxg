@@ -6,7 +6,7 @@
  */
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useWorkflowsStore } from "../stores/workflows.store";
 
 interface WorkflowsHeaderProps {
@@ -46,7 +46,7 @@ export function WorkflowsHeader({ onRefresh, onExport }: WorkflowsHeaderProps) {
   ];
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="워크플로우 관리"
       description="자동화 워크플로우를 생성하고 관리합니다"
       actions={actions}

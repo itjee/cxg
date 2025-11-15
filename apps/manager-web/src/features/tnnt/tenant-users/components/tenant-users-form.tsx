@@ -212,7 +212,7 @@ export function TenantUsersForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="">역할 없음</SelectItem>
+                  <SelectItem value="NONE">역할 없음</SelectItem>
                   {/* TODO: 실제 역할 목록으로 교체 */}
                 </SelectContent>
               </Select>

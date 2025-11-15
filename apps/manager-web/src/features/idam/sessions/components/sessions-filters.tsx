@@ -60,12 +60,11 @@ export function SessionsFilters() {
           
           <div className="space-y-2">
             <Label htmlFor="status">상태</Label>
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+            <Select value={selectedStatus || ""} onValueChange={setSelectedStatus}>
               <SelectTrigger id="status">
                 <SelectValue placeholder="전체 상태" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="ACTIVE">활성</SelectItem>
                 <SelectItem value="EXPIRED">만료됨</SelectItem>
                 <SelectItem value="REVOKED">취소됨</SelectItem>
@@ -75,12 +74,11 @@ export function SessionsFilters() {
 
           <div className="space-y-2">
             <Label htmlFor="sessionType">세션 타입</Label>
-            <Select value={selectedSessionType} onValueChange={setSelectedSessionType}>
+            <Select value={selectedSessionType || ""} onValueChange={setSelectedSessionType}>
               <SelectTrigger id="sessionType">
                 <SelectValue placeholder="전체 타입" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="WEB">웹</SelectItem>
                 <SelectItem value="API">API</SelectItem>
                 <SelectItem value="MOBILE">모바일</SelectItem>

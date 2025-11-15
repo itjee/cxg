@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useTransactionStore } from "../stores";
 
 interface TransactionHeaderProps {
@@ -13,7 +13,7 @@ export function TransactionHeader({ onRefresh, onExport }: TransactionHeaderProp
   const { openForm } = useTransactionStore();
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="거래 관리"
       description="결제 거래를 관리합니다"
       actions={[

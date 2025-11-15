@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useResourcesStore } from "../stores";
 import { getResourcesColumns } from "./resources-columns";
 import type { Resource } from "../types";

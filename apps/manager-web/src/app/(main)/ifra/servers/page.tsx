@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function ServersPage() {
@@ -89,7 +89,7 @@ export default function ServersPage() {
   );
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="서버 관리"
       description="플랫폼 서버 인프라를 모니터링하고 관리합니다"
       actions={actions}
@@ -180,6 +180,6 @@ export default function ServersPage() {
           </div>
         </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

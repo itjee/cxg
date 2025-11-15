@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { AlertCircle, CheckCircle, Clock, Headphones, Ticket } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function TicketsPage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="지원 티켓"
       description="고객 지원 티켓을 관리합니다"
       
@@ -53,6 +53,6 @@ export default function TicketsPage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

@@ -2,6 +2,9 @@
 
 import strawberry
 
+from .auth.mutations import ManagerAuthMutations
+from .auth.queries import ManagerAuthQueries
+from .dashboard import DashboardQueries
 from .idam.permissions import ManagerPermissionMutations, ManagerPermissionQueries
 from .idam.role_permissions import (
     ManagerRolePermissionMutations,
@@ -15,6 +18,11 @@ from .idam.users import ManagerUserMutations, ManagerUserQueries
 @strawberry.type(description="Manager Query")
 class ManagerQuery:
     """Manager 시스템 Query"""
+
+    # Dashboard
+    dashboard = DashboardQueries.dashboard
+    tenant_growth = DashboardQueries.tenant_growth
+    activities = DashboardQueries.activities
 
     # IDAM - Users
     manager_user = ManagerUserQueries.manager_user
@@ -45,7 +53,17 @@ class ManagerQuery:
 class ManagerMutation:
     """Manager 시스템 Mutation"""
 
-    # IDAM - Users
+    # ===== Auth =====
+    # Authentication
+    signin = ManagerAuthMutations.signin
+    signup = ManagerAuthMutations.signup
+    refresh_token = ManagerAuthMutations.refresh_token
+    logout = ManagerAuthMutations.logout
+    change_password = ManagerAuthMutations.change_password
+    forgot_password = ManagerAuthMutations.forgot_password
+    reset_password = ManagerAuthMutations.reset_password
+
+    # ===== IDAM - Users =====
     create_manager_user = ManagerUserMutations.create_manager_user
     update_manager_user = ManagerUserMutations.update_manager_user
 

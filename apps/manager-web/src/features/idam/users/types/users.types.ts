@@ -1,63 +1,114 @@
 /**
- * @file users.types.ts
- * @description Users TypeScript 타입 정의
+ * Users GraphQL 타입 정의 (camelCase - GraphQL 네이티브)
+ *
+ * GraphQL 스키마와 직접 매칭되는 타입입니다.
+ * 불필요한 타입 변환이 없어 성능이 우수합니다.
  */
 
+// ===== 사용자 데이터 타입 =====
+
 /**
- * Users 정보
+ * Manager User (ID&Access Management)
+ * GraphQL 필드는 camelCase입니다 (Strawberry 자동 변환)
  */
-export interface Users {
-  // 기본 식별자
+export interface ManagerUser {
   id: string;
-  created_at: string;
-  updated_at?: string;
-  created_by?: string;
-  updated_by?: string;
+  userType: string; // MASTER, TENANT, SYSTEM
+  fullName: string;
+  email: string;
+  phone?: string;
+  username: string;
+  ssoProvider?: string;
+  ssoSubject?: string;
+  mfaEnabled: boolean;
+  status: "ACTIVE" | "INACTIVE" | "LOCKED";
+  lastLoginAt?: string;
+  lastLoginIp?: string;
+  failedLoginAttempts: number;
+  forcePasswordChange: boolean;
+  timezone: string;
+  locale: string;
+  department?: string;
+  position?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
-  // TODO: 필드 정의
-  name: string;
-  description?: string;
-  
-  // 상태
-  is_active: boolean;
-  is_deleted: boolean;
+// ===== Request/Response 타입 =====
+
+/**
+ * 사용자 생성 요청
+ */
+export interface CreateManagerUserRequest {
+  userType: string;
+  fullName: string;
+  email: string;
+  username: string;
+  password: string;
+  phone?: string;
+  department?: string;
+  position?: string;
 }
 
 /**
- * Users 생성 요청
+ * 사용자 수정 요청
  */
-export interface CreateUsersRequest {
-  name: string;
-  description?: string;
-  is_active?: boolean;
+export interface UpdateManagerUserRequest {
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  department?: string;
+  position?: string;
+  status?: string;
+  mfaEnabled?: boolean;
 }
 
 /**
- * Users 수정 요청
+ * 사용자 목록 응답
  */
-export interface UpdateUsersRequest {
-  name?: string;
-  description?: string;
-  is_active?: boolean;
-}
-
-/**
- * Users 목록 응답
- */
-export interface UsersListResponse {
-  items: Users[];
+export interface ManagerUsersListResponse {
+  items: ManagerUser[];
   total: number;
   page: number;
-  page_size: number;
-  total_pages: number;
+  pageSize: number;
+  totalPages: number;
 }
 
+// ===== 쿼리 파라미터 타입 =====
+
 /**
- * Users 쿼리 파라미터
+ * 사용자 목록 조회 파라미터
  */
-export interface UsersQueryParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  active?: boolean;
+export interface ManagerUsersQueryParams {
+  limit?: number;
+  offset?: number;
+  userType?: string;
+  status?: string;
 }
+
+// ===== 호환성 타입 (기존 코드 지원) =====
+
+/**
+ * @deprecated ManagerUser 사용 권장
+ */
+export type Users = ManagerUser;
+
+/**
+ * @deprecated CreateManagerUserRequest 사용 권장
+ */
+export type CreateUsersRequest = CreateManagerUserRequest;
+
+/**
+ * @deprecated UpdateManagerUserRequest 사용 권장
+ */
+export type UpdateUsersRequest = UpdateManagerUserRequest;
+
+/**
+ * @deprecated ManagerUsersListResponse 사용 권장
+ */
+export type UsersListResponse = ManagerUsersListResponse;
+
+/**
+ * @deprecated ManagerUsersQueryParams 사용 권장
+ */
+export type UsersQueryParams = ManagerUsersQueryParams;

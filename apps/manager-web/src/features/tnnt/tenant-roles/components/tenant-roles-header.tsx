@@ -6,7 +6,7 @@
 'use client';
 
 import { Plus, RefreshCw } from 'lucide-react';
-import { ListPageHeader } from '@/components/layouts/list-page-header';
+import { PageHeader } from '@/components/layouts/page-header';
 import { useTenantRolesStore } from '../stores';
 
 interface TenantRolesHeaderProps {
@@ -32,7 +32,7 @@ export function TenantRolesHeader({ onRefresh }: TenantRolesHeaderProps) {
   ];
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="테넌트 역할 관리"
       description="테넌트별 역할 및 권한을 관리합니다"
       actions={actions}

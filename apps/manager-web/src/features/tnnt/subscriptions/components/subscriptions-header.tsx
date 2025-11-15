@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useSubscriptionsStore } from "../stores/subscriptions.store";
 
 interface SubscriptionsHeaderProps {
@@ -18,5 +18,5 @@ export function SubscriptionsHeader({ onRefresh, onExport }: SubscriptionsHeader
     ...(onExport ? [{ label: "내보내기", icon: Download, onClick: onExport, variant: "outline" as const }] : []),
   ];
 
-  return <ListPageHeader title="구독 관리" description="플랫폼 구독을 관리합니다" actions={actions} />;
+  return <PageHeader title="구독 관리" description="플랫폼 구독을 관리합니다" actions={actions} />;
 }

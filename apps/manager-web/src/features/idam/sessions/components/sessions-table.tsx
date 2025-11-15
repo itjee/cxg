@@ -5,7 +5,7 @@
  * @description 세션 데이터 테이블 컴포넌트
  */
 
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/data-table';
 import { useSessionStore } from '../stores';
 import { getSessionsColumns } from './sessions-columns';
 import type { Session } from '../types';

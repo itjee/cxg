@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Activity, AlertCircle, CheckCircle, Code2, Plug } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function APIsPage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="API 연동"
       description="외부 API 연동을 관리합니다"
       
@@ -53,6 +53,6 @@ export default function APIsPage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

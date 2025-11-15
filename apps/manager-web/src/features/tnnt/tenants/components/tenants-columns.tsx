@@ -14,7 +14,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, AlertCircle } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Tenant, TenantStatus, TenantType } from "../types";
 
 /**

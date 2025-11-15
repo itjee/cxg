@@ -5,7 +5,7 @@
  * @description 스케줄된 작업 데이터 테이블
  */
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useTasksStore } from "../stores";
 import { getTasksColumns } from "./tasks-columns";
 import type { Task } from "../types";

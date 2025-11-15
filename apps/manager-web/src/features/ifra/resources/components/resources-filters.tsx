@@ -49,7 +49,7 @@ export function ResourcesFilters({ data }: ResourcesFiltersProps) {
             <SelectValue placeholder="리소스 유형" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="ALL">전체</SelectItem>
             <SelectItem value="DATABASE">데이터베이스</SelectItem>
             <SelectItem value="STORAGE">스토리지</SelectItem>
             <SelectItem value="COMPUTE">컴퓨팅</SelectItem>
@@ -65,7 +65,7 @@ export function ResourcesFilters({ data }: ResourcesFiltersProps) {
             <SelectValue placeholder="상태" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="ALL">전체</SelectItem>
             <SelectItem value="PROVISIONING">프로비저닝</SelectItem>
             <SelectItem value="RUNNING">실행중</SelectItem>
             <SelectItem value="STOPPED">중지됨</SelectItem>
@@ -80,7 +80,7 @@ export function ResourcesFilters({ data }: ResourcesFiltersProps) {
             <SelectValue placeholder="리전" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
+            <SelectItem value="ALL">전체</SelectItem>
             {uniqueRegions.map((region) => (
               <SelectItem key={region} value={region}>
                 {region}

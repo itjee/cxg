@@ -4,13 +4,13 @@ from .mutations import ManagerAuthMutations
 from .queries import ManagerAuthQueries
 from .types import (
     ChangePasswordInput,
-    LoginInput,
     ManagerAuthUser,
     MessageResponse,
     RefreshTokenInput,
-    RegisterInput,
     ResetPasswordConfirmInput,
     ResetPasswordInput,
+    SigninInput,
+    SignupInput,
     TokenResponse,
 )
 
@@ -19,9 +19,9 @@ __all__ = [
     "ManagerAuthMutations",
     "ManagerAuthQueries",
     "ManagerAuthUser",
-    "LoginInput",
+    "SigninInput",
     "RefreshTokenInput",
-    "RegisterInput",
+    "SignupInput",
     "ChangePasswordInput",
     "ResetPasswordInput",
     "ResetPasswordConfirmInput",

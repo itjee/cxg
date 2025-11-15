@@ -6,7 +6,7 @@
 'use client';
 
 import { Plus, RefreshCw, Download } from 'lucide-react';
-import { ListPageHeader } from '@/components/layouts/list-page-header';
+import { PageHeader } from '@/components/layouts/page-header';
 import { useTenantUsersStore } from '../stores';
 
 interface TenantUsersHeaderProps {
@@ -43,7 +43,7 @@ export function TenantUsersHeader({
 
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="테넌트 사용자 관리"
       description="테넌트별 사용자 계정을 관리합니다"
       actions={actions}

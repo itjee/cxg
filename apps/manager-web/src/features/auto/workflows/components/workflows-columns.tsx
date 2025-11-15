@@ -3,7 +3,7 @@
 /**
  * @file workflows-columns.tsx
  * @description 워크플로우 테이블 컬럼 정의
- * 
+ *
  * 역할:
  * - TanStack Table 컬럼 정의
  * - 포맷 함수 (날짜)
@@ -15,7 +15,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { ArrowUpDown, Edit2, Trash2, Play, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Workflows } from "../types";
 
 /**

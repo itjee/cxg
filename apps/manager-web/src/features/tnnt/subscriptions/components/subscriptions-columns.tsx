@@ -9,7 +9,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Calendar, DollarSign, Users, HardDrive, Activity } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Subscription, SubscriptionStatus, BillingCycle } from "../types/subscriptions.types";
 
 /**

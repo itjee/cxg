@@ -1,15 +1,15 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import type { 
-  Compliance, 
-  ReportType, 
-  ComplianceStatus, 
+import type {
+  Compliance,
+  ReportType,
+  ComplianceStatus,
   ReportStatus,
-  FileType 
+  FileType,
 } from "../types/compliances.types";
 
 const reportTypeLabels: Record<ReportType, string> = {
@@ -90,7 +90,8 @@ export const getCompliancesColumns = ({
       <div className="max-w-md">
         <div className="font-medium">{row.getValue("report_name")}</div>
         <div className="text-xs text-muted-foreground">
-          {formatDate(row.original.start_date, "yyyy-MM-dd")} ~ {formatDate(row.original.close_date, "yyyy-MM-dd")}
+          {formatDate(row.original.start_date, "yyyy-MM-dd")} ~{" "}
+          {formatDate(row.original.close_date, "yyyy-MM-dd")}
         </div>
       </div>
     ),
@@ -149,9 +150,7 @@ export const getCompliancesColumns = ({
     cell: ({ row }) => {
       const status = row.getValue("status") as ReportStatus;
       return (
-        <Badge className={statusColors[status]}>
-          {statusLabels[status]}
-        </Badge>
+        <Badge className={statusColors[status]}>{statusLabels[status]}</Badge>
       );
     },
   },

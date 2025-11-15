@@ -6,7 +6,7 @@
  */
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useTasksStore } from "../stores";
 
 interface TasksHeaderProps {
@@ -40,7 +40,7 @@ export function TasksHeader({ onRefresh, onExport }: TasksHeaderProps) {
 
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="스케줄된 작업 관리"
       description="정기적으로 실행되는 시스템 작업을 관리합니다"
       actions={actions}

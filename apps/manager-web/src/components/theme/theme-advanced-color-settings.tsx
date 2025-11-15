@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { ColorPicker } from '@/components/theme/color-picker';
+import { ColorPicker } from '@/components/theme/theme-color-picker';
 import { getGroupedThemeColors, type ThemeColorInfo } from '@/lib/constants/theme-colors';
 import { useThemeStore } from '@/shared/stores';
 import { Palette, RotateCcw } from 'lucide-react';

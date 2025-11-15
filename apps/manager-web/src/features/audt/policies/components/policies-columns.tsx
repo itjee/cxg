@@ -1,15 +1,15 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, CheckCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import type { 
-  Policy, 
-  PolicyType, 
+import type {
+  Policy,
+  PolicyType,
   PolicyCategory,
   PolicyStatus,
-  EnforcementLevel 
+  EnforcementLevel,
 } from "../types/policies.types";
 
 const policyTypeLabels: Record<PolicyType, string> = {
@@ -143,9 +143,7 @@ export const getPoliciesColumns = ({
     cell: ({ row }) => {
       const status = row.getValue("status") as PolicyStatus;
       return (
-        <Badge className={statusColors[status]}>
-          {statusLabels[status]}
-        </Badge>
+        <Badge className={statusColors[status]}>{statusLabels[status]}</Badge>
       );
     },
   },

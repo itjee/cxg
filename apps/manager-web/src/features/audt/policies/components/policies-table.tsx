@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { usePoliciesStore } from "../stores/policies.store";
 import { getPoliciesColumns } from "./policies-columns";
 import type { Policy } from "../types/policies.types";
@@ -9,10 +9,10 @@ interface PoliciesTableProps {
   onApprove?: (policy: Policy) => void;
 }
 
-export function PoliciesTable({ 
-  data, 
+export function PoliciesTable({
+  data,
   onViewDetails,
-  onApprove 
+  onApprove,
 }: PoliciesTableProps) {
   const { sorting, setSorting } = usePoliciesStore();
   const columns = getPoliciesColumns({ onViewDetails, onApprove });

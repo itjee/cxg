@@ -3,7 +3,7 @@
 /**
  * @file executions-columns.tsx
  * @description 워크플로우 실행 이력 테이블 컬럼 정의
- * 
+ *
  * 역할:
  * - TanStack Table 컬럼 정의
  * - 포맷 함수 (날짜, 시간, 리소스)
@@ -15,7 +15,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Execution, ExecutionStatus, TriggerSource } from "../types";
 
 /**
@@ -53,7 +53,13 @@ const formatResource = (value?: number, unit: string = ""): string => {
 /**
  * 실행 상태 색상 및 라벨 매핑
  */
-const statusConfig: Record<ExecutionStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const statusConfig: Record<
+  ExecutionStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   PENDING: { label: "대기", variant: "outline" },
   RUNNING: { label: "실행중", variant: "default" },
   COMPLETED: { label: "완료", variant: "secondary" },
@@ -131,7 +137,9 @@ export const getExecutionsColumns = ({
     accessorKey: "trigger_source",
     header: "트리거",
     cell: ({ row }) => {
-      const source = row.getValue("trigger_source") as TriggerSource | undefined;
+      const source = row.getValue("trigger_source") as
+        | TriggerSource
+        | undefined;
       if (!source) return <span className="text-muted-foreground">-</span>;
       return (
         <Badge variant="outline" className="font-normal">
@@ -169,7 +177,7 @@ export const getExecutionsColumns = ({
     cell: ({ row }) => {
       const step = row.getValue("current_step") as string | undefined;
       const status = row.getValue("status") as ExecutionStatus;
-      
+
       if (status === "RUNNING" && step) {
         return <div className="text-sm text-primary font-medium">{step}</div>;
       }

@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { AlertCircle, CheckCircle, Clock, FileText } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function ReportsPage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="통계 보고서"
       description="통계 보고서를 관리합니다"
       
@@ -53,6 +53,6 @@ export default function ReportsPage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ButtonGroup } from '@/components/ui/button-group';
 import { Plus, RefreshCw, Download } from 'lucide-react';
 
-export interface ListPageContainerProps {
+export interface PageContainerProps {
   title: string;
   description: string;
   children: ReactNode;
@@ -16,7 +16,7 @@ export interface ListPageContainerProps {
   showAdd?: boolean;
 }
 
-export function ListPageContainer({
+export function PageContainer({
   title,
   description,
   children,
@@ -25,7 +25,7 @@ export function ListPageContainer({
   onExport,
   showExport = true,
   showAdd = true,
-}: ListPageContainerProps) {
+}: PageContainerProps) {
   return (
     <div className="space-y-6">
       {/* 페이지 헤더 */}

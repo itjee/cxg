@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function AlertsPage() {
@@ -81,7 +81,7 @@ export default function AlertsPage() {
   );
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="알림 관리"
       description="시스템 알림 및 경고를 확인합니다"
       actions={actions}
@@ -168,6 +168,6 @@ export default function AlertsPage() {
           </div>
         </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

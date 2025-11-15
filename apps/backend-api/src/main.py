@@ -47,14 +47,27 @@ app = FastAPI(
 )
 
 
-# CORS 미들웨어
+# CORS 미들웨어 (GraphQL 요청 포함)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS", "PUT", "DELETE", "PATCH"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "Accept",
+        "Origin",
+    ],
+    expose_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Requested-With",
+        "X-Total-Count",
+        "X-Total-Pages",
+    ],
+    max_age=3600,
 )
 
 # 커스텀 미들웨어

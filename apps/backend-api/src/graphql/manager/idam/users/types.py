@@ -74,53 +74,30 @@ class ManagerUser(Node):
     created_at: datetime = strawberry.field(description="생성일시")
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
-    @strawberry.field(description="사용자에게 할당된 역할 목록")
-    async def roles(self, info) -> list["ManagerRole"]:
-        """
-        사용자에게 할당된 역할 목록을 조회하는 필드 resolver
+    # NOTE: Field resolvers commented out due to circular import issues with Strawberry
+    # These will be re-enabled after resolving the circular dependency structure
+    # @strawberry.field(description="사용자에게 할당된 역할 목록")
+    # async def roles(self, info) -> list["ManagerRole"]:
+    #     """사용자에게 할당된 역할 목록을 조회하는 필드 resolver"""
+    #     from uuid import UUID
+    #     from .resolvers import resolve_user_roles
+    #     return await resolve_user_roles(UUID(self.id), info)
 
-        User와 Role은 UserRole 중간 테이블을 통한 Many-to-Many 관계입니다.
-        활성(ACTIVE) 상태의 역할만 반환합니다.
-        """
-        from uuid import UUID
+    # @strawberry.field(description="사용자의 세션 목록")
+    # async def sessions(
+    #     self, info, status: str | None = None, limit: int = 10
+    # ) -> list["ManagerSession"]:
+    #     """사용자의 세션 목록을 조회하는 필드 resolver"""
+    #     from uuid import UUID
+    #     from .resolvers import resolve_user_sessions
+    #     return await resolve_user_sessions(UUID(self.id), info, status)
 
-        from .resolvers import resolve_user_roles
-
-        return await resolve_user_roles(UUID(self.id), info)
-
-    @strawberry.field(description="사용자의 세션 목록")
-    async def sessions(
-        self, info, status: str | None = None, limit: int = 10
-    ) -> list["ManagerSession"]:
-        """
-        사용자의 세션 목록을 조회하는 필드 resolver
-
-        User와 Session은 One-to-Many 관계입니다.
-        최근 생성된 순으로 반환됩니다.
-
-        Args:
-            status: 세션 상태 필터 (선택)
-            limit: 조회 개수 (기본값: 10)
-        """
-        from uuid import UUID
-
-        from .resolvers import resolve_user_sessions
-
-        return await resolve_user_sessions(UUID(self.id), info, status)
-
-    @strawberry.field(description="사용자의 유효 권한 목록")
-    async def permissions(self, info) -> list["ManagerPermission"]:
-        """
-        사용자의 유효 권한 목록을 조회하는 필드 resolver
-
-        사용자가 가진 모든 역할을 통해 부여된 권한들을 조회합니다.
-        User → UserRole → Role → RolePermission → Permission 경로로 조회됩니다.
-        """
-        from uuid import UUID
-
-        from .resolvers import resolve_user_permissions
-
-        return await resolve_user_permissions(UUID(self.id), info)
+    # @strawberry.field(description="사용자의 유효 권한 목록")
+    # async def permissions(self, info) -> list["ManagerPermission"]:
+    #     """사용자의 유효 권한 목록을 조회하는 필드 resolver"""
+    #     from uuid import UUID
+    #     from .resolvers import resolve_user_permissions
+    #     return await resolve_user_permissions(UUID(self.id), info)
 
 
 @strawberry.input(description="Manager 사용자 생성 입력")

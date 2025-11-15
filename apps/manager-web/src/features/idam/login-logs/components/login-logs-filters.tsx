@@ -69,12 +69,11 @@ export function LoginLogsFilters() {
           
           <div className="space-y-2">
             <Label htmlFor="attemptType">시도 타입</Label>
-            <Select value={selectedAttemptType} onValueChange={setSelectedAttemptType}>
+            <Select value={selectedAttemptType || ""} onValueChange={setSelectedAttemptType}>
               <SelectTrigger id="attemptType">
                 <SelectValue placeholder="전체 타입" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="LOGIN">로그인</SelectItem>
                 <SelectItem value="LOGOUT">로그아웃</SelectItem>
                 <SelectItem value="FAILED_LOGIN">로그인 실패</SelectItem>
@@ -86,12 +85,11 @@ export function LoginLogsFilters() {
 
           <div className="space-y-2">
             <Label htmlFor="success">결과</Label>
-            <Select value={selectedSuccess} onValueChange={setSelectedSuccess}>
+            <Select value={selectedSuccess || ""} onValueChange={setSelectedSuccess}>
               <SelectTrigger id="success">
                 <SelectValue placeholder="전체 결과" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="true">성공</SelectItem>
                 <SelectItem value="false">실패</SelectItem>
               </SelectContent>
@@ -100,12 +98,11 @@ export function LoginLogsFilters() {
 
           <div className="space-y-2">
             <Label htmlFor="userType">사용자 타입</Label>
-            <Select value={selectedUserType} onValueChange={setSelectedUserType}>
+            <Select value={selectedUserType || ""} onValueChange={setSelectedUserType}>
               <SelectTrigger id="userType">
                 <SelectValue placeholder="전체 타입" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="MASTER">마스터</SelectItem>
                 <SelectItem value="TENANT">테넌트</SelectItem>
                 <SelectItem value="SYSTEM">시스템</SelectItem>
@@ -117,12 +114,11 @@ export function LoginLogsFilters() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="mfaUsed">MFA 사용</Label>
-            <Select value={selectedMfaUsed} onValueChange={setSelectedMfaUsed}>
+            <Select value={selectedMfaUsed || ""} onValueChange={setSelectedMfaUsed}>
               <SelectTrigger id="mfaUsed">
                 <SelectValue placeholder="전체" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">전체</SelectItem>
                 <SelectItem value="true">사용</SelectItem>
                 <SelectItem value="false">미사용</SelectItem>
               </SelectContent>

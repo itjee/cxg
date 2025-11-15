@@ -26,18 +26,19 @@ from src.core.security import (
     get_password_hash,
     verify_password,
 )
+from src.graphql.decorators import require_auth
 from src.models.manager.idam import LoginLog, Session, User
 
 from .queries import user_to_graphql
 from .types import (
     ChangePasswordInput,
-    LoginInput,
     ManagerAuthUser,
     MessageResponse,
     RefreshTokenInput,
-    RegisterInput,
     ResetPasswordConfirmInput,
     ResetPasswordInput,
+    SigninInput,
+    SignupInput,
     TokenResponse,
 )
 
@@ -121,7 +122,7 @@ async def create_session(
     await db.commit()
 
 
-async def register_user(db: AsyncSession, data: RegisterInput) -> ManagerAuthUser:
+async def register_user(db: AsyncSession, data: SignupInput) -> ManagerAuthUser:
     """
     새로운 사용자 회원가입
 
@@ -171,7 +172,7 @@ async def register_user(db: AsyncSession, data: RegisterInput) -> ManagerAuthUse
     return user_to_graphql(user)
 
 
-async def login_user(db: AsyncSession, data: LoginInput, request: Request) -> TokenResponse:
+async def login_user(db: AsyncSession, data: SigninInput, request: Request) -> TokenResponse:
     """
     사용자 로그인 및 토큰 발급
 
@@ -496,7 +497,7 @@ class ManagerAuthMutations:
     """
 
     @strawberry.mutation(description="회원가입")
-    async def signup(self, info, input: RegisterInput) -> ManagerAuthUser:
+    async def signup(self, info, input: SignupInput) -> ManagerAuthUser:
         """
         새로운 사용자를 등록합니다.
 
@@ -516,7 +517,7 @@ class ManagerAuthMutations:
         return await register_user(db, input)
 
     @strawberry.mutation(description="로그인")
-    async def signin(self, info, input: LoginInput) -> TokenResponse:
+    async def signin(self, info, input: SigninInput) -> TokenResponse:
         """
         사용자명과 비밀번호로 로그인하여 토큰을 발급받습니다.
 
@@ -537,6 +538,7 @@ class ManagerAuthMutations:
         return await login_user(db, input, request)
 
     @strawberry.mutation(description="토큰 갱신")
+    @require_auth
     async def refresh_token(self, info, input: RefreshTokenInput) -> TokenResponse:
         """
         Refresh Token으로 새로운 Access Token을 발급받습니다.
@@ -555,6 +557,7 @@ class ManagerAuthMutations:
         return await refresh_user_token(db, user_id)
 
     @strawberry.mutation(description="비밀번호 변경")
+    @require_auth
     async def change_password(self, info, input: ChangePasswordInput) -> MessageResponse:
         """
         현재 비밀번호를 확인하고 새 비밀번호로 변경합니다.
@@ -577,6 +580,7 @@ class ManagerAuthMutations:
         return MessageResponse(message="비밀번호가 변경되었습니다")
 
     @strawberry.mutation(description="로그아웃")
+    @require_auth
     async def logout(self, info) -> MessageResponse:
         """
         로그아웃 처리 (클라이언트에서 토큰 삭제)

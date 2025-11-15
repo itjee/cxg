@@ -7,9 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft, Palette, Sliders, Moon, Sun } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useThemeStore } from '@/shared/stores';
-import { PaletteSelector } from "@/components/theme/palette-selector";
+import { PaletteSelector } from "@/components/theme/theme-palette-selector";
 import { ThemePreviewCard } from "@/components/theme/theme-preview-card";
-import { AdvancedColorSettings } from "@/components/theme/advanced-color-settings";
+import { AdvancedColorSettings } from "@/components/theme/theme-advanced-color-settings";
 
 export default function AdvancedThemePage() {
   const router = useRouter();

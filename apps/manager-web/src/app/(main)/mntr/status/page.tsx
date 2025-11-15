@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Activity, RefreshCw, Download, Server, Database, Zap, HardDrive } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -62,7 +62,7 @@ export default function MonitoringStatusPage() {
   );
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="시스템 상태"
       description="실시간 시스템 상태를 모니터링합니다"
       actions={actions}
@@ -198,6 +198,6 @@ export default function MonitoringStatusPage() {
           </div>
         </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

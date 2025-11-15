@@ -198,7 +198,6 @@ export function LoginLogsForm({
               <SelectValue placeholder="선택" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">선택 안함</SelectItem>
               <SelectItem value="MASTER">마스터</SelectItem>
               <SelectItem value="TENANT">테넌트</SelectItem>
               <SelectItem value="SYSTEM">시스템</SelectItem>
@@ -269,7 +268,6 @@ export function LoginLogsForm({
               <SelectValue placeholder="선택" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">선택 안함</SelectItem>
               <SelectItem value="TOTP">TOTP</SelectItem>
               <SelectItem value="SMS">SMS</SelectItem>
               <SelectItem value="EMAIL">이메일</SelectItem>

@@ -19,15 +19,15 @@ import { generateBreadcrumbs } from "@/lib/breadcrumbs";
 import { useAuthStore } from "@/features/auth";
 import { useBreadcrumb } from "@/contexts/breadcrumb.context";
 
-interface HeaderProps {
+interface MainHeaderProps {
   collapsed?: boolean;
   onToggleSidebar?: () => void;
 }
 
-export function Header({
+export function MainHeader({
   collapsed = false,
   onToggleSidebar
-}: HeaderProps) {
+}: MainHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { dynamicData } = useBreadcrumb();

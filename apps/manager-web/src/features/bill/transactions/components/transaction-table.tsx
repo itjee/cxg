@@ -10,7 +10,7 @@
  * - 행별 상세 보기 액션
  */
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useTransactionStore } from "../stores";
 import { getTransactionColumns } from "./transaction-columns";
 import type { Transaction } from "../types";

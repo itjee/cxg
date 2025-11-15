@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Bell, Shield } from "lucide-react";
 
@@ -10,7 +10,7 @@ export default function SystemConfigPage() {
   const [activeTab, setActiveTab] = useState("general");
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="시스템 설정"
       description="시스템 구성 및 환경을 관리합니다"
     >
@@ -66,6 +66,6 @@ export default function SystemConfigPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

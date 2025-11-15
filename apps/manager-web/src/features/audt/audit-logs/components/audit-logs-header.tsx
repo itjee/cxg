@@ -1,7 +1,7 @@
 "use client";
 
 import { RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 
 interface AuditLogsHeaderProps {
   onRefresh?: () => void;
@@ -25,7 +25,7 @@ export function AuditLogsHeader({ onRefresh, onExport }: AuditLogsHeaderProps) {
   ];
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="감사 로그"
       description="시스템 변경 및 주요 작업 기록을 확인합니다"
       actions={actions}

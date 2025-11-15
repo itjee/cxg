@@ -11,18 +11,18 @@ export interface ActionButtonConfig {
   variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
 }
 
-interface ListPageHeaderProps {
+interface PageHeaderProps {
   title: string;
   description: string;
   actions?: ActionButtonConfig[];
 }
 
 /**
- * 리스트 페이지 헤더 공통 컴포넌트
+ * 페이지 헤더 공통 컴포넌트
  * 페이지 제목, 설명, 가변적 액션 버튼을 포함
  *
  * @example
- * <ListPageHeader
+ * <PageHeader
  *   title="사용자 관리"
  *   description="시스템 사용자 계정을 관리합니다"
  *   actions={[
@@ -32,11 +32,11 @@ interface ListPageHeaderProps {
  *   ]}
  * />
  */
-export function ListPageHeader({
+export function PageHeader({
   title,
   description,
   actions = [],
-}: ListPageHeaderProps) {
+}: PageHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>

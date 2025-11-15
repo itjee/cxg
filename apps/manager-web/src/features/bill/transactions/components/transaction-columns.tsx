@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Eye, MoreVertical } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import {
   Tooltip,
   TooltipContent,
@@ -38,12 +38,12 @@ import type { Transaction, TransactionStatus } from "../types";
 const formatDateTime = (dateString: string | null | undefined) => {
   if (!dateString) return "-";
   const date = new Date(dateString);
-  return date.toLocaleString('ko-KR', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
+  return date.toLocaleString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 
@@ -54,10 +54,10 @@ const formatDateTime = (dateString: string | null | undefined) => {
  * @returns USD 통화 형식 문자열
  */
 const formatCurrency = (amount: number | string) => {
-  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const numAmount = typeof amount === "string" ? parseFloat(amount) : amount;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(numAmount);
 };
 
@@ -138,7 +138,9 @@ export const getTransactionColumns = ({
   // 거래 번호 컬럼 (정렬 가능)
   {
     accessorKey: "transaction_no",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="거래 번호" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="거래 번호" />
+    ),
     cell: ({ row }) => (
       <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("transaction_no")}
@@ -150,7 +152,9 @@ export const getTransactionColumns = ({
   // 거래 유형 컬럼
   {
     accessorKey: "transaction_type",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="유형" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="유형" />
+    ),
     cell: ({ row }) => {
       const type = row.getValue("transaction_type") as string;
       return <div>{transactionTypeLabels[type] || type}</div>;
@@ -160,35 +164,45 @@ export const getTransactionColumns = ({
   // 결제 수단 컬럼
   {
     accessorKey: "payment_method",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="결제 수단" />,
-    cell: ({ row }) => <div className="text-sm">{row.getValue("payment_method")}</div>,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="결제 수단" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{row.getValue("payment_method")}</div>
+    ),
     enableSorting: false,
   },
   // 결제 게이트웨이 컬럼
   {
     accessorKey: "payment_gateway",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="게이트웨이" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="게이트웨이" />
+    ),
     cell: ({ row }) => {
       const gateway = row.getValue("payment_gateway") as string | null;
-      return (
-        <div className="text-sm">{gateway ? gateway : "-"}</div>
-      );
+      return <div className="text-sm">{gateway ? gateway : "-"}</div>;
     },
     enableSorting: true,
   },
   // 금액 컬럼 (정렬 가능)
   {
     accessorKey: "amount",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="금액" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="금액" />
+    ),
     cell: ({ row }) => (
-      <div className="font-medium">{formatCurrency(row.getValue("amount"))}</div>
+      <div className="font-medium">
+        {formatCurrency(row.getValue("amount"))}
+      </div>
     ),
     enableSorting: true,
   },
   // 상태 컬럼 (정렬 가능, 배지 스타일)
   {
     accessorKey: "status",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="상태" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="상태" />
+    ),
     cell: ({ row }) => {
       const status = row.getValue("status") as TransactionStatus;
       return (
@@ -202,9 +216,13 @@ export const getTransactionColumns = ({
   // 처리 시간 컬럼 (정렬 가능)
   {
     accessorKey: "processed_at",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="처리 시간" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="처리 시간" />
+    ),
     cell: ({ row }) => (
-      <div className="text-sm">{formatDateTime(row.getValue("processed_at"))}</div>
+      <div className="text-sm">
+        {formatDateTime(row.getValue("processed_at"))}
+      </div>
     ),
     enableSorting: true,
   },

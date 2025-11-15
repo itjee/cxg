@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Activity, BarChart3, TrendingUp, Users } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="분석 대시보드"
       description="분석 대시보드를 확인합니다"
       
@@ -53,6 +53,6 @@ export default function AnalyticsPage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

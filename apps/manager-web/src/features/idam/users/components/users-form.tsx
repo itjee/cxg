@@ -3,7 +3,7 @@
 /**
  * @file users-form.tsx
  * @description 사용자 생성/수정 폼 컴포넌트 (Presentational)
- * 
+ *
  * React Hook Form과 Zod를 사용한 폼 유효성 검증
  * - 사용자 생성 모드: 모든 필드 입력
  * - 사용자 수정 모드: 기존 데이터 로드
@@ -15,24 +15,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { EntityFormButtons } from "@/components/features";
-import type { Users } from "../types/users.types";
+import type { ManagerUser } from "../types/users.types";
 
 /**
  * 폼 유효성 검증 스키마
  */
 const userFormSchema = z.object({
-  name: z.string().min(1, "사용자명을 입력해주세요"),
-  description: z.string().optional(),
-  is_active: z.boolean().default(true),
+  fullName: z.string().min(1, "사용자명을 입력해주세요"),
+  email: z.string().email("유효한 이메일을 입력해주세요"),
+  phone: z.string(),
+  department: z.string(),
+  position: z.string(),
+  status: z.enum(["ACTIVE", "INACTIVE", "LOCKED"]),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
 
-interface UsersFormProps {
-  initialData?: Users;
+interface ManagerUserFormProps {
+  initialData?: ManagerUser;
   onSubmit: (data: UserFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
@@ -43,7 +44,7 @@ export function UsersForm({
   onSubmit,
   onCancel,
   isLoading = false,
-}: UsersFormProps) {
+}: ManagerUserFormProps) {
   const isEditing = !!initialData;
 
   const {
@@ -51,28 +52,33 @@ export function UsersForm({
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
     watch,
   } = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      description: initialData?.description || "",
-      is_active: initialData?.is_active ?? true,
+      fullName: initialData?.fullName || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || "",
+      department: initialData?.department || "",
+      position: initialData?.position || "",
+      status: initialData?.status || "ACTIVE",
     },
   });
 
   useEffect(() => {
     if (initialData) {
       reset({
-        name: initialData.name,
-        description: initialData.description || "",
-        is_active: initialData.is_active,
+        fullName: initialData.fullName,
+        email: initialData.email,
+        phone: initialData.phone || "",
+        department: initialData.department || "",
+        position: initialData.position || "",
+        status: initialData.status || "ACTIVE",
       });
     }
   }, [initialData, reset]);
 
-  const isActive = watch("is_active");
+  const status = watch("status");
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -84,47 +90,93 @@ export function UsersForm({
         </div>
 
         <div className="space-y-4">
-          {/* 사용자명 */}
+          {/* 전체 이름 */}
           <div className="space-y-2">
-            <Label htmlFor="name">
-              사용자명 <span className="text-red-500">*</span>
+            <Label htmlFor="fullName">
+              전체 이름 <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="name"
-              {...register("name")}
-              placeholder="사용자명을 입력하세요"
+              id="fullName"
+              {...register("fullName")}
+              placeholder="전체 이름을 입력하세요"
               disabled={isLoading}
             />
-            {errors.name && (
-              <p className="text-xs text-red-500">{errors.name.message}</p>
+            {errors.fullName && (
+              <p className="text-xs text-red-500">{errors.fullName.message}</p>
             )}
           </div>
 
-          {/* 설명 */}
+          {/* 이메일 */}
           <div className="space-y-2">
-            <Label htmlFor="description">설명</Label>
-            <Textarea
-              id="description"
-              {...register("description")}
-              placeholder="설명을 입력하세요"
-              rows={3}
+            <Label htmlFor="email">
+              이메일 <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              {...register("email")}
+              placeholder="이메일을 입력하세요"
+              disabled={isLoading}
+            />
+            {errors.email && (
+              <p className="text-xs text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* 전화 */}
+          <div className="space-y-2">
+            <Label htmlFor="phone">전화</Label>
+            <Input
+              id="phone"
+              {...register("phone")}
+              placeholder="전화번호를 입력하세요"
               disabled={isLoading}
             />
           </div>
 
-          {/* 활성 상태 */}
-          <div className="flex items-center justify-between rounded-lg border p-4">
-            <div className="space-y-0.5">
-              <Label className="text-base">활성 상태</Label>
-              <p className="text-sm text-muted-foreground">
-                사용자 활성화 여부를 설정합니다
-              </p>
-            </div>
-            <Switch
-              checked={isActive}
-              onCheckedChange={(checked) => setValue("is_active", checked)}
+          {/* 부서 */}
+          <div className="space-y-2">
+            <Label htmlFor="department">부서</Label>
+            <Input
+              id="department"
+              {...register("department")}
+              placeholder="부서를 입력하세요"
               disabled={isLoading}
             />
+          </div>
+
+          {/* 직책 */}
+          <div className="space-y-2">
+            <Label htmlFor="position">직책</Label>
+            <Input
+              id="position"
+              {...register("position")}
+              placeholder="직책을 입력하세요"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* 상태 */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label className="text-base">사용자 상태</Label>
+              <p className="text-sm text-muted-foreground">
+                {status === "ACTIVE"
+                  ? "활성 상태"
+                  : status === "INACTIVE"
+                  ? "비활성 상태"
+                  : "잠금 상태"}
+              </p>
+            </div>
+            <select
+              {...register("status")}
+              className="px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading}
+            >
+              <option value="ACTIVE">활성</option>
+              <option value="INACTIVE">비활성</option>
+              <option value="LOCKED">잠금</option>
+            </select>
           </div>
         </div>
       </div>

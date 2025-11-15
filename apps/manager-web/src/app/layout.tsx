@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { QueryProvider } from "@/lib/query-provider";
+import { ApolloProvider } from "@/lib/apollo-provider";
 import { AuthProvider } from "@/features/auth";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "sonner";
@@ -23,6 +24,9 @@ const pretendard = localFont({
 export const metadata: Metadata = {
   title: "ConexGrow Manager - AI-Powered Business Support Platform",
   description: "ConexGrow by CXG - Manage tenants, infrastructure, and analytics for your business platform",
+  icons: {
+    icon: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({
@@ -34,9 +38,11 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning className="dark">
       <body className={`${GeistSans.variable} ${pretendard.variable}`}>
         <ThemeProvider defaultTheme="dark" >
-          <QueryProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </QueryProvider>
+          <ApolloProvider>
+            <QueryProvider>
+              <AuthProvider>{children}</AuthProvider>
+            </QueryProvider>
+          </ApolloProvider>
         </ThemeProvider>
         <Toaster />
         <Sonner position="top-right" richColors />

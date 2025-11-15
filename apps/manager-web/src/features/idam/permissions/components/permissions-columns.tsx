@@ -4,7 +4,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2 } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Permissions } from "../types/permissions.types";
 
 interface GetColumnsParams {
@@ -45,9 +45,7 @@ export const getPermissionsColumns = ({
   {
     accessorKey: "description",
     header: "설명",
-    cell: ({ row }) => (
-      <div>{row.getValue("description") || "-"}</div>
-    ),
+    cell: ({ row }) => <div>{row.getValue("description") || "-"}</div>,
   },
   // 상태
   {

@@ -12,15 +12,64 @@ import {
   Loader2
 } from "lucide-react";
 import { StatsCards, StatCardData, ActivityFeed, QuickActions, TenantGrowthChart } from "@/features/dashboard";
+import { useDashboardStats, useDashboardStore } from "@/features/dashboard";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
-  // Calculate stats
+  const router = useRouter();
+  const { setIsRefreshing, isRefreshing } = useDashboardStore();
+
+  // GraphQL로 대시보드 통계 조회
+  const { data, loading, error, refetch } = useDashboardStats();
+
+  // 통계 데이터를 카드 형식으로 변환
   const statsCards: StatCardData[] = useMemo(() => {
+    const stats = data?.dashboard;
+
+    if (!stats) {
+      return [
+        {
+          title: "총 테넌트",
+          value: "0",
+          description: "활성 테넌트 수",
+          icon: <Building2 className="h-5 w-5" />,
+          color: "primary",
+        },
+        {
+          title: "전체 사용자",
+          value: "0",
+          description: "등록된 사용자",
+          icon: <Users className="h-5 w-5" />,
+          color: "success",
+        },
+        {
+          title: "서버 상태",
+          value: "로딩 중...",
+          description: "상태 확인 중",
+          icon: <Server className="h-5 w-5" />,
+          color: "success",
+        },
+        {
+          title: "시스템 활동",
+          value: "0",
+          description: "오늘의 활동 수",
+          icon: <Activity className="h-5 w-5" />,
+          color: "warning",
+        },
+      ];
+    }
+
+    // 서버 상태 색상 결정
+    const statusColor: "success" | "warning" | "danger" | "primary" | "default" =
+      stats.systemStatus === "HEALTHY" ? "success" :
+      stats.systemStatus === "WARNING" ? "warning" :
+      "danger";
+
     return [
       {
         title: "총 테넌트",
-        value: "24",
+        value: stats.totalTenants,
         description: "활성 테넌트 수",
         icon: <Building2 className="h-5 w-5" />,
         color: "primary",
@@ -32,7 +81,7 @@ export default function DashboardPage() {
       },
       {
         title: "전체 사용자",
-        value: "1,847",
+        value: stats.totalUsers.toLocaleString(),
         description: "등록된 사용자",
         icon: <Users className="h-5 w-5" />,
         color: "success",
@@ -44,14 +93,15 @@ export default function DashboardPage() {
       },
       {
         title: "서버 상태",
-        value: "정상",
-        description: "모든 서비스 가동 중",
+        value: stats.systemStatus === "HEALTHY" ? "정상" :
+               stats.systemStatus === "WARNING" ? "경고" : "심각",
+        description: "모든 서비스 상태",
         icon: <Server className="h-5 w-5" />,
-        color: "success",
+        color: statusColor,
       },
       {
         title: "시스템 활동",
-        value: "342",
+        value: stats.todayActivities,
         description: "오늘의 활동 수",
         icon: <Activity className="h-5 w-5" />,
         color: "warning",
@@ -62,7 +112,7 @@ export default function DashboardPage() {
         }
       },
     ];
-  }, []);
+  }, [data]);
 
   const quickActions = [
     {
@@ -70,30 +120,40 @@ export default function DashboardPage() {
       description: "새로운 테넌트 추가",
       icon: Plus,
       color: "primary" as const,
-      onClick: () => console.log("Create tenant")
+      onClick: () => router.push("/tnnt/tenants/create")
     },
     {
       label: "사용자 관리",
       description: "사용자 및 권한 관리",
       icon: Users,
       color: "default" as const,
-      onClick: () => console.log("Manage users")
+      onClick: () => router.push("/idam/users")
     },
     {
       label: "시스템 설정",
       description: "전역 설정 관리",
       icon: Settings,
       color: "default" as const,
-      onClick: () => console.log("System settings")
+      onClick: () => router.push("/settings")
     },
     {
       label: "분석 리포트",
       description: "통계 및 분석 보기",
       icon: BarChart3,
       color: "default" as const,
-      onClick: () => console.log("View analytics")
+      onClick: () => router.push("/reports")
     },
   ];
+
+  // 새로고침 핸들러
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -106,17 +166,30 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors">
-            오늘
-          </button>
-          <button className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors">
-            이번 주
-          </button>
-          <button className="px-4 py-2 text-sm font-medium bg-primary/10 text-primary rounded-lg">
-            이번 달
+          <button
+            onClick={handleRefresh}
+            disabled={loading || isRefreshing}
+            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isRefreshing ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                새로고침 중...
+              </span>
+            ) : (
+              "새로고침"
+            )}
           </button>
         </div>
       </div>
+
+      {/* Error state */}
+      {error && (
+        <div className="p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/20">
+          <p className="text-sm font-medium">데이터를 불러올 수 없습니다</p>
+          <p className="text-xs text-destructive/80 mt-1">{error.message}</p>
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="animate-slide-in-left animate-delay-100">
@@ -132,7 +205,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Activity */}
         <div className="lg:col-span-2 animate-slide-in-left animate-delay-200">
-          <ActivityFeed />
+          <ActivityFeed limit={10} />
         </div>
 
         {/* Quick Actions */}

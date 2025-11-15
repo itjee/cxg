@@ -14,39 +14,41 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2 } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
-import type { Users } from "../types/users.types";
+import { DataTableColumnHeader } from "@/components/data-table";
+import type { ManagerUser } from "../types/users.types";
 
 /**
  * 상수 정의 - 상태별 색상
  */
 const statusColors = {
-  active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+  ACTIVE: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  INACTIVE: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+  LOCKED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
 } as const;
 
 const statusLabels = {
-  active: "활성",
-  inactive: "비활성",
+  ACTIVE: "활성",
+  INACTIVE: "비활성",
+  LOCKED: "잠금",
 } as const;
 
 /**
  * 포맷 함수 - 상태 포맷
  */
-const formatStatus = (isActive: boolean) => {
-  return isActive ? statusLabels.active : statusLabels.inactive;
+const formatStatus = (status: string) => {
+  return statusLabels[status as keyof typeof statusLabels] || status;
 };
 
-const getStatusColor = (isActive: boolean) => {
-  return isActive ? statusColors.active : statusColors.inactive;
+const getStatusColor = (status: string) => {
+  return statusColors[status as keyof typeof statusColors] || statusColors.INACTIVE;
 };
 
 /**
  * 액션 핸들러 타입
  */
 interface GetColumnsParams {
-  onEdit?: (user: Users) => void;
-  onDelete?: (user: Users) => void;
+  onEdit?: (user: ManagerUser) => void;
+  onDelete?: (user: ManagerUser) => void;
 }
 
 /**
@@ -55,7 +57,7 @@ interface GetColumnsParams {
 export const getUsersColumns = ({
   onEdit,
   onDelete,
-}: GetColumnsParams = {}): ColumnDef<Users>[] => [
+}: GetColumnsParams = {}): ColumnDef<ManagerUser>[] => [
   // NO 컬럼
   {
     id: "rowNumber",
@@ -73,35 +75,37 @@ export const getUsersColumns = ({
   },
   // 사용자명
   {
-    accessorKey: "name",
+    accessorKey: "fullName",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="사용자명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-medium">{row.getValue("fullName")}</div>
     ),
   },
-  // 설명
+  // 이메일
   {
-    accessorKey: "description",
-    header: "설명",
+    accessorKey: "email",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="이메일" />
+    ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        {row.getValue("description") || "-"}
+        {row.getValue("email") || "-"}
       </div>
     ),
   },
   // 상태
   {
-    accessorKey: "is_active",
+    accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="상태" />
     ),
     cell: ({ row }) => {
-      const isActive = row.getValue("is_active") as boolean;
+      const status = row.getValue("status") as string;
       return (
-        <Badge variant="outline" className={getStatusColor(isActive)}>
-          {formatStatus(isActive)}
+        <Badge variant="outline" className={getStatusColor(status)}>
+          {formatStatus(status)}
         </Badge>
       );
     },

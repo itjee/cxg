@@ -1,25 +1,28 @@
 /**
- * @file users.store.ts
- * @description Users Zustand 상태 관리
+ * Users Zustand Store
+ *
+ * UI 상태만 관리합니다.
+ * 서버 상태(데이터)는 Apollo Client가 관리합니다.
+ *
+ * @example
+ * const { selectedStatus, currentPage, setSelectedStatus } = useUsersStore();
  */
 
 import { create } from 'zustand';
 import type { Updater } from '@tanstack/react-table';
 
 interface UsersStore {
-  // UI State
-  selectedStatus: 'active' | 'inactive' | '';
+  // ===== UI 상태 =====
+  selectedStatus: 'ACTIVE' | 'INACTIVE' | '';
   currentPage: number;
   itemsPerPage: number;
   globalFilter: string;
   formOpen: boolean;
   selectedId: string | null;
-  
-  // 정렬 상태
   sorting: Array<{ id: string; desc: boolean }>;
 
-  // Actions
-  setSelectedStatus: (status: 'active' | 'inactive' | '') => void;
+  // ===== 액션 =====
+  setSelectedStatus: (status: 'ACTIVE' | 'INACTIVE' | '') => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
   setGlobalFilter: (filter: Updater<string>) => void;
@@ -31,7 +34,7 @@ interface UsersStore {
 }
 
 const initialState = {
-  selectedStatus: '' as 'active' | 'inactive' | '',
+  selectedStatus: '' as 'ACTIVE' | 'INACTIVE' | '',
   currentPage: 0,
   itemsPerPage: 20,
   globalFilter: '',

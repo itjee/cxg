@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useRolesStore } from "../stores/roles.store";
 import { getRolesColumns } from "./roles-columns";
 import type { Roles } from "../types/roles.types";

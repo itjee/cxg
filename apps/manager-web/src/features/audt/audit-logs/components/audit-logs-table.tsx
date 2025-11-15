@@ -1,4 +1,4 @@
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useAuditLogsStore } from "../stores/audit-logs.store";
 import { getAuditLogsColumns } from "./audit-logs-columns";
 import type { AuditLog } from "../types/audit-logs.types";

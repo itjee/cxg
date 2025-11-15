@@ -3,7 +3,7 @@
 /**
  * @file invoice-columns.tsx
  * @description 청구서 테이블 컬럼 정의
- * 
+ *
  * TanStack Table 컬럼 정의 및 포맷 유틸리티
  * - 청구서 번호, 테넌트, 발행일, 마감일, 금액, 상태
  * - 상세 보기 및 PDF 다운로드 액션
@@ -20,7 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Eye, Download, MoreVertical } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import {
   Tooltip,
   TooltipContent,
@@ -31,24 +31,24 @@ import type { Invoice, InvoiceStatus } from "../types/invoice.types";
 
 /**
  * 날짜 포맷 유틸리티 함수
- * 
+ *
  * @param dateString - ISO 8601 날짜 문자열
  * @returns YYYY-MM-DD 형식의 날짜 문자열
  */
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toISOString().split('T')[0];
+  return new Date(dateString).toISOString().split("T")[0];
 };
 
 /**
  * 통화 포맷 유틸리티 함수
- * 
+ *
  * @param amount - 금액
  * @returns USD 통화 형식 문자열
  */
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(amount);
 };
 
@@ -78,24 +78,24 @@ const statusLabels: Record<InvoiceStatus, string> = {
 interface GetColumnsParams {
   /** 청구서 상세 보기 핸들러 */
   onViewDetails?: (invoice: Invoice) => void;
-  
+
   /** PDF 다운로드 핸들러 */
   onDownload?: (invoice: Invoice) => void;
 }
 
 /**
  * 청구서 테이블 컬럼 정의 생성 함수
- * 
+ *
  * @description
  * TanStack Table에 사용할 청구서 컬럼 정의 배열을 생성합니다.
  * - 정렬 가능한 컬럼 (청구서 번호, 테넌트, 발행일, 마감일, 금액, 상태)
  * - 행 번호 자동 계산 (페이지네이션 고려)
  * - 상태별 색상 배지
  * - 액션 메뉴 (상세 보기, PDF 다운로드)
- * 
+ *
  * @param params - 컬럼 정의 파라미터
  * @returns TanStack Table 컬럼 정의 배열
- * 
+ *
  * @example
  * ```typescript
  * const columns = getInvoiceColumns({
@@ -132,7 +132,9 @@ export const getInvoiceColumns = ({
   // 청구서 번호 컬럼 (정렬 가능)
   {
     accessorKey: "invoiceNumber",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="청구서 번호" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="청구서 번호" />
+    ),
     cell: ({ row }) => (
       <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("invoiceNumber")}
@@ -144,37 +146,45 @@ export const getInvoiceColumns = ({
   // 테넌트명 컬럼 (정렬 가능)
   {
     accessorKey: "tenantName",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="테넌트" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="테넌트" />
+    ),
     cell: ({ row }) => <div>{row.getValue("tenantName")}</div>,
     enableSorting: true,
   },
   // 발행일 컬럼 (정렬 가능)
   {
     accessorKey: "issueDate",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="발행일" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="발행일" />
+    ),
     cell: ({ row }) => <div>{formatDate(row.getValue("issueDate"))}</div>,
     enableSorting: true,
   },
   // 마감일 컬럼 (정렬 가능)
   {
     accessorKey: "dueDate",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="마감일" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="마감일" />
+    ),
     cell: ({ row }) => <div>{formatDate(row.getValue("dueDate"))}</div>,
     enableSorting: true,
   },
   // 금액 컬럼 (정렬 가능)
   {
     accessorKey: "amount",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="금액" />,
-    cell: ({ row }) => (
-      <div>{formatCurrency(row.getValue("amount"))}</div>
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="금액" />
     ),
+    cell: ({ row }) => <div>{formatCurrency(row.getValue("amount"))}</div>,
     enableSorting: true,
   },
   // 상태 컬럼 (정렬 가능, 배지 스타일)
   {
     accessorKey: "status",
-    header: ({ column }) => <DataTableColumnHeader column={column} title="상태" />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="상태" />
+    ),
     cell: ({ row }) => {
       const status = row.getValue("status") as InvoiceStatus;
       return (

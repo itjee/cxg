@@ -31,12 +31,11 @@ export function ApiKeysFilters() {
         className="max-w-sm"
       />
       
-      <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+      <Select value={selectedStatus || ""} onValueChange={setSelectedStatus}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="상태" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">전체</SelectItem>
           <SelectItem value="ACTIVE">활성</SelectItem>
           <SelectItem value="INACTIVE">비활성</SelectItem>
           <SelectItem value="REVOKED">취소됨</SelectItem>

@@ -6,7 +6,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DataTableColumnHeader } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/data-table';
 import type { TenantUser, TenantUserStatus } from '../types';
 import { format } from 'date-fns';
 import { Edit, Trash2, Key, UserCircle, Crown } from 'lucide-react';

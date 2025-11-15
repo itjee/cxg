@@ -1,5 +1,5 @@
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { usePoliciesStore } from "../stores/policies.store";
 
 interface PoliciesHeaderProps {
@@ -33,7 +33,7 @@ export function PoliciesHeader({ onRefresh, onExport }: PoliciesHeaderProps) {
 
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="보안 정책"
       description="시스템 보안 정책을 정의하고 관리합니다"
       actions={actions}

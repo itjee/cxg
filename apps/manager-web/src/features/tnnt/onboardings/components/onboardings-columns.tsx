@@ -8,7 +8,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { DataTableColumnHeader } from '@/components/ui/data-table';
+import { DataTableColumnHeader } from '@/components/data-table';
 import type { Onboarding, OnboardingStepStatus, OnboardingStepName } from '../types';
 import { RefreshCw, Eye, Clock, CheckCircle2, XCircle, Loader2, SkipForward, Circle } from 'lucide-react';
 

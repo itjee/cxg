@@ -5,7 +5,7 @@
 
 'use client';
 
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/data-table';
 import { useOnboardingsStore } from '../stores';
 import { getOnboardingsColumns } from './onboardings-columns';
 import type { Onboarding } from '../types';

@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useInvoiceStore } from "../stores";
 
 interface InvoiceHeaderProps {
@@ -13,7 +13,7 @@ export function InvoiceHeader({ onRefresh, onExport }: InvoiceHeaderProps) {
   const { openForm } = useInvoiceStore();
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="청구서 관리"
       description="테넌트별 청구서를 관리합니다"
       actions={[

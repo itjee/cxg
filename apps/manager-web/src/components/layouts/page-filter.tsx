@@ -18,7 +18,7 @@ export interface FilterConfig {
   options?: Array<{ label: string; value: string }>;
 }
 
-interface FilterSectionProps {
+interface PageFilterProps {
   filters: FilterConfig[];
   values: Record<string, string | { startDate?: string; endDate?: string }>;
   onFilterChange: (key: string, value: string | { startDate?: string; endDate?: string }) => void;
@@ -26,13 +26,13 @@ interface FilterSectionProps {
   onExpandChange?: (expanded: boolean) => void;
 }
 
-export function FilterSection({
+export function PageFilter({
   filters,
   values,
   onFilterChange,
   expanded = true,
   onExpandChange,
-}: FilterSectionProps) {
+}: PageFilterProps) {
   const [isExpanded, setIsExpanded] = useState(expanded);
 
   const handleToggle = () => {

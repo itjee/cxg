@@ -3,7 +3,7 @@
  */
 
 // Components
-export { LoginForm } from "./components/login-form";
+export { SigninForm } from "./components/signin-form";
 export { SignupForm } from "./components/signup-form";
 export { ForgotPasswordForm } from "./components/forgot-password-form";
 export { ResetPasswordForm } from "./components/reset-password-form";
@@ -18,6 +18,17 @@ export { useAuthStore } from "./stores/auth.store";
 export { useAuth } from "./hooks/use-auth";
 export { useResetPassword } from "./hooks/use-reset-password";
 
+// Apollo Hooks (Advanced usage)
+export {
+  useSignin,
+  useSignup,
+  useRefreshToken,
+  useLogout,
+  useChangePassword,
+  useForgotPassword,
+  useCurrentUser,
+} from "./hooks/use-auth";
+
 // Services
 export { authService } from "./services/auth.service";
 
@@ -25,12 +36,8 @@ export { authService } from "./services/auth.service";
 export type {
   SigninRequest,
   SignupRequest,
-  LoginRequest,  // Backward compatibility
-  RegisterRequest,  // Backward compatibility
   TokenResponse,
   User,
-  ApiError,
-  EnvelopeResponse,
 } from "./types/auth.types";
 
 export type {

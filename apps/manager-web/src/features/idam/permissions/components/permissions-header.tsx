@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { usePermissionsStore } from "../stores/permissions.store";
 
 interface PermissionsHeaderProps {
@@ -18,5 +18,5 @@ export function PermissionsHeader({ onRefresh, onExport }: PermissionsHeaderProp
     ...(onExport ? [{ label: "내보내기", icon: Download, onClick: onExport, variant: "outline" as const }] : []),
   ];
 
-  return <ListPageHeader title="permission 관리" description="플랫폼 permission를 관리합니다" actions={actions} />;
+  return <PageHeader title="permission 관리" description="플랫폼 permission를 관리합니다" actions={actions} />;
 }

@@ -1,22 +1,62 @@
 /**
  * 인증 관련 커스텀 훅
  * Feature-driven 아키텍처에 따른 재사용 가능한 로직 계층
+ *
+ * 두 가지 방식 제공:
+ * 1. useAuth() - 권장 방식 (UI Logic Hook)
+ *    - 컴포넌트에서 간단하게 사용
+ *    - 글로벌 상태 유지
+ *    - 라우팅 자동 처리
+ *
+ * 2. useSignin(), useSignup() 등 (Apollo Hooks - 고급 사용)
+ *    - Apollo Client를 직접 사용
+ *    - 로컬 상태만 관리
+ *    - 토큰/라우팅 직접 처리 필요
  */
 
 "use client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useMutation, useQuery } from "@apollo/client";
 import { useAuthStore } from "@/features/auth";
+import {
+  SIGNIN,
+  SIGNUP,
+  REFRESH_TOKEN,
+  LOGOUT,
+  CHANGE_PASSWORD,
+  FORGOT_PASSWORD,
+  RESET_PASSWORD,
+  GET_CURRENT_USER,
+  type SigninVariables,
+  type SignupVariables,
+  type ChangePasswordVariables,
+  type ForgotPasswordVariables,
+  type ResetPasswordVariables,
+  type GetCurrentUserResponse,
+} from "@/features/auth/graphql";
 
+// ============================================
+// UI LOGIC HOOKS (권장 방식 - 컴포넌트에서 사용)
+// ============================================
+
+/**
+ * 로그인, 로그아웃, 회원가입 관련 UI 로직
+ * 글로벌 상태 유지 + 라우팅 자동 처리
+ *
+ * @example
+ * const { signin, isLoading, error } = useAuth();
+ * await signin(username, password);
+ */
 export function useAuth() {
   const router = useRouter();
   const {
     user,
     isAuthenticated,
     isLoading: storeLoading,
-    login: storeLogin,
-    register: storeRegister,
+    signin: storeSignin,
+    signup: storeSignup,
     logout: storeLogout,
   } = useAuthStore();
 
@@ -31,7 +71,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      await storeLogin(username, password);
+      await storeSignin(username, password);
       router.push("/core/dashboard");
       return true;
     } catch (err: any) {
@@ -72,7 +112,7 @@ export function useAuth() {
     setIsLoading(true);
 
     try {
-      await storeRegister(username, email, password, fullName);
+      await storeSignup(username, email, password, fullName);
       router.push("/core/dashboard");
       return true;
     } catch (err: any) {
@@ -134,4 +174,138 @@ export function useAuth() {
     logout,
     clearError,
   };
+}
+
+// ============================================
+// APOLLO CLIENT HOOKS (고급 사용 - 선택사항)
+// ============================================
+
+/**
+ * Apollo Client를 직접 사용하는 고급 사용자를 위한 Hooks
+ *
+ * 사용하는 경우:
+ * - Real-time 구독 필요
+ * - 로컬 상태만 필요
+ * - 토큰/라우팅을 직접 처리하고 싶음
+ *
+ * @example
+ * const [signin, { loading, error, data }] = useSignin();
+ * const result = await signin({
+ *   variables: { input: { username, password } }
+ * });
+ */
+
+/**
+ * 로그인 뮤테이션 (Apollo)
+ */
+export function useSignin() {
+  return useMutation<
+    {
+      signin: {
+        accessToken: string;
+        refreshToken: string;
+        tokenType: string;
+        expiresIn: number;
+      };
+    },
+    SigninVariables
+  >(SIGNIN);
+}
+
+/**
+ * 회원가입 뮤테이션 (Apollo)
+ */
+export function useSignup() {
+  return useMutation<
+    {
+      signup: {
+        id: string;
+        username: string;
+        email: string;
+        fullName: string;
+        userType: string;
+        status: string;
+        createdAt: string;
+      };
+    },
+    SignupVariables
+  >(SIGNUP);
+}
+
+/**
+ * 토큰 갱신 뮤테이션 (Apollo)
+ */
+export function useRefreshToken() {
+  return useMutation<{
+    refreshToken: {
+      accessToken: string;
+      refreshToken: string;
+      tokenType: string;
+      expiresIn: number;
+    };
+  }>(REFRESH_TOKEN);
+}
+
+/**
+ * 로그아웃 뮤테이션 (Apollo)
+ */
+export function useLogout() {
+  return useMutation<{
+    logout: {
+      message: string;
+    };
+  }>(LOGOUT);
+}
+
+/**
+ * 비밀번호 변경 뮤테이션 (Apollo)
+ */
+export function useChangePassword() {
+  return useMutation<
+    {
+      changePassword: {
+        message: string;
+      };
+    },
+    ChangePasswordVariables
+  >(CHANGE_PASSWORD);
+}
+
+/**
+ * 비밀번호 찾기 뮤테이션 (Apollo)
+ */
+export function useForgotPassword() {
+  return useMutation<
+    {
+      forgotPassword: {
+        message: string;
+        resetToken?: string;
+      };
+    },
+    ForgotPasswordVariables
+  >(FORGOT_PASSWORD);
+}
+
+/**
+ * 비밀번호 재설정 뮤테이션 (Apollo)
+ */
+export function useResetPassword() {
+  return useMutation<
+    {
+      resetPassword: {
+        message: string;
+      };
+    },
+    ResetPasswordVariables
+  >(RESET_PASSWORD);
+}
+
+/**
+ * 현재 사용자 정보 조회 쿼리 (Apollo)
+ */
+export function useCurrentUser(options = {}) {
+  return useQuery<GetCurrentUserResponse>(GET_CURRENT_USER, {
+    fetchPolicy: "network-only",
+    ...options,
+  });
 }

@@ -6,7 +6,7 @@
  */
 
 import { RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 
 interface ExecutionsHeaderProps {
   onRefresh?: () => void;
@@ -33,7 +33,7 @@ export function ExecutionsHeader({
   ];
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="실행 이력 관리"
       description="워크플로우 실행 이력을 조회하고 관리합니다"
       actions={actions}

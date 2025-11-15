@@ -10,7 +10,7 @@
  * - 검색 설정
  */
 
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/data-table';
 import { useTenantsStore } from '../stores';
 import { getTenantsColumns } from './tenants-columns';
 import type { Tenant } from '../types';

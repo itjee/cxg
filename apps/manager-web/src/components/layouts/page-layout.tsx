@@ -1,7 +1,7 @@
 import React from "react";
 import { cn } from "@/lib/utils";
 
-interface ListPageLayoutProps {
+interface PageLayoutProps {
   title: string;
   description?: string;
   actions?: React.ReactNode;
@@ -9,13 +9,13 @@ interface ListPageLayoutProps {
   className?: string;
 }
 
-export function ListPageLayout({
+export function PageLayout({
   title,
   description,
   actions,
   children,
   className,
-}: ListPageLayoutProps) {
+}: PageLayoutProps) {
   return (
     <div className={cn("flex flex-col gap-6", className)}>
       {/* Header */}

@@ -1,5 +1,5 @@
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useCompliancesStore } from "../stores/compliances.store";
 
 interface CompliancesHeaderProps {
@@ -33,7 +33,7 @@ export function CompliancesHeader({ onRefresh, onExport }: CompliancesHeaderProp
 
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="컴플라이언스 보고서"
       description="GDPR, SOX, HIPAA 등 규정 준수 보고서를 관리합니다"
       actions={actions}

@@ -11,7 +11,7 @@
  * - 페이지네이션 설정
  */
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useSubscriptionsStore } from "../stores/subscriptions.store";
 import { getSubscriptionsColumns } from "./subscriptions-columns";
 import type { Subscription } from "../types/subscriptions.types";

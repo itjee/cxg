@@ -38,6 +38,11 @@ const publicRoutes = [
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // favicon 요청 처리
+  if (pathname === '/favicon.ico') {
+    return NextResponse.next();
+  }
+
   // 보호된 라우트인지 확인
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route));
@@ -74,6 +79,6 @@ export const config = {
      * - favicon.ico (favicon file)
      * - public files (images, etc.)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|logo|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg).*)",
+    "/((?!api|_next/static|_next/image|favicon\\.ico|logos|logo|icons|.*\\.png|.*\\.jpg|.*\\.jpeg|.*\\.svg|.*\\.gif).*)",
   ],
 };

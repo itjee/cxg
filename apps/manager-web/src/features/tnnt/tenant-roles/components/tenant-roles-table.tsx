@@ -5,7 +5,7 @@
 
 'use client';
 
-import { DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/data-table';
 import { useTenantRolesStore } from '../stores';
 import { getTenantRolesColumns } from './tenant-roles-columns';
 import type { TenantRole } from '../types';

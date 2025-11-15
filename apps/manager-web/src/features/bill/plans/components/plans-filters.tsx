@@ -42,12 +42,12 @@ export function PlansFilters() {
         </div>
 
         {/* 상태 필터 */}
-        <Select value={filters.status || ''} onValueChange={(value) => setStatus(value || undefined)}>
+        <Select value={filters.status || 'ALL'} onValueChange={(value) => setStatus(value === 'ALL' ? undefined : value)}>
           <SelectTrigger className="h-9">
             <SelectValue placeholder="상태 선택" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">모두</SelectItem>
+            <SelectItem value="ALL">모두</SelectItem>
             <SelectItem value={PlanStatus.ACTIVE}>활성</SelectItem>
             <SelectItem value={PlanStatus.INACTIVE}>비활성</SelectItem>
             <SelectItem value={PlanStatus.ARCHIVED}>보관</SelectItem>
@@ -55,12 +55,12 @@ export function PlansFilters() {
         </Select>
 
         {/* 유형 필터 */}
-        <Select value={filters.type || ''} onValueChange={(value) => setType(value || undefined)}>
+        <Select value={filters.type || 'ALL'} onValueChange={(value) => setType(value === 'ALL' ? undefined : value)}>
           <SelectTrigger className="h-9">
             <SelectValue placeholder="유형 선택" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">모두</SelectItem>
+            <SelectItem value="ALL">모두</SelectItem>
             <SelectItem value={PlanType.TRIAL}>체험판</SelectItem>
             <SelectItem value={PlanType.STANDARD}>표준</SelectItem>
             <SelectItem value={PlanType.PREMIUM}>프리미엄</SelectItem>
@@ -70,14 +70,14 @@ export function PlansFilters() {
 
         {/* 청구 주기 필터 */}
         <Select
-          value={filters.billing_cycle || ''}
-          onValueChange={(value) => setBillingCycle(value || undefined)}
+          value={filters.billing_cycle || 'ALL'}
+          onValueChange={(value) => setBillingCycle(value === 'ALL' ? undefined : value)}
         >
           <SelectTrigger className="h-9">
             <SelectValue placeholder="청구 주기" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">모두</SelectItem>
+            <SelectItem value="ALL">모두</SelectItem>
             <SelectItem value={BillingCycle.MONTHLY}>월간</SelectItem>
             <SelectItem value={BillingCycle.QUARTERLY}>분기</SelectItem>
             <SelectItem value={BillingCycle.YEARLY}>연간</SelectItem>

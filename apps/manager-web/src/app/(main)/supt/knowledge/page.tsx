@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { ListPageLayout } from "@/components/layouts/list-page-layout";
+import { PageLayout } from "@/components/layouts/page-layout";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { BookOpen, Eye, FileText, ThumbsUp } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function KnowledgePage() {
 
 
   return (
-    <ListPageLayout
+    <PageLayout
       title="지식 베이스"
       description="지식 베이스를 관리합니다"
       
@@ -53,6 +53,6 @@ export default function KnowledgePage() {
       </div>
             </CardContent>
       </Card>
-    </ListPageLayout>
+    </PageLayout>
   );
 }

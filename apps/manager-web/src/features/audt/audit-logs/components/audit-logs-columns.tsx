@@ -1,8 +1,14 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
-import type { AuditLog, EventType, EventCategory, AuditResult, RiskLevel } from "../types/audit-logs.types";
+import type {
+  AuditLog,
+  EventType,
+  EventCategory,
+  AuditResult,
+  RiskLevel,
+} from "../types/audit-logs.types";
 
 const eventTypeLabels: Record<EventType, string> = {
   LOGIN: "로그인",
@@ -146,9 +152,7 @@ export const getAuditLogsColumns = ({
     cell: ({ row }) => {
       const result = row.getValue("result") as AuditResult;
       return (
-        <Badge className={resultColors[result]}>
-          {resultLabels[result]}
-        </Badge>
+        <Badge className={resultColors[result]}>{resultLabels[result]}</Badge>
       );
     },
   },

@@ -30,3 +30,28 @@ export function getCSSVariable(variableName: string): string {
   const varName = variableName.startsWith('--') ? variableName : `--${variableName}`;
   return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
 }
+
+/**
+ * 날짜를 상대 시간으로 변환 (예: "2분 전", "1시간 전")
+ * @param date - 변환할 날짜
+ * @returns 상대 시간 문자열
+ */
+export function getTimeAgo(date: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.round(diffMs / 1000);
+  const diffMins = Math.round(diffSecs / 60);
+  const diffHours = Math.round(diffMins / 60);
+  const diffDays = Math.round(diffHours / 24);
+
+  if (diffSecs < 60) return '방금 전';
+  if (diffMins < 60) return `${diffMins}분 전`;
+  if (diffHours < 24) return `${diffHours}시간 전`;
+  if (diffDays < 30) return `${diffDays}일 전`;
+
+  const diffMonths = Math.round(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}개월 전`;
+
+  const diffYears = Math.round(diffMonths / 12);
+  return `${diffYears}년 전`;
+}

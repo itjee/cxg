@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from "lucide-react";
 
-export function LoginForm() {
+export function SigninForm() {
   const { signin, isLoading, error } = useAuth();
   const [formData, setFormData] = useState({
     username: "",
@@ -52,7 +52,10 @@ export function LoginForm() {
 
       {/* Username Field */}
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-neutral-200 font-medium text-sm">
+        <Label
+          htmlFor="username"
+          className="text-neutral-200 font-medium text-sm"
+        >
           사용자명
         </Label>
         <div className="relative group">
@@ -63,7 +66,9 @@ export function LoginForm() {
             placeholder="admin"
             className="pl-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-neutral-600 focus:border-violet-500/50 focus:bg-white/10 focus:shadow-lg focus:shadow-violet-500/20 rounded-xl transition-all"
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
             required
             disabled={isLoading}
           />
@@ -73,7 +78,10 @@ export function LoginForm() {
       {/* Password Field */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password" className="text-neutral-200 font-medium text-sm">
+          <Label
+            htmlFor="password"
+            className="text-neutral-200 font-medium text-sm"
+          >
             비밀번호
           </Label>
           <Link
@@ -91,7 +99,9 @@ export function LoginForm() {
             placeholder="••••••••"
             className="pl-12 pr-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-neutral-600 focus:border-violet-500/50 focus:bg-white/10 focus:shadow-lg focus:shadow-violet-500/20 rounded-xl transition-all"
             value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, password: e.target.value })
+            }
             required
             disabled={isLoading}
           />
@@ -190,7 +200,9 @@ export function LoginForm() {
         {/* Admin Test Links */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-3 pt-3 border-t border-white/10">
-            <p className="text-xs text-amber-400 mb-2 font-semibold">🧪 테스트 링크</p>
+            <p className="text-xs text-amber-400 mb-2 font-semibold">
+              🧪 테스트 링크
+            </p>
             <Link
               href="/reset-password?username=admin"
               className="text-xs text-amber-300 hover:text-amber-200 transition-colors block"

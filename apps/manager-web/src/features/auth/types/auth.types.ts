@@ -1,5 +1,8 @@
 /**
- * 인증 관련 타입 정의
+ * 인증 관련 타입 정의 (GraphQL 네이티브)
+ *
+ * GraphQL의 camelCase 네이밍을 직접 사용합니다.
+ * REST API 호환성 레이어를 제거하여 불필요한 타입 변환을 줄입니다.
  */
 
 export interface SigninRequest {
@@ -11,38 +14,30 @@ export interface SignupRequest {
   username: string;
   email: string;
   password: string;
-  full_name?: string;
+  fullName?: string;
 }
 
-// Backward compatibility
-export type LoginRequest = SigninRequest;
-export type RegisterRequest = SignupRequest;
-
+/**
+ * GraphQL Token Response (camelCase)
+ * Apollo Client 뮤테이션의 응답을 직접 사용합니다.
+ */
 export interface TokenResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
 }
 
+/**
+ * GraphQL User Response (camelCase)
+ * Apollo Client 쿼리의 응답을 직접 사용합니다.
+ */
 export interface User {
   id: string;
   username: string;
   email: string;
-  full_name: string;
-  user_type: string;
+  fullName: string;
+  userType: string;
   status: string;
-  created_at: string;
-}
-
-export interface ApiError {
-  code: string;
-  message: string;
-  detail: Record<string, any>;
-}
-
-export interface EnvelopeResponse<T> {
-  success: boolean;
-  data: T | null;
-  error: ApiError | null;
+  createdAt: string;
 }

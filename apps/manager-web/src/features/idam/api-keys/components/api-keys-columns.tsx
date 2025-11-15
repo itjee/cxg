@@ -3,7 +3,7 @@
 /**
  * @file api-keys-columns.tsx
  * @description API 키 테이블 컬럼 정의
- * 
+ *
  * TanStack Table 컬럼 정의, 포맷 함수, 상수를 포함합니다.
  * - 상태 색상 및 라벨 매핑
  * - 날짜 포맷 함수
@@ -14,7 +14,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { ApiKey, ApiKeyStatus } from "../types";
 
 /**
@@ -189,7 +189,9 @@ export const getApiKeysColumns = ({
       const expiresAt = row.getValue("expires_at") as string | undefined;
       const isExpired = expiresAt && new Date(expiresAt) < new Date();
       return (
-        <div className={isExpired ? "text-destructive" : "text-muted-foreground"}>
+        <div
+          className={isExpired ? "text-destructive" : "text-muted-foreground"}
+        >
           {formatDate(expiresAt)}
         </div>
       );
@@ -214,7 +216,7 @@ export const getApiKeysColumns = ({
     cell: ({ row }) => {
       const apiKey = row.original;
       const isActive = apiKey.status === "ACTIVE";
-      
+
       return (
         <div className="flex justify-end gap-2">
           <Button

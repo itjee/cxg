@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
 /**
  * @file login-logs-table.tsx
  * @description 로그인 이력 데이터 테이블 컴포넌트
  */
 
-import { DataTable } from '@/components/ui/data-table';
-import { useLoginLogStore } from '../stores';
-import { getLoginLogsColumns } from './login-logs-columns';
-import type { LoginLog } from '../types';
+import { DataTable } from "@/components/data-table";
+import { useLoginLogStore } from "../stores";
+import { getLoginLogsColumns } from "./login-logs-columns";
+import type { LoginLog } from "../types";
 
 interface LoginLogsTableProps {
   data: LoginLog[];
@@ -16,7 +16,11 @@ interface LoginLogsTableProps {
   onDelete?: (log: LoginLog) => void;
 }
 
-export function LoginLogsTable({ data, onViewDetail, onDelete }: LoginLogsTableProps) {
+export function LoginLogsTable({
+  data,
+  onViewDetail,
+  onDelete,
+}: LoginLogsTableProps) {
   const { sorting, setSorting } = useLoginLogStore();
   const columns = getLoginLogsColumns({ onViewDetail, onDelete });
 

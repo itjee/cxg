@@ -10,7 +10,7 @@
 import { useMemo } from "react";
 import { Users as UsersIcon, UserCheck, UserX, Shield } from "lucide-react";
 import { StatsCards } from "@/components/stats/stats-cards";
-import type { Users } from "../types/users.types";
+import type { ManagerUser } from "../types/users.types";
 
 interface StatCardData {
   title: string;
@@ -26,13 +26,13 @@ interface StatCardData {
 }
 
 interface UsersStatsProps {
-  users: Users[];
+  data: ManagerUser[];
 }
 
-export function UsersStats({ users }: UsersStatsProps) {
+export function UsersStats({ data }: UsersStatsProps) {
   const stats: StatCardData[] = useMemo(() => {
-    const total = users.length;
-    const active = users.filter((u) => u.is_active).length;
+    const total = data.length;
+    const active = data.filter((u) => u.status === "ACTIVE").length;
     const inactive = total - active;
     
     // 활성 사용자 비율 계산
@@ -69,7 +69,7 @@ export function UsersStats({ users }: UsersStatsProps) {
         color: "warning" as const,
       },
     ];
-  }, [users]);
+  }, [data]);
 
   return <StatsCards cards={stats} columns={4} />;
 }

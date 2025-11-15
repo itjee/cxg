@@ -58,7 +58,7 @@ class MessageResponse:
 
 
 @strawberry.input(description="로그인 입력")
-class LoginInput:
+class SigninInput:
     """
     로그인 입력 타입
 
@@ -70,7 +70,7 @@ class LoginInput:
 
 
 @strawberry.input(description="회원가입 입력")
-class RegisterInput:
+class SignupInput:
     """
     회원가입 입력 타입
 

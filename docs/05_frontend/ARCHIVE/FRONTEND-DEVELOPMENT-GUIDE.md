@@ -200,7 +200,7 @@ features/[domain]/
 ```typescript
 // features/invoice/components/invoice-columns.tsx
 import { ColumnDef } from "@tanstack/react-table";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Invoice } from "../types";
 
 // 포맷 함수
@@ -307,7 +307,7 @@ export const getInvoiceColumns = ({
 
 ```typescript
 // features/invoice/components/invoice-table.tsx
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { useInvoiceStore } from "../stores";
 import { getInvoiceColumns } from "./invoice-columns";
 import type { Invoice } from "../types";

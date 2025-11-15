@@ -6,7 +6,7 @@
 'use client';
 
 import { Plus, RefreshCw } from 'lucide-react';
-import { ListPageHeader } from '@/components/layouts/list-page-header';
+import { PageHeader } from '@/components/layouts/page-header';
 import { useOnboardingsStore } from '../stores';
 
 interface OnboardingsHeaderProps {
@@ -32,7 +32,7 @@ export function OnboardingsHeader({ onRefresh }: OnboardingsHeaderProps) {
   ];
 
   return (
-    <ListPageHeader
+    <PageHeader
       title="온보딩 프로세스 관리"
       description="테넌트 온보딩 프로세스를 관리합니다"
       actions={actions}

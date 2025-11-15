@@ -1,7 +1,7 @@
 "use client";
 
 import { Plus, RefreshCw, Download } from "lucide-react";
-import { ListPageHeader } from "@/components/layouts/list-page-header";
+import { PageHeader } from "@/components/layouts/page-header";
 import { useRolesStore } from "../stores/roles.store";
 
 interface RolesHeaderProps {
@@ -18,5 +18,5 @@ export function RolesHeader({ onRefresh, onExport }: RolesHeaderProps) {
     ...(onExport ? [{ label: "내보내기", icon: Download, onClick: onExport, variant: "outline" as const }] : []),
   ];
 
-  return <ListPageHeader title="role 관리" description="플랫폼 role를 관리합니다" actions={actions} />;
+  return <PageHeader title="role 관리" description="플랫폼 role를 관리합니다" actions={actions} />;
 }

@@ -1,21 +1,52 @@
 /**
- * @file index.ts
- * @description Users feature public API exports
- * 
- * Feature 외부에서 사용할 수 있는 컴포넌트, 훅, 서비스, 타입, 스토어를 export합니다.
+ * Users Feature - Public API
+ *
+ * Feature 외부에서 사용할 수 있는 공개 인터페이스입니다.
+ * 다른 features에서는 이 index.ts를 통해서만 users feature에 접근합니다.
+ *
+ * @example
+ * // Component
+ * import { UsersTable } from '@/features/idam/users';
+ *
+ * // Hook
+ * import { useManagerUsers, useCreateManagerUser } from '@/features/idam/users';
+ *
+ * // Type
+ * import type { ManagerUser } from '@/features/idam/users';
+ *
+ * // Store
+ * import { useUsersStore } from '@/features/idam/users';
  */
 
-// Components
+// ===== Components =====
 export * from "./components";
 
-// Hooks
-export * from "./hooks/use-users";
+// ===== GraphQL (Hooks & Queries) =====
+export {
+  useManagerUsers,
+  useManagerUser,
+  useCreateManagerUser,
+  useUpdateManagerUser,
+} from "./hooks";
+export type {
+  GetManagerUsersVariables,
+  GetManagerUserVariables,
+  CreateManagerUserVariables,
+  UpdateManagerUserVariables,
+} from "./graphql";
 
-// Services
-export { usersService } from "./services/users.service";
+// ===== Types =====
+export type {
+  ManagerUser,
+  CreateManagerUserRequest,
+  UpdateManagerUserRequest,
+  ManagerUsersListResponse,
+  ManagerUsersQueryParams,
+  // Deprecated types (compatibility)
+  Users,
+  UsersListResponse,
+  UsersQueryParams,
+} from "./types/users.types";
 
-// Types
-export type * from "./types/users.types";
-
-// Stores
+// ===== Store =====
 export { useUsersStore } from "./stores/users.store";

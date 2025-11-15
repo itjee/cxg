@@ -20,12 +20,11 @@ export function PermissionsFilters({ permissions }: PermissionsFiltersProps) {
         <Input placeholder="permission 검색..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10" />
       </div>
       <div className="flex gap-2">
-        <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as "active" | "inactive" | "")}>
+        <Select value={selectedStatus || ""} onValueChange={(value) => setSelectedStatus(value as "active" | "inactive" | "")}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="상태" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">전체</SelectItem>
             <SelectItem value="active">활성</SelectItem>
             <SelectItem value="inactive">비활성</SelectItem>
           </SelectContent>

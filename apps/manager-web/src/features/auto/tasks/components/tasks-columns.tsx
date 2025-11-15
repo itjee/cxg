@@ -3,7 +3,7 @@
 /**
  * @file tasks-columns.tsx
  * @description 스케줄된 작업 테이블 컬럼 정의
- * 
+ *
  * 역할:
  * - TanStack Table 컬럼 정의
  * - 포맷 함수 (날짜, 시간, CRON)
@@ -15,7 +15,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Edit2, Trash2, Play, Pause, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { DataTableColumnHeader } from "@/components/ui/data-table";
+import { DataTableColumnHeader } from "@/components/data-table";
 import type { Task, TaskType, LastRunStatus } from "../types";
 
 /**
@@ -77,7 +77,13 @@ const taskTypeColors: Record<TaskType, "default" | "secondary" | "outline"> = {
 /**
  * 마지막 실행 상태 설정
  */
-const lastRunStatusConfig: Record<LastRunStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const lastRunStatusConfig: Record<
+  LastRunStatus,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+  }
+> = {
   SUCCESS: { label: "성공", variant: "secondary" },
   FAILED: { label: "실패", variant: "destructive" },
   TIMEOUT: { label: "타임아웃", variant: "destructive" },
@@ -136,9 +142,7 @@ export const getTasksColumns = ({
     cell: ({ row }) => {
       const type = row.getValue("task_type") as TaskType;
       return (
-        <Badge variant={taskTypeColors[type]}>
-          {taskTypeLabels[type]}
-        </Badge>
+        <Badge variant={taskTypeColors[type]}>{taskTypeLabels[type]}</Badge>
       );
     },
     filterFn: (row, id, value) => {
@@ -183,7 +187,9 @@ export const getTasksColumns = ({
     accessorKey: "last_run_status",
     header: "마지막 상태",
     cell: ({ row }) => {
-      const status = row.getValue("last_run_status") as LastRunStatus | undefined;
+      const status = row.getValue("last_run_status") as
+        | LastRunStatus
+        | undefined;
       if (!status) return <span className="text-muted-foreground">-</span>;
       const config = lastRunStatusConfig[status];
       return <Badge variant={config.variant}>{config.label}</Badge>;

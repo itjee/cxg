@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/data-table";
 import { usePermissionsStore } from "../stores/permissions.store";
 import { getPermissionsColumns } from "./permissions-columns";
 import type { Permissions } from "../types/permissions.types";
@@ -11,7 +11,11 @@ interface PermissionsTableProps {
   onDelete: (permission: Permissions) => void;
 }
 
-export function PermissionsTable({ data, onEdit, onDelete }: PermissionsTableProps) {
+export function PermissionsTable({
+  data,
+  onEdit,
+  onDelete,
+}: PermissionsTableProps) {
   const { sorting, setSorting } = usePermissionsStore();
   const columns = getPermissionsColumns({ onEdit, onDelete });
 
