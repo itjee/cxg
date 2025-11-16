@@ -44,7 +44,7 @@ def manager_user_role_to_graphql(user_role: UserRoleModel) -> ManagerUserRole:
 
 async def get_manager_user_role_by_id(
     db: AsyncSession, user_role_id: UUID
-) -> ManagerUserRole | None:
+) -> "ManagerUserRole | None":
     """
     ID로 Manager 사용자-역할 매핑 단건 조회
 
@@ -71,7 +71,7 @@ async def get_manager_user_roles(
     role_id: UUID | None = None,
     scope: str | None = None,
     status: str | None = None,
-) -> list[ManagerUserRole]:
+) -> "list[ManagerUserRole]":
     """
     Manager 사용자-역할 매핑 목록 조회
 
@@ -110,7 +110,7 @@ async def get_manager_user_roles(
     )
 
 
-async def get_manager_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[ManagerUserRole]:
+async def get_manager_roles_by_user_id(db: AsyncSession, user_id: UUID) -> "list[ManagerUserRole]":
     """
     특정 사용자에게 할당된 모든 역할 조회
 
@@ -131,7 +131,7 @@ async def get_manager_roles_by_user_id(db: AsyncSession, user_id: UUID) -> list[
     )
 
 
-async def get_manager_users_by_role_id(db: AsyncSession, role_id: UUID) -> list[ManagerUserRole]:
+async def get_manager_users_by_role_id(db: AsyncSession, role_id: UUID) -> "list[ManagerUserRole]":
     """
     특정 역할이 할당된 모든 사용자 조회
 

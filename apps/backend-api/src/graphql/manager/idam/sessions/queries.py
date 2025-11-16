@@ -46,7 +46,7 @@ def manager_session_to_graphql(session: SessionModel) -> ManagerSession:
     )
 
 
-async def get_manager_session_by_id(db: AsyncSession, session_id: UUID) -> ManagerSession | None:
+async def get_manager_session_by_id(db: AsyncSession, session_id: UUID) -> "ManagerSession | None":
     """
     ID로 Manager 세션 단건 조회
 
@@ -71,7 +71,7 @@ async def get_manager_sessions(
     offset: int = 0,
     user_id: UUID | None = None,
     status: str | None = None,
-) -> list[ManagerSession]:
+) -> "list[ManagerSession]":
     """
     Manager 세션 목록 조회
 

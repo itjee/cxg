@@ -41,7 +41,7 @@ def manager_role_to_graphql(role: RoleModel) -> ManagerRole:
     )
 
 
-async def get_manager_role_by_id(db: AsyncSession, role_id: UUID) -> ManagerRole | None:
+async def get_manager_role_by_id(db: AsyncSession, role_id: UUID) -> "ManagerRole | None":
     """
     ID로 Manager 역할 단건 조회
 
@@ -66,7 +66,7 @@ async def get_manager_roles(
     offset: int = 0,
     category: str | None = None,
     status: str | None = None,
-) -> list[ManagerRole]:
+) -> "list[ManagerRole]":
     """
     Manager 역할 목록 조회
 

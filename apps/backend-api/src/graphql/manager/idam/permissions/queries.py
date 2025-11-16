@@ -44,7 +44,7 @@ def manager_permission_to_graphql(permission: PermissionModel) -> ManagerPermiss
 
 async def get_manager_permission_by_id(
     db: AsyncSession, permission_id: UUID
-) -> ManagerPermission | None:
+) -> "ManagerPermission | None":
     """
     ID로 Manager 권한 단건 조회
 
@@ -70,7 +70,7 @@ async def get_manager_permissions(
     category: str | None = None,
     resource: str | None = None,
     status: str | None = None,
-) -> list[ManagerPermission]:
+) -> "list[ManagerPermission]":
     """
     Manager 권한 목록 조회
 

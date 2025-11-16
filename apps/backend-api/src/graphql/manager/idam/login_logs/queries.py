@@ -49,7 +49,7 @@ def manager_login_log_to_graphql(log: LoginLogModel) -> ManagerLoginLog:
     )
 
 
-async def get_manager_login_log_by_id(db: AsyncSession, log_id: UUID) -> ManagerLoginLog | None:
+async def get_manager_login_log_by_id(db: AsyncSession, log_id: UUID) -> "ManagerLoginLog | None":
     """
     ID로 Manager 로그인 이력 단건 조회
 
@@ -77,7 +77,7 @@ async def get_manager_login_logs(
     success: bool | None = None,
     start_date: datetime | None = None,
     end_date: datetime | None = None,
-) -> list[ManagerLoginLog]:
+) -> "list[ManagerLoginLog]":
     """
     Manager 로그인 이력 목록 조회
 

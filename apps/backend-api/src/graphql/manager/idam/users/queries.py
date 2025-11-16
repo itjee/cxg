@@ -49,7 +49,7 @@ def manager_user_to_graphql(user: UserModel) -> ManagerUser:
     )
 
 
-async def get_manager_user_by_id(db: AsyncSession, user_id: UUID) -> ManagerUser | None:
+async def get_manager_user_by_id(db: AsyncSession, user_id: UUID) -> "ManagerUser | None":
     """
     ID로 Manager 사용자 단건 조회
 
@@ -74,7 +74,7 @@ async def get_manager_users(
     offset: int = 0,
     user_type: str | None = None,
     status: str | None = None,
-) -> list[ManagerUser]:
+) -> "list[ManagerUser]":
     """
     Manager 사용자 목록 조회
 

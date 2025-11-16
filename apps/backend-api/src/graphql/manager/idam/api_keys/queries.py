@@ -51,7 +51,7 @@ def manager_api_key_to_graphql(api_key: ApiKeyModel) -> ManagerApiKey:
     )
 
 
-async def get_manager_api_key_by_id(db: AsyncSession, api_key_id: UUID) -> ManagerApiKey | None:
+async def get_manager_api_key_by_id(db: AsyncSession, api_key_id: UUID) -> "ManagerApiKey | None":
     """
     ID로 Manager API 키 단건 조회
 
@@ -76,7 +76,7 @@ async def get_manager_api_keys(
     offset: int = 0,
     user_id: UUID | None = None,
     status: str | None = None,
-) -> list[ManagerApiKey]:
+) -> "list[ManagerApiKey]":
     """
     Manager API 키 목록 조회
 

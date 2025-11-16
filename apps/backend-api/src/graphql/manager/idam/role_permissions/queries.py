@@ -47,7 +47,7 @@ def manager_role_permission_to_graphql(
 
 async def get_manager_role_permission_by_id(
     db: AsyncSession, role_permission_id: UUID
-) -> ManagerRolePermission | None:
+) -> "ManagerRolePermission | None":
     """ID로 Manager 역할-권한 매핑 조회
 
     Args:
@@ -71,7 +71,7 @@ async def get_manager_role_permissions(
     offset: int = 0,
     role_id: UUID | None = None,
     permission_id: UUID | None = None,
-) -> list[ManagerRolePermission]:
+) -> "list[ManagerRolePermission]":
     """Manager 역할-권한 매핑 목록 조회
 
     Args:
@@ -103,7 +103,7 @@ async def get_manager_role_permissions(
 
 async def get_manager_permissions_by_role_id(
     db: AsyncSession, role_id: UUID
-) -> list[ManagerRolePermission]:
+) -> "list[ManagerRolePermission]":
     """특정 역할에 할당된 모든 권한 조회
 
     Args:
@@ -122,7 +122,7 @@ async def get_manager_permissions_by_role_id(
 
 async def get_manager_roles_by_permission_id(
     db: AsyncSession, permission_id: UUID
-) -> list[ManagerRolePermission]:
+) -> "list[ManagerRolePermission]":
     """특정 권한이 할당된 모든 역할 조회
 
     Args:
