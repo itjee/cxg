@@ -4,15 +4,10 @@
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING
-from uuid import UUID
 
 import strawberry
 
 from src.graphql.common import Node
-
-if TYPE_CHECKING:
-    from ..permissions.types import ManagerPermission
 
 
 @strawberry.type(name="ManagerRole", description="Manager 역할")
@@ -47,18 +42,18 @@ class ManagerRole(Node):
     created_at: datetime = strawberry.field(description="생성일시")
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
-    @strawberry.field(description="역할에 할당된 권한 목록")
-    async def permissions(self, info) -> "list[ManagerPermission]":
-        """
-        역할에 할당된 권한 목록을 조회하는 필드 resolver
+    # @strawberry.field(description="역할에 할당된 권한 목록")
+    # async def permissions(self, info) -> "list[ManagerPermission]":
+    #     """
+    #     역할에 할당된 권한 목록을 조회하는 필드 resolver
 
-        Role과 Permission은 Many-to-Many 관계로,
-        RolePermission 중간 테이블을 통해 연결됩니다.
-        """
-        from .resolvers import resolve_manager_role_permissions
+    #     Role과 Permission은 Many-to-Many 관계로,
+    #     RolePermission 중간 테이블을 통해 연결됩니다.
+    #     """
+    #     from .resolvers import resolve_manager_role_permissions
 
-        # strawberry.ID를 UUID로 변환하여 resolver 호출
-        return await resolve_manager_role_permissions(UUID(self.id), info)
+    #     # strawberry.ID를 UUID로 변환하여 resolver 호출
+    #     return await resolve_manager_role_permissions(UUID(self.id), info)
 
 
 @strawberry.input(description="Manager 역할 생성 입력")

@@ -5,16 +5,10 @@ RBAC(Role-Based Access Control) 시스템의 권한을 정의합니다.
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING
-from uuid import UUID
 
 import strawberry
 
 from src.graphql.common import Node
-
-
-if TYPE_CHECKING:
-    from ..roles.types import ManagerRole
 
 
 @strawberry.type(name="ManagerPermission", description="Manager 권한")
@@ -81,20 +75,20 @@ class ManagerPermission(Node):
     created_at: datetime = strawberry.field(description="생성일시")
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
-    @strawberry.field(description="이 권한을 가진 역할 목록")
-    async def roles(self, info) -> "list[ManagerRole]":
-        """
-        권한에 할당된 역할 목록 조회
+    # @strawberry.field(description="이 권한을 가진 역할 목록")
+    # async def roles(self, info) -> "list[ManagerRole]":
+    #     """
+    #     권한에 할당된 역할 목록 조회
 
-        이 권한이 어떤 역할들에 할당되어 있는지 확인할 수 있습니다.
-        역할을 통해 간접적으로 사용자에게 권한이 부여됩니다.
+    #     이 권한이 어떤 역할들에 할당되어 있는지 확인할 수 있습니다.
+    #     역할을 통해 간접적으로 사용자에게 권한이 부여됩니다.
 
-        Returns:
-            list[ManagerRole]: 이 권한을 가진 역할 목록
-        """
-        from .resolvers import resolve_manager_permission_roles
+    #     Returns:
+    #         list[ManagerRole]: 이 권한을 가진 역할 목록
+    #     """
+    #     from .resolvers import resolve_manager_permission_roles
 
-        return await resolve_manager_permission_roles(UUID(self.id), info)
+    #     return await resolve_manager_permission_roles(UUID(self.id), info)
 
 
 @strawberry.input(description="Manager 권한 생성 입력")

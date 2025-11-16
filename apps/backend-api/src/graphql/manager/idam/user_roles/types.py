@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 import strawberry
@@ -13,8 +14,6 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from datetime import datetime
-
     from ..roles.types import ManagerRole
     from ..users.types import ManagerUser
 
