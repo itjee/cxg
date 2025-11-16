@@ -15,7 +15,7 @@ from src.models.manager.idam.api_key import ApiKey as ApiKeyModel
 from .types import ManagerApiKey
 
 
-def api_key_to_graphql(api_key: ApiKeyModel) -> ManagerApiKey:
+def manager_api_key_to_graphql(api_key: ApiKeyModel) -> ManagerApiKey:
     """
     ApiKeyModel(DB 모델)을 ManagerApiKey(GraphQL 타입)으로 변환
 
@@ -66,7 +66,7 @@ async def get_manager_api_key_by_id(db: AsyncSession, api_key_id: UUID) -> Manag
         db=db,
         model_class=ApiKeyModel,
         id_=api_key_id,
-        to_graphql=api_key_to_graphql,
+        to_graphql=manager_api_key_to_graphql,
     )
 
 
@@ -103,7 +103,7 @@ async def get_manager_api_keys(
     return await get_list(
         db=db,
         model_class=ApiKeyModel,
-        to_graphql=api_key_to_graphql,
+        to_graphql=manager_api_key_to_graphql,
         limit=limit,
         offset=offset,
         order_by=ApiKeyModel.created_at.desc(),  # 최신 생성 순
@@ -120,7 +120,7 @@ class ManagerApiKeyQueries:
     """
 
     @strawberry.field(description="Manager API 키 조회 (ID)")
-    async def manager_api_key(self, info, id: strawberry.ID) -> ManagerApiKey | None:
+    async def api_key(self, info, id: strawberry.ID) -> "ManagerApiKey | None":
         """
         ID로 API 키 단건 조회
 
@@ -138,14 +138,14 @@ class ManagerApiKeyQueries:
         return await get_manager_api_key_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager API 키 목록")
-    async def manager_api_keys(
+    async def api_keys(
         self,
         info,
         limit: int = 20,
         offset: int = 0,
         user_id: UUID | None = None,
         status: str | None = None,
-    ) -> list[ManagerApiKey]:
+    ) -> "list[ManagerApiKey]":
         """
         API 키 목록 조회 (페이징 및 필터링 지원)
 

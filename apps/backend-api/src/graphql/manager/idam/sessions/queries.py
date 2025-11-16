@@ -15,7 +15,7 @@ from src.models.manager.idam.session import Session as SessionModel
 from .types import ManagerSession
 
 
-def session_to_graphql(session: SessionModel) -> ManagerSession:
+def manager_session_to_graphql(session: SessionModel) -> ManagerSession:
     """
     SessionModel(DB 모델)을 ManagerSession(GraphQL 타입)으로 변환
 
@@ -61,7 +61,7 @@ async def get_manager_session_by_id(db: AsyncSession, session_id: UUID) -> Manag
         db=db,
         model_class=SessionModel,
         id_=session_id,
-        to_graphql=session_to_graphql,
+        to_graphql=manager_session_to_graphql,
     )
 
 
@@ -96,7 +96,7 @@ async def get_manager_sessions(
     return await get_list(
         db=db,
         model_class=SessionModel,
-        to_graphql=session_to_graphql,
+        to_graphql=manager_session_to_graphql,
         limit=limit,
         offset=offset,
         order_by=SessionModel.created_at.desc(),  # 최신 순으로 정렬
@@ -113,7 +113,7 @@ class ManagerSessionQueries:
     """
 
     @strawberry.field(description="Manager 세션 조회 (ID)")
-    async def manager_session(self, info, id: strawberry.ID) -> ManagerSession | None:
+    async def session(self, info, id: strawberry.ID) -> "ManagerSession | None":
         """
         ID로 세션 단건 조회
 
@@ -127,14 +127,14 @@ class ManagerSessionQueries:
         return await get_manager_session_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 세션 목록")
-    async def manager_sessions(
+    async def sessions(
         self,
         info,
         limit: int = 20,
         offset: int = 0,
         user_id: strawberry.ID | None = None,
         status: str | None = None,
-    ) -> list[ManagerSession]:
+    ) -> "list[ManagerSession]":
         """
         세션 목록 조회 (페이징 및 필터링 지원)
 

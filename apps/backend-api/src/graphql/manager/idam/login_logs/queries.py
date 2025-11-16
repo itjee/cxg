@@ -16,7 +16,7 @@ from src.models.manager.idam.login_log import LoginLog as LoginLogModel
 from .types import ManagerLoginLog
 
 
-def login_log_to_graphql(log: LoginLogModel) -> ManagerLoginLog:
+def manager_login_log_to_graphql(log: LoginLogModel) -> ManagerLoginLog:
     """
     LoginLogModel(DB 모델)을 ManagerLoginLog(GraphQL 타입)으로 변환
 
@@ -64,7 +64,7 @@ async def get_manager_login_log_by_id(db: AsyncSession, log_id: UUID) -> Manager
         db=db,
         model_class=LoginLogModel,
         id_=log_id,
-        to_graphql=login_log_to_graphql,
+        to_graphql=manager_login_log_to_graphql,
     )
 
 
@@ -131,7 +131,7 @@ async def get_manager_login_logs(
     return await get_list(
         db=db,
         model_class=LoginLogModel,
-        to_graphql=login_log_to_graphql,
+        to_graphql=manager_login_log_to_graphql,
         limit=limit,
         offset=offset,
         order_by=LoginLogModel.created_at.desc(),  # 최신 순
@@ -149,7 +149,7 @@ class ManagerLoginLogQueries:
     """
 
     @strawberry.field(description="Manager 로그인 이력 조회 (ID)")
-    async def manager_login_log(self, info, id: strawberry.ID) -> ManagerLoginLog | None:
+    async def login_log(self, info, id: strawberry.ID) -> "ManagerLoginLog | None":
         """
         ID로 로그인 이력 단건 조회
 
@@ -163,7 +163,7 @@ class ManagerLoginLogQueries:
         return await get_manager_login_log_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 로그인 이력 목록")
-    async def manager_login_logs(
+    async def login_logs(
         self,
         info,
         limit: int = 50,
@@ -173,7 +173,7 @@ class ManagerLoginLogQueries:
         success: bool | None = None,
         start_date: datetime | None = None,
         end_date: datetime | None = None,
-    ) -> list[ManagerLoginLog]:
+    ) -> "list[ManagerLoginLog]":
         """
         로그인 이력 목록 조회 (페이징 및 필터링 지원)
 

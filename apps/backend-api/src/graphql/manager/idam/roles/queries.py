@@ -12,10 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.role import Role as RoleModel
 
-from .types import Role
+from .types import ManagerRole
 
 
-def role_to_graphql(role: RoleModel) -> Role:
+def manager_role_to_graphql(role: RoleModel) -> ManagerRole:
     """
     RoleModel(DB 모델)을 Role(GraphQL 타입)으로 변환
 
@@ -23,9 +23,9 @@ def role_to_graphql(role: RoleModel) -> Role:
         role: 데이터베이스 역할 모델
 
     Returns:
-        Role: GraphQL 역할 타입
+        ManagerRole: GraphQL 역할 타입
     """
-    return Role(
+    return ManagerRole(
         id=strawberry.ID(str(role.id)),
         code=role.code,
         name=role.name,
@@ -41,7 +41,7 @@ def role_to_graphql(role: RoleModel) -> Role:
     )
 
 
-async def get_role_by_id(db: AsyncSession, role_id: UUID) -> Role | None:
+async def get_manager_role_by_id(db: AsyncSession, role_id: UUID) -> ManagerRole | None:
     """
     ID로 Manager 역할 단건 조회
 
@@ -56,17 +56,17 @@ async def get_role_by_id(db: AsyncSession, role_id: UUID) -> Role | None:
         db=db,
         model_class=RoleModel,
         id_=role_id,
-        to_graphql=role_to_graphql,
+        to_graphql=manager_role_to_graphql,
     )
 
 
-async def get_roles(
+async def get_manager_roles(
     db: AsyncSession,
     limit: int = 20,
     offset: int = 0,
     category: str | None = None,
     status: str | None = None,
-) -> list[Role]:
+) -> list[ManagerRole]:
     """
     Manager 역할 목록 조회
 
@@ -91,7 +91,7 @@ async def get_roles(
     return await get_list(
         db=db,
         model_class=RoleModel,
-        to_graphql=role_to_graphql,
+        to_graphql=manager_role_to_graphql,
         limit=limit,
         offset=offset,
         order_by=RoleModel.priority,  # 우선순위 순으로 정렬
@@ -100,7 +100,7 @@ async def get_roles(
 
 
 @strawberry.type
-class RoleQueries:
+class ManagerRoleQueries:
     """
     Manager IDAM Roles Query
 
@@ -108,7 +108,7 @@ class RoleQueries:
     """
 
     @strawberry.field(description="Manager 역할 조회 (ID)")
-    async def role(self, info, id: strawberry.ID) -> Role | None:
+    async def role(self, info, id: strawberry.ID) -> "ManagerRole | None":
         """
         ID로 역할 단건 조회
 
@@ -119,7 +119,7 @@ class RoleQueries:
             Role: 역할 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await get_role_by_id(db, UUID(id))
+        return await get_manager_role_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 역할 목록")
     async def roles(
@@ -129,7 +129,7 @@ class RoleQueries:
         offset: int = 0,
         category: str | None = None,
         status: str | None = None,
-    ) -> list[Role]:
+    ) -> "list[ManagerRole]":
         """
         역할 목록 조회 (페이징 및 필터링 지원)
 
@@ -140,7 +140,7 @@ class RoleQueries:
             status: 상태 필터
 
         Returns:
-            list[Role]: 역할 객체 리스트
+            list[ManagerRole]: 역할 객체 리스트
         """
         db = info.context.manager_db_session
-        return await get_roles(db, limit, offset, category, status)
+        return await get_manager_roles(db, limit, offset, category, status)

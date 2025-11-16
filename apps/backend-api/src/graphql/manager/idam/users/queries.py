@@ -12,10 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.user import User as UserModel
 
-from .types import User
+from .types import ManagerUser
 
 
-def user_to_graphql(user: UserModel) -> User:
+def manager_user_to_graphql(user: UserModel) -> ManagerUser:
     """
     UserModel(DB 모델)을 User(GraphQL 타입)으로 변환
 
@@ -23,9 +23,9 @@ def user_to_graphql(user: UserModel) -> User:
         user: 데이터베이스 사용자 모델
 
     Returns:
-        User: GraphQL 사용자 타입
+        ManagerUser: GraphQL 사용자 타입
     """
-    return User(
+    return ManagerUser(
         id=strawberry.ID(str(user.id)),
         user_type=user.user_type,
         full_name=user.full_name,
@@ -49,7 +49,7 @@ def user_to_graphql(user: UserModel) -> User:
     )
 
 
-async def get_user_by_id(db: AsyncSession, user_id: UUID) -> User | None:
+async def get_manager_user_by_id(db: AsyncSession, user_id: UUID) -> ManagerUser | None:
     """
     ID로 Manager 사용자 단건 조회
 
@@ -64,17 +64,17 @@ async def get_user_by_id(db: AsyncSession, user_id: UUID) -> User | None:
         db=db,
         model_class=UserModel,
         id_=user_id,
-        to_graphql=user_to_graphql,
+        to_graphql=manager_user_to_graphql,
     )
 
 
-async def get_users(
+async def get_manager_users(
     db: AsyncSession,
     limit: int = 20,
     offset: int = 0,
     user_type: str | None = None,
     status: str | None = None,
-) -> list[User]:
+) -> list[ManagerUser]:
     """
     Manager 사용자 목록 조회
 
@@ -99,7 +99,7 @@ async def get_users(
     return await get_list(
         db=db,
         model_class=UserModel,
-        to_graphql=user_to_graphql,
+        to_graphql=manager_user_to_graphql,
         limit=limit,
         offset=offset,
         order_by=UserModel.created_at.desc(),  # 최신 순으로 정렬
@@ -108,7 +108,7 @@ async def get_users(
 
 
 @strawberry.type
-class UserQueries:
+class ManagerUserQueries:
     """
     Manager IDAM Users Query
 
@@ -116,7 +116,7 @@ class UserQueries:
     """
 
     @strawberry.field(description="Manager 사용자 조회 (ID)")
-    async def user(self, info, id: strawberry.ID) -> User | None:
+    async def user(self, info, id: strawberry.ID) -> "ManagerUser | None":
         """
         ID로 사용자 단건 조회
 
@@ -127,7 +127,7 @@ class UserQueries:
             User: 사용자 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await get_user_by_id(db, UUID(id))
+        return await get_manager_user_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 사용자 목록")
     async def users(
@@ -137,7 +137,7 @@ class UserQueries:
         offset: int = 0,
         user_type: str | None = None,
         status: str | None = None,
-    ) -> list[User]:
+    ) -> "list[ManagerUser]":
         """
         사용자 목록 조회 (페이징 및 필터링 지원)
 
@@ -151,4 +151,4 @@ class UserQueries:
             list[User]: 사용자 객체 리스트
         """
         db = info.context.manager_db_session
-        return await get_users(db, limit, offset, user_type, status)
+        return await get_manager_users(db, limit, offset, user_type, status)

@@ -12,10 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.permission import Permission as PermissionModel
 
-from .types import Permission
+from .types import ManagerPermission
 
 
-def permission_to_graphql(permission: PermissionModel) -> Permission:
+def manager_permission_to_graphql(permission: PermissionModel) -> ManagerPermission:
     """
     PermissionModel(DB 모델)을 Permission(GraphQL 타입)으로 변환
 
@@ -23,9 +23,9 @@ def permission_to_graphql(permission: PermissionModel) -> Permission:
         permission: 데이터베이스 권한 모델
 
     Returns:
-        Permission: GraphQL 타입
+        ManagerPermission: GraphQL 타입
     """
-    return Permission(
+    return ManagerPermission(
         id=strawberry.ID(str(permission.id)),
         code=permission.code,
         name=permission.name,
@@ -42,9 +42,9 @@ def permission_to_graphql(permission: PermissionModel) -> Permission:
     )
 
 
-async def get_permission_by_id(
+async def get_manager_permission_by_id(
     db: AsyncSession, permission_id: UUID
-) -> Permission | None:
+) -> ManagerPermission | None:
     """
     ID로 Manager 권한 단건 조회
 
@@ -59,18 +59,18 @@ async def get_permission_by_id(
         db=db,
         model_class=PermissionModel,
         id_=permission_id,
-        to_graphql=permission_to_graphql,
+        to_graphql=manager_permission_to_graphql,
     )
 
 
-async def get_permissions(
+async def get_manager_permissions(
     db: AsyncSession,
     limit: int = 50,
     offset: int = 0,
     category: str | None = None,
     resource: str | None = None,
     status: str | None = None,
-) -> list[Permission]:
+) -> list[ManagerPermission]:
     """
     Manager 권한 목록 조회
 
@@ -111,7 +111,7 @@ async def get_permissions(
     return await get_list(
         db=db,
         model_class=PermissionModel,
-        to_graphql=permission_to_graphql,
+        to_graphql=manager_permission_to_graphql,
         limit=limit,
         offset=offset,
         order_by=[
@@ -124,7 +124,7 @@ async def get_permissions(
 
 
 @strawberry.type
-class PermissionQueries:
+class ManagerPermissionQueries:
     """
     Manager IDAM Permissions Query
 
@@ -132,7 +132,7 @@ class PermissionQueries:
     """
 
     @strawberry.field(description="Manager 권한 조회 (ID)")
-    async def permission(self, info, id: strawberry.ID) -> Permission | None:
+    async def permission(self, info, id: strawberry.ID) -> "ManagerPermission | None":
         """
         ID로 권한 단건 조회
 
@@ -143,7 +143,7 @@ class PermissionQueries:
             Permission: 권한 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await get_permission_by_id(db, UUID(id))
+        return await get_manager_permission_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 권한 목록")
     async def permissions(
@@ -154,7 +154,7 @@ class PermissionQueries:
         category: str | None = None,
         resource: str | None = None,
         status: str | None = None,
-    ) -> list[Permission]:
+    ) -> "list[ManagerPermission]":
         """
         권한 목록 조회 (페이징 및 필터링 지원)
 
@@ -187,4 +187,4 @@ class PermissionQueries:
             }
         """
         db = info.context.manager_db_session
-        return await get_permissions(db, limit, offset, category, resource, status)
+        return await get_manager_permissions(db, limit, offset, category, resource, status)

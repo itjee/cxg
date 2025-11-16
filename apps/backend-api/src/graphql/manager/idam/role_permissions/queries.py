@@ -19,9 +19,10 @@ from src.models.manager.idam.role_permission import RolePermission as RolePermis
 from .types import ManagerRolePermission
 
 
-def role_permission_to_graphql(role_permission: RolePermissionModel) -> ManagerRolePermission:
-    """RolePermissionModel을 ManagerRolePermission GraphQL 타입으로 변환
-
+def manager_role_permission_to_graphql(
+    role_permission: RolePermissionModel,
+) -> ManagerRolePermission:
+    """RolePermissionModel을 RolePermission GraphQL 타입으로 변환
     Args:
         role_permission: SQLAlchemy 모델 인스턴스
 
@@ -60,7 +61,7 @@ async def get_manager_role_permission_by_id(
         db=db,
         model_class=RolePermissionModel,
         id_=role_permission_id,
-        to_graphql=role_permission_to_graphql,
+        to_graphql=manager_role_permission_to_graphql,
     )
 
 
@@ -92,7 +93,7 @@ async def get_manager_role_permissions(
     return await get_list(
         db=db,
         model_class=RolePermissionModel,
-        to_graphql=role_permission_to_graphql,
+        to_graphql=manager_role_permission_to_graphql,
         limit=limit,
         offset=offset,
         order_by=RolePermissionModel.created_at.desc(),
@@ -100,7 +101,7 @@ async def get_manager_role_permissions(
     )
 
 
-async def get_permissions_by_role_id(
+async def get_manager_permissions_by_role_id(
     db: AsyncSession, role_id: UUID
 ) -> list[ManagerRolePermission]:
     """특정 역할에 할당된 모든 권한 조회
@@ -119,7 +120,7 @@ async def get_permissions_by_role_id(
     )
 
 
-async def get_roles_by_permission_id(
+async def get_manager_roles_by_permission_id(
     db: AsyncSession, permission_id: UUID
 ) -> list[ManagerRolePermission]:
     """특정 권한이 할당된 모든 역할 조회
@@ -146,9 +147,7 @@ class ManagerRolePermissionQueries:
     """
 
     @strawberry.field(description="Manager 역할-권한 매핑 조회 (ID)")
-    async def manager_role_permission(
-        self, info, id: strawberry.ID
-    ) -> ManagerRolePermission | None:
+    async def role_permission(self, info, id: strawberry.ID) -> "ManagerRolePermission | None":
         """Manager 역할-권한 매핑 단건 조회
 
         특정 ID의 역할-권한 매핑을 조회합니다.
@@ -157,14 +156,14 @@ class ManagerRolePermissionQueries:
         return await get_manager_role_permission_by_id(db, UUID(id))
 
     @strawberry.field(description="Manager 역할-권한 매핑 목록")
-    async def manager_role_permissions(
+    async def role_permissions(
         self,
         info,
         limit: int = 50,
         offset: int = 0,
         role_id: strawberry.ID | None = None,
         permission_id: strawberry.ID | None = None,
-    ) -> list[ManagerRolePermission]:
+    ) -> "list[ManagerRolePermission]":
         """Manager 역할-권한 매핑 목록 조회
 
         역할 ID 또는 권한 ID로 필터링하여 매핑 목록을 조회합니다.
@@ -180,23 +179,23 @@ class ManagerRolePermissionQueries:
         )
 
     @strawberry.field(description="역할에 할당된 권한 목록")
-    async def manager_permissions_by_role(
+    async def permissions_by_role(
         self, info, role_id: strawberry.ID
-    ) -> list[ManagerRolePermission]:
+    ) -> "list[ManagerRolePermission]":
         """특정 역할에 할당된 모든 권한 조회
 
         역할 ID로 해당 역할이 가진 모든 권한을 조회합니다.
         """
         db = info.context.manager_db_session
-        return await get_permissions_by_role_id(db, UUID(role_id))
+        return await get_manager_permissions_by_role_id(db, UUID(role_id))
 
     @strawberry.field(description="권한이 할당된 역할 목록")
-    async def manager_roles_by_permission(
+    async def roles_by_permission(
         self, info, permission_id: strawberry.ID
-    ) -> list[ManagerRolePermission]:
+    ) -> "list[ManagerRolePermission]":
         """특정 권한이 할당된 모든 역할 조회
 
         권한 ID로 해당 권한을 가진 모든 역할을 조회합니다.
         """
         db = info.context.manager_db_session
-        return await get_roles_by_permission_id(db, UUID(permission_id))
+        return await get_manager_roles_by_permission_id(db, UUID(permission_id))
