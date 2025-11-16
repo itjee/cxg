@@ -86,6 +86,39 @@ export interface PermissionsQueryVariables {
   scope?: string;
 }
 
+/**
+ * 권한 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface PermissionQueryVariables {
+  id: string;
+}
+
+// ===== 뮤테이션 변수 타입 (단수) =====
+
+/**
+ * 권한 생성 뮤테이션 변수 (단수)
+ */
+export interface CreatePermissionVariables {
+  input: CreatePermissionInput;
+}
+
+/**
+ * 권한 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdatePermissionVariables {
+  id: string;
+  input: UpdatePermissionInput;
+}
+
+/**
+ * 권한 삭제 뮤테이션 변수 (단수)
+ */
+export interface DeletePermissionVariables {
+  id: string;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

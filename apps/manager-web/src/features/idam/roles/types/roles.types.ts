@@ -72,6 +72,39 @@ export interface RolesQueryVariables {
   status?: string;
 }
 
+/**
+ * 역할 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface RoleQueryVariables {
+  id: string;
+}
+
+// ===== 뮤테이션 변수 타입 (단수) =====
+
+/**
+ * 역할 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateRoleVariables {
+  input: CreateRoleInput;
+}
+
+/**
+ * 역할 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdateRoleVariables {
+  id: string;
+  input: UpdateRoleInput;
+}
+
+/**
+ * 역할 삭제 뮤테이션 변수 (단수)
+ */
+export interface DeleteRoleVariables {
+  id: string;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

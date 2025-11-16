@@ -4,16 +4,16 @@
  *
  * API 키 생성/수정/삭제 뮤테이션 정의
  *
- * 타입 명명 규칙:
- * - 생성 뮤테이션 변수: CreateApiKeyVariables (단수)
- * - 수정 뮤테이션 변수: UpdateApiKeyVariables (단수)
- * - 삭제 뮤테이션 변수: DeleteApiKeyVariables (단수)
+ * 타입 정의는 ../types/api_keys.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
 import type {
   CreateApiKeyInput,
   UpdateApiKeyInput,
+  CreateApiKeyVariables,
+  UpdateApiKeyVariables,
+  DeleteApiKeyVariables,
 } from "../types/api_keys.types";
 
 /**
@@ -86,27 +86,3 @@ export const DELETE_API_KEY = gql`
     }
   }
 `;
-
-// ===== 뮤테이션 변수 타입 (단수형) =====
-
-/**
- * CREATE_API_KEY 뮤테이션 변수 (단수)
- */
-export interface CreateApiKeyVariables {
-  input: CreateApiKeyInput;
-}
-
-/**
- * UPDATE_API_KEY 뮤테이션 변수 (단수)
- */
-export interface UpdateApiKeyVariables {
-  id: string;
-  input: UpdateApiKeyInput;
-}
-
-/**
- * DELETE_API_KEY 뮤테이션 변수 (단수)
- */
-export interface DeleteApiKeyVariables {
-  id: string;
-}

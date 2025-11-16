@@ -82,6 +82,30 @@ export interface UsersQueryVariables {
   status?: string;
 }
 
+/**
+ * 사용자 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface UserQueryVariables {
+  id: string;
+}
+
+/**
+ * 사용자 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateUserVariables {
+  input: CreateUserInput;
+}
+
+/**
+ * 사용자 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdateUserVariables {
+  id: string;
+  input: UpdateUserInput;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

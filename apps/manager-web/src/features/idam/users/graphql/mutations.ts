@@ -3,10 +3,12 @@
  * @description Users GraphQL Mutations
  *
  * Manager Users 생성/수정 뮤테이션 정의
+ *
+ * 타입 정의는 ../types/users.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { CreateUserInput, UpdateUserInput } from "../types/users.types";
+import type { CreateUserInput, UpdateUserInput, CreateUserVariables, UpdateUserVariables } from "../types/users.types";
 
 /**
  * 사용자 생성 (단수)
@@ -67,20 +69,3 @@ export const UPDATE_USER = gql`
     }
   }
 `;
-
-// ===== 뮤테이션 변수 타입 (단수형) =====
-
-/**
- * CREATE_USER 뮤테이션 변수 (단수)
- */
-export interface CreateUserVariables {
-  input: CreateUserInput;
-}
-
-/**
- * UPDATE_USER 뮤테이션 변수 (단수)
- */
-export interface UpdateUserVariables {
-  id: string;
-  input: UpdateUserInput;
-}

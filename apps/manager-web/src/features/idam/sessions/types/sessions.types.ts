@@ -111,6 +111,53 @@ export interface SessionsQueryVariables {
   mfaVerified?: boolean;
 }
 
+/**
+ * 세션 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface SessionQueryVariables {
+  id: string;
+}
+
+// ===== 뮤테이션 변수 타입 (단수) =====
+
+/**
+ * 세션 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateSessionVariables {
+  input: CreateSessionInput;
+}
+
+/**
+ * 세션 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdateSessionVariables {
+  id: string;
+  input: UpdateSessionInput;
+}
+
+/**
+ * 세션 삭제 뮤테이션 변수 (단수)
+ */
+export interface DeleteSessionVariables {
+  id: string;
+}
+
+/**
+ * 세션 폐기 뮤테이션 변수 (단수)
+ */
+export interface RevokeSessionVariables {
+  id: string;
+}
+
+/**
+ * 사용자 세션 모두 폐기 뮤테이션 변수 (단수)
+ */
+export interface RevokeUserSessionsVariables {
+  userId: string;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

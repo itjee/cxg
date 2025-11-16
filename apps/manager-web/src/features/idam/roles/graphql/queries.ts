@@ -3,9 +3,12 @@
  * @description Roles GraphQL Queries
  *
  * Roles (역할) 조회 쿼리 정의
+ *
+ * 타입 정의는 ../types/roles.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
+import type { RolesQueryVariables, RoleQueryVariables } from "../types/roles.types";
 
 /**
  * 역할 목록 조회 (복수)
@@ -50,21 +53,3 @@ export const GET_ROLE = gql`
     }
   }
 `;
-
-// ===== 쿼리 변수 타입 (복수형) =====
-
-/**
- * GET_ROLES 쿼리 변수 (복수)
- */
-export interface RolesQueryVariables {
-  limit?: number;
-  offset?: number;
-  status?: string;
-}
-
-/**
- * GET_ROLE 쿼리 변수 (단수)
- */
-export interface RoleQueryVariables {
-  id: string;
-}

@@ -4,17 +4,18 @@
  *
  * 세션 생성/수정/삭제 뮤테이션 정의
  *
- * 타입 명명 규칙:
- * - 생성 뮤테이션 변수: CreateSessionVariables (단수)
- * - 수정 뮤테이션 변수: UpdateSessionVariables (단수)
- * - 삭제 뮤테이션 변수: DeleteSessionVariables (단수)
- * - 폐기 뮤테이션 변수: RevokeSessionVariables (단수)
+ * 타입 정의는 ../types/sessions.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
 import type {
   CreateSessionInput,
   UpdateSessionInput,
+  CreateSessionVariables,
+  UpdateSessionVariables,
+  DeleteSessionVariables,
+  RevokeSessionVariables,
+  RevokeUserSessionsVariables,
 } from "../types/sessions.types";
 
 /**
@@ -108,41 +109,3 @@ export const REVOKE_USER_SESSIONS = gql`
     }
   }
 `;
-
-// ===== 뮤테이션 변수 타입 (단수형) =====
-
-/**
- * CREATE_SESSION 뮤테이션 변수 (단수)
- */
-export interface CreateSessionVariables {
-  input: CreateSessionInput;
-}
-
-/**
- * UPDATE_SESSION 뮤테이션 변수 (단수)
- */
-export interface UpdateSessionVariables {
-  id: string;
-  input: UpdateSessionInput;
-}
-
-/**
- * DELETE_SESSION 뮤테이션 변수 (단수)
- */
-export interface DeleteSessionVariables {
-  id: string;
-}
-
-/**
- * REVOKE_SESSION 뮤테이션 변수 (단수)
- */
-export interface RevokeSessionVariables {
-  id: string;
-}
-
-/**
- * REVOKE_USER_SESSIONS 뮤테이션 변수 (단수)
- */
-export interface RevokeUserSessionsVariables {
-  userId: string;
-}

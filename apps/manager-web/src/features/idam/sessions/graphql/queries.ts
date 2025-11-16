@@ -4,13 +4,11 @@
  *
  * 세션 조회 쿼리 정의
  *
- * 타입 명명 규칙:
- * - 목록 조회 파라미터: SessionsQueryVariables (복수)
- * - 단일 조회 파라미터: SessionQueryVariables (단수)
+ * 타입 정의는 ../types/sessions.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { SessionsQueryVariables } from "../types/sessions.types";
+import type { SessionsQueryVariables, SessionQueryVariables } from "../types/sessions.types";
 
 /**
  * 세션 목록 조회 (복수)
@@ -69,21 +67,3 @@ export const GET_SESSION = gql`
     }
   }
 `;
-
-// ===== 쿼리 변수 타입 (복수형) =====
-
-/**
- * GET_SESSIONS 쿼리 변수 (복수)
- */
-export interface SessionsQueryVariablesExport extends SessionsQueryVariables {}
-
-/**
- * GET_SESSION 쿼리 변수 (단수)
- */
-export interface SessionQueryVariables {
-  id: string;
-}
-
-// 호환성을 위한 별칭
-export type GetSessionsVariables = SessionsQueryVariablesExport;
-export type GetSessionVariables = SessionQueryVariables;

@@ -117,6 +117,31 @@ export interface LoginLogsQueryVariables {
   endDate?: string;
 }
 
+/**
+ * 로그인 이력 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface LoginLogQueryVariables {
+  id: string;
+}
+
+// ===== 뮤테이션 변수 타입 (단수) =====
+
+/**
+ * 로그인 이력 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateLoginLogVariables {
+  input: CreateLoginLogInput;
+}
+
+/**
+ * 로그인 이력 삭제 뮤테이션 변수 (단수)
+ */
+export interface DeleteLoginLogVariables {
+  id: string;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

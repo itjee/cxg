@@ -15,12 +15,14 @@ import {
   GET_USER,
   CREATE_USER,
   UPDATE_USER,
-  type UsersQueryVariables,
-  type UserQueryVariables,
-  type CreateUserVariables,
-  type UpdateUserVariables,
 } from "../graphql";
-import type { User } from "../types/users.types";
+import type {
+  User,
+  UsersQueryVariables,
+  UserQueryVariables,
+  CreateUserVariables,
+  UpdateUserVariables,
+} from "../types/users.types";
 
 // ========== useQuery Hooks (조회) ==========
 

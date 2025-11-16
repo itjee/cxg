@@ -18,13 +18,15 @@ import {
   CREATE_API_KEY,
   UPDATE_API_KEY,
   DELETE_API_KEY,
-  type ApiKeysQueryVariables,
-  type ApiKeyQueryVariables,
-  type CreateApiKeyVariables,
-  type UpdateApiKeyVariables,
-  type DeleteApiKeyVariables,
 } from "../graphql";
-import type { ApiKey } from "../types";
+import type {
+  ApiKey,
+  ApiKeysQueryVariables,
+  ApiKeyQueryVariables,
+  CreateApiKeyVariables,
+  UpdateApiKeyVariables,
+  DeleteApiKeyVariables,
+} from "../types/api_keys.types";
 
 // ========== useQuery Hooks ==========
 

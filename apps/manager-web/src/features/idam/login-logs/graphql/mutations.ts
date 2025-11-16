@@ -4,13 +4,15 @@
  *
  * 로그인 이력 생성/삭제 뮤테이션 정의
  *
- * 타입 명명 규칙:
- * - 생성 뮤테이션 변수: CreateLoginLogVariables (단수)
- * - 삭제 뮤테이션 변수: DeleteLoginLogVariables (단수)
+ * 타입 정의는 ../types/login-logs.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { CreateLoginLogInput } from "../types/login-logs.types";
+import type {
+  CreateLoginLogInput,
+  CreateLoginLogVariables,
+  DeleteLoginLogVariables,
+} from "../types/login-logs.types";
 
 /**
  * 로그인 이력 생성 (단수)
@@ -51,19 +53,3 @@ export const DELETE_LOGIN_LOG = gql`
     }
   }
 `;
-
-// ===== 뮤테이션 변수 타입 (단수형) =====
-
-/**
- * CREATE_LOGIN_LOG 뮤테이션 변수 (단수)
- */
-export interface CreateLoginLogVariables {
-  input: CreateLoginLogInput;
-}
-
-/**
- * DELETE_LOGIN_LOG 뮤테이션 변수 (단수)
- */
-export interface DeleteLoginLogVariables {
-  id: string;
-}

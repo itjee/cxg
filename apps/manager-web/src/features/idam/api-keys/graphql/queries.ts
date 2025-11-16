@@ -4,13 +4,11 @@
  *
  * API 키 조회 쿼리 정의
  *
- * 타입 명명 규칙:
- * - 목록 조회 파라미터: ApiKeysQueryVariables (복수)
- * - 단일 조회 파라미터: ApiKeyQueryVariables (단수)
+ * 타입 정의는 ../types/api_keys.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { ApiKeysQueryVariables } from "../types/api_keys.types";
+import type { ApiKeysQueryVariables, ApiKeyQueryVariables } from "../types/api_keys.types";
 
 /**
  * API 키 목록 조회 (복수)
@@ -71,21 +69,3 @@ export const GET_API_KEY = gql`
     }
   }
 `;
-
-// ===== 쿼리 변수 타입 (복수형) =====
-
-/**
- * GET_API_KEYS 쿼리 변수 (복수)
- */
-export interface ApiKeysQueryVariablesExport extends ApiKeysQueryVariables {}
-
-/**
- * GET_API_KEY 쿼리 변수 (단수)
- */
-export interface ApiKeyQueryVariables {
-  id: string;
-}
-
-// 호환성을 위한 별칭
-export type GetApiKeysVariables = ApiKeysQueryVariablesExport;
-export type GetApiKeyVariables = ApiKeyQueryVariables;

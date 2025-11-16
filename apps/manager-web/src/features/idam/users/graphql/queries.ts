@@ -3,9 +3,12 @@
  * @description Users GraphQL Queries
  *
  * Manager Users 조회 쿼리 정의
+ *
+ * 타입 정의는 ../types/users.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
+import type { UsersQueryVariables, UserQueryVariables } from "../types/users.types";
 
 /**
  * 사용자 목록 조회 (복수)
@@ -76,22 +79,3 @@ export const GET_USER = gql`
     }
   }
 `;
-
-// ===== 쿼리 변수 타입 (복수형) =====
-
-/**
- * GET_USERS 쿼리 변수 (복수)
- */
-export interface UsersQueryVariables {
-  limit?: number;
-  offset?: number;
-  userType?: string;
-  status?: string;
-}
-
-/**
- * GET_USER 쿼리 변수 (단수)
- */
-export interface UserQueryVariables {
-  id: string;
-}

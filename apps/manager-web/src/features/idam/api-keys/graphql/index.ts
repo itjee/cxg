@@ -2,29 +2,22 @@
  * @file index.ts
  * @description API Keys GraphQL Exports
  *
- * API Keys feature의 모든 GraphQL 정의 및 타입을 export합니다.
+ * API Keys feature의 모든 GraphQL 쿼리 및 뮤테이션을 export합니다.
  *
- * 타입 명명 규칙:
- * - 목록 조회: ApiKeysQueryVariables (복수)
- * - 단일 조회: ApiKeyQueryVariables (단수)
- * - 생성/수정/삭제: CreateApiKeyVariables, UpdateApiKeyVariables, DeleteApiKeyVariables (단수)
+ * ⚠️ 타입 정의는 ../types/api_keys.types.ts에서 관리됩니다.
+ * 타입을 임포트할 때는 반드시 types.ts에서 직접 임포트하세요.
+ *
+ * 예시:
+ * import type { ApiKeysQueryVariables, CreateApiKeyVariables } from "../types/api_keys.types";
  */
 
 export {
   GET_API_KEYS,
   GET_API_KEY,
-  type ApiKeysQueryVariables,
-  type ApiKeyQueryVariables,
-  // 호환성 별칭
-  type GetApiKeysVariables,
-  type GetApiKeyVariables,
 } from "./queries";
 
 export {
   CREATE_API_KEY,
   UPDATE_API_KEY,
   DELETE_API_KEY,
-  type CreateApiKeyVariables,
-  type UpdateApiKeyVariables,
-  type DeleteApiKeyVariables,
 } from "./mutations";

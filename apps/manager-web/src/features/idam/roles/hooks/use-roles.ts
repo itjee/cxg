@@ -12,13 +12,15 @@ import {
   CREATE_ROLE,
   UPDATE_ROLE,
   DELETE_ROLE,
-  type RolesQueryVariables,
-  type RoleQueryVariables,
-  type CreateRoleVariables,
-  type UpdateRoleVariables,
-  type DeleteRoleVariables,
 } from "../graphql";
-import type { Role } from "../types";
+import type {
+  Role,
+  RolesQueryVariables,
+  RoleQueryVariables,
+  CreateRoleVariables,
+  UpdateRoleVariables,
+  DeleteRoleVariables,
+} from "../types/roles.types";
 
 // ========== useQuery Hooks ==========
 

@@ -105,6 +105,39 @@ export interface ApiKeysQueryVariables {
   search?: string;
 }
 
+/**
+ * API 키 상세 조회 파라미터
+ *
+ * @singular 단수 조회 파라미터
+ */
+export interface ApiKeyQueryVariables {
+  id: string;
+}
+
+// ===== 뮤테이션 변수 타입 (단수) =====
+
+/**
+ * API 키 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateApiKeyVariables {
+  input: CreateApiKeyInput;
+}
+
+/**
+ * API 키 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdateApiKeyVariables {
+  id: string;
+  input: UpdateApiKeyInput;
+}
+
+/**
+ * API 키 삭제 뮤테이션 변수 (단수)
+ */
+export interface DeleteApiKeyVariables {
+  id: string;
+}
+
 // ===== GraphQL 응답 타입 =====
 
 /**

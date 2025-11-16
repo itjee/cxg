@@ -2,24 +2,21 @@
  * @file index.ts
  * @description Users GraphQL Exports
  *
- * Users feature의 모든 GraphQL 정의 및 타입을 export합니다.
+ * Users feature의 모든 GraphQL 쿼리 및 뮤테이션을 export합니다.
  *
- * 타입 명명 규칙:
- * - 목록 조회: UsersQueryVariables (복수)
- * - 단일 조회: UserQueryVariables (단수)
- * - 생성/수정: CreateUserVariables, UpdateUserVariables (단수)
+ * ⚠️ 타입 정의는 ../types/users.types.ts에서 관리됩니다.
+ * 타입을 임포트할 때는 반드시 types.ts에서 직접 임포트하세요.
+ *
+ * 예시:
+ * import type { UsersQueryVariables, CreateUserVariables } from "../types/users.types";
  */
 
 export {
   GET_USERS,
   GET_USER,
-  type UsersQueryVariables,
-  type UserQueryVariables,
 } from "./queries";
 
 export {
   CREATE_USER,
   UPDATE_USER,
-  type CreateUserVariables,
-  type UpdateUserVariables,
 } from "./mutations";

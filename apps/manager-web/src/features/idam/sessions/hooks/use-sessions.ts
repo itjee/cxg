@@ -20,15 +20,17 @@ import {
   DELETE_SESSION,
   REVOKE_SESSION,
   REVOKE_USER_SESSIONS,
-  type SessionsQueryVariables,
-  type SessionQueryVariables,
-  type CreateSessionVariables,
-  type UpdateSessionVariables,
-  type DeleteSessionVariables,
-  type RevokeSessionVariables,
-  type RevokeUserSessionsVariables,
 } from "../graphql";
-import type { Session } from "../types";
+import type {
+  Session,
+  SessionsQueryVariables,
+  SessionQueryVariables,
+  CreateSessionVariables,
+  UpdateSessionVariables,
+  DeleteSessionVariables,
+  RevokeSessionVariables,
+  RevokeUserSessionsVariables,
+} from "../types/sessions.types";
 
 // ========== useQuery Hooks ==========
 

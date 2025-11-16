@@ -18,13 +18,15 @@ import {
   CREATE_PERMISSION,
   UPDATE_PERMISSION,
   DELETE_PERMISSION,
-  type PermissionsQueryVariables,
-  type PermissionQueryVariables,
-  type CreatePermissionVariables,
-  type UpdatePermissionVariables,
-  type DeletePermissionVariables,
 } from "../graphql";
-import type { Permission } from "../types";
+import type {
+  Permission,
+  PermissionsQueryVariables,
+  PermissionQueryVariables,
+  CreatePermissionVariables,
+  UpdatePermissionVariables,
+  DeletePermissionVariables,
+} from "../types/permissions.types";
 
 // ========== useQuery Hooks ==========
 

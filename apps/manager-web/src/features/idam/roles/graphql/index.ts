@@ -2,26 +2,22 @@
  * @file index.ts
  * @description Roles GraphQL Exports
  *
- * Roles feature의 모든 GraphQL 정의 및 타입을 export합니다.
+ * Roles feature의 모든 GraphQL 쿼리 및 뮤테이션을 export합니다.
  *
- * 타입 명명 규칙:
- * - 목록 조회: RolesQueryVariables (복수)
- * - 단일 조회: RoleQueryVariables (단수)
- * - 생성/수정/삭제: CreateRoleVariables, UpdateRoleVariables, DeleteRoleVariables (단수)
+ * ⚠️ 타입 정의는 ../types/roles.types.ts에서 관리됩니다.
+ * 타입을 임포트할 때는 반드시 types.ts에서 직접 임포트하세요.
+ *
+ * 예시:
+ * import type { RolesQueryVariables, CreateRoleVariables } from "../types/roles.types";
  */
 
 export {
   GET_ROLES,
   GET_ROLE,
-  type RolesQueryVariables,
-  type RoleQueryVariables,
 } from "./queries";
 
 export {
   CREATE_ROLE,
   UPDATE_ROLE,
   DELETE_ROLE,
-  type CreateRoleVariables,
-  type UpdateRoleVariables,
-  type DeleteRoleVariables,
 } from "./mutations";

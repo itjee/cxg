@@ -3,10 +3,12 @@
  * @description Roles GraphQL Mutations
  *
  * Roles 생성/수정/삭제 뮤테이션 정의
+ *
+ * 타입 정의는 ../types/roles.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { CreateRoleInput, UpdateRoleInput } from "../types/roles.types";
+import type { CreateRoleInput, UpdateRoleInput, CreateRoleVariables, UpdateRoleVariables, DeleteRoleVariables } from "../types/roles.types";
 
 /**
  * 역할 생성 (단수)
@@ -62,27 +64,3 @@ export const DELETE_ROLE = gql`
     }
   }
 `;
-
-// ===== 뮤테이션 변수 타입 (단수형) =====
-
-/**
- * CREATE_ROLE 뮤테이션 변수 (단수)
- */
-export interface CreateRoleVariables {
-  input: CreateRoleInput;
-}
-
-/**
- * UPDATE_ROLE 뮤테이션 변수 (단수)
- */
-export interface UpdateRoleVariables {
-  id: string;
-  input: UpdateRoleInput;
-}
-
-/**
- * DELETE_ROLE 뮤테이션 변수 (단수)
- */
-export interface DeleteRoleVariables {
-  id: string;
-}

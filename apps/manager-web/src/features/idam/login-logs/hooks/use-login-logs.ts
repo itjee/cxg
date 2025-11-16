@@ -17,12 +17,14 @@ import {
   GET_LOGIN_LOG,
   CREATE_LOGIN_LOG,
   DELETE_LOGIN_LOG,
-  type LoginLogsQueryVariables,
-  type LoginLogQueryVariables,
-  type CreateLoginLogVariables,
-  type DeleteLoginLogVariables,
 } from "../graphql";
-import type { LoginLog } from "../types";
+import type {
+  LoginLog,
+  LoginLogsQueryVariables,
+  LoginLogQueryVariables,
+  CreateLoginLogVariables,
+  DeleteLoginLogVariables,
+} from "../types/login-logs.types";
 
 // ========== useQuery Hooks ==========
 

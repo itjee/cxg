@@ -4,13 +4,11 @@
  *
  * 로그인 이력 조회 쿼리 정의
  *
- * 타입 명명 규칙:
- * - 목록 조회 파라미터: LoginLogsQueryVariables (복수)
- * - 단일 조회 파라미터: LoginLogQueryVariables (단수)
+ * 타입 정의는 ../types/login-logs.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { LoginLogsQueryVariables } from "../types/login-logs.types";
+import type { LoginLogsQueryVariables, LoginLogQueryVariables } from "../types/login-logs.types";
 
 /**
  * 로그인 이력 목록 조회 (복수)
@@ -69,21 +67,3 @@ export const GET_LOGIN_LOG = gql`
     }
   }
 `;
-
-// ===== 쿼리 변수 타입 (복수형) =====
-
-/**
- * GET_LOGIN_LOGS 쿼리 변수 (복수)
- */
-export interface LoginLogsQueryVariablesExport extends LoginLogsQueryVariables {}
-
-/**
- * GET_LOGIN_LOG 쿼리 변수 (단수)
- */
-export interface LoginLogQueryVariables {
-  id: string;
-}
-
-// 호환성을 위한 별칭
-export type GetLoginLogsVariables = LoginLogsQueryVariablesExport;
-export type GetLoginLogVariables = LoginLogQueryVariables;
