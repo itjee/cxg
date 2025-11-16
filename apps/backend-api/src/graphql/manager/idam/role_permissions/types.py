@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from ..roles.types import ManagerRole
 
 
-@strawberry.type(description="Manager 역할-권한 매핑")
+@strawberry.type(name="ManagerRolePermission", description="Manager 역할-권한 매핑")
 class ManagerRolePermission(Node):
     """Manager 역할-권한 매핑
 
@@ -62,13 +62,13 @@ class ManagerRolePermission(Node):
         """
         from uuid import UUID
 
-        from .resolvers import resolve_role_permission_role
+        from .resolvers import resolve_manager_role_permission_role
 
         # strawberry.ID를 UUID로 변환하여 resolver 호출
-        return await resolve_role_permission_role(UUID(self.role_id), info)
+        return await resolve_manager_role_permission_role(UUID(self.role_id), info)
 
     @strawberry.field(description="권한 정보")
-    async def permission(self, info) -> ManagerPermission | None:
+    async def permission(self, info) -> "ManagerPermission | None":
         """권한 정보를 조회하는 필드 resolver
 
         매핑된 권한의 상세 정보를 조회합니다.
@@ -79,10 +79,10 @@ class ManagerRolePermission(Node):
         """
         from uuid import UUID
 
-        from .resolvers import resolve_role_permission_permission
+        from .resolvers import resolve_manager_role_permission_permission
 
         # strawberry.ID를 UUID로 변환하여 resolver 호출
-        return await resolve_role_permission_permission(UUID(self.permission_id), info)
+        return await resolve_manager_role_permission_permission(UUID(self.permission_id), info)
 
 
 @strawberry.input(description="Manager 역할-권한 할당 입력")

@@ -15,12 +15,12 @@ from src.graphql.common import Node
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from ..roles.types import Role
-    from ..users.types import User
+    from ..roles.types import ManagerRole
+    from ..users.types import ManagerUser
 
 
-@strawberry.type(description="Manager 사용자-역할 매핑")
-class UserRole(Node):
+@strawberry.type(name="ManagerUserRole", description="Manager 사용자-역할 매핑")
+class ManagerUserRole(Node):
     """
     Manager 사용자-역할 매핑
 
@@ -60,7 +60,7 @@ class UserRole(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="사용자 정보")
-    async def user(self, info) -> User | None:
+    async def user(self, info) -> "ManagerUser | None":
         """
         매핑된 사용자 정보를 조회하는 필드 resolver
 
@@ -68,12 +68,12 @@ class UserRole(Node):
         """
         from uuid import UUID
 
-        from .resolvers import resolve_user_role_user
+        from .resolvers import resolve_manager_user_role_user
 
-        return await resolve_user_role_user(UUID(self.user_id), info)
+        return await resolve_manager_user_role_user(UUID(self.user_id), info)
 
     @strawberry.field(description="역할 정보")
-    async def role(self, info) -> Role | None:
+    async def role(self, info) -> "ManagerRole | None":
         """
         매핑된 역할 정보를 조회하는 필드 resolver
 
@@ -81,12 +81,12 @@ class UserRole(Node):
         """
         from uuid import UUID
 
-        from .resolvers import resolve_user_role_role
+        from .resolvers import resolve_manager_user_role_role
 
-        return await resolve_user_role_role(UUID(self.role_id), info)
+        return await resolve_manager_user_role_role(UUID(self.role_id), info)
 
     @strawberry.field(description="역할 부여자 정보")
-    async def granter(self, info) -> User | None:
+    async def granter(self, info) -> "ManagerUser | None":
         """
         역할을 부여한 관리자 정보를 조회하는 필드 resolver
 
@@ -97,13 +97,13 @@ class UserRole(Node):
 
         from uuid import UUID
 
-        from .resolvers import resolve_granted_by_user
+        from .resolvers import resolve_manager_granted_by_user
 
-        return await resolve_granted_by_user(UUID(self.granted_by), info)
+        return await resolve_manager_granted_by_user(UUID(self.granted_by), info)
 
 
 @strawberry.input(description="Manager 사용자-역할 할당 입력")
-class UserRoleCreateInput:
+class ManagerUserRoleCreateInput:
     """
     Manager 사용자에게 역할 할당
 
@@ -118,7 +118,7 @@ class UserRoleCreateInput:
 
 
 @strawberry.input(description="Manager 사용자-역할 수정 입력")
-class UserRoleUpdateInput:
+class ManagerUserRoleUpdateInput:
     """
     Manager 사용자-역할 매핑 수정
 
@@ -133,7 +133,7 @@ class UserRoleUpdateInput:
 
 
 @strawberry.input(description="Manager 사용자-역할 해제 입력")
-class UserRoleRevokeInput:
+class ManagerUserRoleRevokeInput:
     """
     Manager 사용자에서 역할 해제
 
