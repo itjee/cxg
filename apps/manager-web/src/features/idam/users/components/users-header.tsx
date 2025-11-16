@@ -26,6 +26,7 @@ export function UsersHeader({ onRefresh, onExport }: UserHeaderProps) {
     ...(onRefresh
       ? [
           {
+            id: "refresh",
             label: "새로고침",
             icon: RefreshCw,
             onClick: onRefresh,
@@ -34,6 +35,7 @@ export function UsersHeader({ onRefresh, onExport }: UserHeaderProps) {
         ]
       : []),
     {
+      id: "add",
       label: "사용자 추가",
       icon: Plus,
       onClick: () => openForm(),
@@ -42,6 +44,7 @@ export function UsersHeader({ onRefresh, onExport }: UserHeaderProps) {
     ...(onExport
       ? [
           {
+            id: "export",
             label: "내보내기",
             icon: Download,
             onClick: onExport,

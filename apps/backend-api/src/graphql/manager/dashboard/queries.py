@@ -18,7 +18,7 @@ class DashboardQueries:
     """Dashboard Query"""
 
     @strawberry.field(description="Dashboard 통계 데이터 조회")
-    async def dashboard(self) -> DashboardStats:
+    async def dashboard(self, info) -> DashboardStats:
         """
         대시보드 통계 데이터를 조회합니다.
         - 전체 테넌트 수
@@ -37,7 +37,7 @@ class DashboardQueries:
         )
 
     @strawberry.field(description="테넌트 성장 데이터 조회")
-    async def tenant_growth(self, period: str = "month") -> list[TenantGrowthData]:
+    async def tenant_growth(self, info, period: str = "month") -> list[TenantGrowthData]:
         """
         테넌트 성장 데이터를 조회합니다.
         차트 렌더링에 사용됩니다.
@@ -64,7 +64,7 @@ class DashboardQueries:
         return data
 
     @strawberry.field(description="최근 활동 로그 조회")
-    async def activities(self, limit: int = 10, order_by: str = "createdAt") -> list[Activity]:
+    async def activities(self, info, limit: int = 10, order_by: str = "createdAt") -> list[Activity]:
         """
         최근 활동 로그를 조회합니다.
 

@@ -22,12 +22,17 @@ import type { User } from "../types/users.types";
  * 폼 유효성 검증 스키마
  */
 const userFormSchema = z.object({
-  fullName: z.string().min(1, "사용자명을 입력해주세요"),
+  username: z.string().min(3, "사용자명은 3자 이상이어야 합니다"),
   email: z.string().email("유효한 이메일을 입력해주세요"),
-  phone: z.string(),
-  department: z.string(),
-  position: z.string(),
-  status: z.enum(["ACTIVE", "INACTIVE", "LOCKED"]),
+  fullName: z.string().min(1, "전체 이름을 입력해주세요"),
+  password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다").optional(),
+  userType: z.enum(["ADMIN", "MANAGER", "USER"], {
+    errorMap: () => ({ message: "사용자 유형을 선택해주세요" }),
+  }),
+  phone: z.string().optional(),
+  department: z.string().optional(),
+  position: z.string().optional(),
+  status: z.enum(["ACTIVE", "INACTIVE", "LOCKED"]).optional(),
 });
 
 type UserFormData = z.infer<typeof userFormSchema>;
@@ -56,8 +61,11 @@ export function UsersForm({
   } = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
-      fullName: initialData?.fullName || "",
+      username: initialData?.username || "",
       email: initialData?.email || "",
+      fullName: initialData?.fullName || "",
+      password: "",
+      userType: (initialData as any)?.userType || "USER",
       phone: initialData?.phone || "",
       department: initialData?.department || "",
       position: initialData?.position || "",
@@ -68,12 +76,15 @@ export function UsersForm({
   useEffect(() => {
     if (initialData) {
       reset({
-        fullName: initialData.fullName,
-        email: initialData.email,
-        phone: initialData.phone || "",
-        department: initialData.department || "",
-        position: initialData.position || "",
-        status: initialData.status || "ACTIVE",
+        username: initialData.username || "",
+        email: initialData.email || "",
+        fullName: initialData.fullName || "",
+        password: "",
+        userType: (initialData as any)?.userType || "USER",
+        phone: initialData?.phone || "",
+        department: initialData?.department || "",
+        position: initialData?.position || "",
+        status: initialData?.status || "ACTIVE",
       });
     }
   }, [initialData, reset]);
@@ -90,19 +101,19 @@ export function UsersForm({
         </div>
 
         <div className="space-y-4">
-          {/* 전체 이름 */}
+          {/* 사용자명 */}
           <div className="space-y-2">
-            <Label htmlFor="fullName">
-              전체 이름 <span className="text-red-500">*</span>
+            <Label htmlFor="username">
+              사용자명 <span className="text-red-500">*</span>
             </Label>
             <Input
-              id="fullName"
-              {...register("fullName")}
-              placeholder="전체 이름을 입력하세요"
-              disabled={isLoading}
+              id="username"
+              {...register("username")}
+              placeholder="사용자명을 입력하세요 (3자 이상)"
+              disabled={isLoading || isEditing}
             />
-            {errors.fullName && (
-              <p className="text-xs text-red-500">{errors.fullName.message}</p>
+            {errors.username && (
+              <p className="text-xs text-red-500">{errors.username.message}</p>
             )}
           </div>
 
@@ -120,6 +131,61 @@ export function UsersForm({
             />
             {errors.email && (
               <p className="text-xs text-red-500">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* 전체 이름 */}
+          <div className="space-y-2">
+            <Label htmlFor="fullName">
+              전체 이름 <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="fullName"
+              {...register("fullName")}
+              placeholder="전체 이름을 입력하세요"
+              disabled={isLoading}
+            />
+            {errors.fullName && (
+              <p className="text-xs text-red-500">{errors.fullName.message}</p>
+            )}
+          </div>
+
+          {/* 비밀번호 (생성 모드에서만 필수) */}
+          {!isEditing && (
+            <div className="space-y-2">
+              <Label htmlFor="password">
+                비밀번호 <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                {...register("password")}
+                placeholder="비밀번호를 입력하세요 (8자 이상)"
+                disabled={isLoading}
+              />
+              {errors.password && (
+                <p className="text-xs text-red-500">{errors.password.message}</p>
+              )}
+            </div>
+          )}
+
+          {/* 사용자 유형 */}
+          <div className="space-y-2">
+            <Label htmlFor="userType">
+              사용자 유형 <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="userType"
+              {...register("userType")}
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading}
+            >
+              <option value="USER">일반 사용자</option>
+              <option value="MANAGER">매니저</option>
+              <option value="ADMIN">관리자</option>
+            </select>
+            {errors.userType && (
+              <p className="text-xs text-red-500">{errors.userType.message}</p>
             )}
           </div>
 

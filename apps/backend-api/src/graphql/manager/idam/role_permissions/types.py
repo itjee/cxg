@@ -17,10 +17,13 @@ import strawberry
 
 from src.graphql.common import Node
 
+# Import at module level for Strawberry to resolve type hints
+# These need to be available in globals() for get_type_hints() to work
+from ..permissions.types import ManagerPermission
+from ..roles.types import ManagerRole
 
 if TYPE_CHECKING:
-    from ..permissions.types import ManagerPermission
-    from ..roles.types import ManagerRole
+    pass
 
 
 @strawberry.type(name="ManagerRolePermission", description="Manager 역할-권한 매핑")

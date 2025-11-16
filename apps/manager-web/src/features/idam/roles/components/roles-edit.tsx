@@ -1,54 +1,65 @@
 "use client";
 
 /**
- * @file roles-edit.tsx
- * @description 역할 생성/수정 Drawer 컨테이너 컴포넌트
+ * Role Edit Dialog
+ *
+ * 역할 생성/수정 Dialog 컴포넌트
+ * Apollo GraphQL Hooks를 사용합니다.
  */
 
 import { toast } from "sonner";
 import { EntityDrawer } from "@/components/features";
 import { RolesForm } from "./roles-form";
 import { useRolesStore } from "../stores/roles.store";
-import { useRolesById, useCreateRoles, useUpdateRoles } from "../hooks/use-roles";
-import type { Roles } from "../types/roles.types";
+import {
+  useRole,
+  useCreateRole,
+  useUpdateRole,
+} from "../hooks/use-roles";
 
-interface RolesEditProps {
-  roles: Roles[];
-}
-
-export function RolesEdit({ roles }: RolesEditProps) {
+export function RolesEdit() {
   const { formOpen, selectedId, closeForm } = useRolesStore();
-  const { data: editingRole } = useRolesById(selectedId || "");
-  
-  const createMutation = useCreateRoles({
-    onSuccess: () => {
-      toast.success('역할이 생성되었습니다');
-      closeForm();
-    },
-    onError: (error) => {
-      toast.error(error.message || '역할 생성에 실패했습니다');
-      console.error('Failed to create role:', error);
-    },
-  });
 
-  const updateMutation = useUpdateRoles({
-    onSuccess: () => {
-      toast.success('역할이 수정되었습니다');
-      closeForm();
-    },
-    onError: (error) => {
-      toast.error(error.message || '역할 수정에 실패했습니다');
-      console.error('Failed to update role:', error);
-    },
-  });
-  
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  // 수정 모드: 선택된 역할 조회
+  const { data: roleResponse } = useRole(selectedId || "");
+  const editingRole = roleResponse?.role;
 
-  const handleSubmit = (formData: any) => {
-    if (selectedId) {
-      updateMutation.mutate({ id: selectedId, data: formData });
-    } else {
-      createMutation.mutate(formData);
+  // Apollo GraphQL Mutation Hooks
+  const [createRole, { loading: createLoading }] = useCreateRole();
+  const [updateRole, { loading: updateLoading }] = useUpdateRole();
+
+  const isLoading = createLoading || updateLoading;
+
+  const handleSubmit = async (formData: any) => {
+    try {
+      if (selectedId) {
+        // 수정 모드: name, description, status, permissions 전송
+        await updateRole({
+          variables: {
+            id: selectedId,
+            input: formData,
+          },
+        });
+
+        toast.success("역할이 수정되었습니다");
+        closeForm();
+      } else {
+        // 생성 모드: 전체 데이터 전송
+        await createRole({
+          variables: {
+            input: formData,
+          },
+        });
+
+        toast.success("역할이 생성되었습니다");
+        closeForm();
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "작업 실패";
+      toast.error(
+        selectedId ? "역할 수정 실패: " + message : "역할 생성 실패: " + message
+      );
+      console.error("Failed to save role:", error);
     }
   };
 
@@ -56,11 +67,11 @@ export function RolesEdit({ roles }: RolesEditProps) {
     <EntityDrawer
       open={formOpen}
       onOpenChange={closeForm}
-      title={selectedId ? '역할 수정' : '역할 등록'}
+      title={selectedId ? "역할 수정" : "역할 등록"}
       description={
         selectedId
-          ? '역할 정보를 수정하세요.'
-          : '새로운 역할 정보를 입력하세요.'
+          ? "역할 정보를 수정하세요."
+          : "새로운 역할 정보를 입력하세요."
       }
       width="md"
     >

@@ -20,11 +20,13 @@ import { gql } from "@apollo/client";
  */
 export const SIGNIN = gql`
   mutation Signin($input: SigninInput!) {
-    signin(input: $input) {
-      accessToken
-      refreshToken
-      tokenType
-      expiresIn
+    auth {
+      signin(input: $input) {
+        accessToken
+        refreshToken
+        tokenType
+        expiresIn
+      }
     }
   }
 `;
@@ -36,14 +38,16 @@ export const SIGNIN = gql`
  */
 export const SIGNUP = gql`
   mutation Signup($input: SignupInput!) {
-    signup(input: $input) {
-      id
-      username
-      email
-      fullName
-      userType
-      status
-      createdAt
+    auth {
+      signup(input: $input) {
+        id
+        username
+        email
+        fullName
+        userType
+        status
+        createdAt
+      }
     }
   }
 `;
@@ -56,11 +60,13 @@ export const SIGNUP = gql`
  */
 export const REFRESH_TOKEN = gql`
   mutation RefreshToken($input: RefreshTokenInput!) {
-    refreshToken(input: $input) {
-      accessToken
-      refreshToken
-      tokenType
-      expiresIn
+    auth {
+      refreshToken(input: $input) {
+        accessToken
+        refreshToken
+        tokenType
+        expiresIn
+      }
     }
   }
 `;
@@ -72,8 +78,10 @@ export const REFRESH_TOKEN = gql`
  */
 export const LOGOUT = gql`
   mutation Logout {
-    logout {
-      message
+    auth {
+      logout {
+        message
+      }
     }
   }
 `;
@@ -86,8 +94,10 @@ export const LOGOUT = gql`
  */
 export const CHANGE_PASSWORD = gql`
   mutation ChangePassword($input: ChangePasswordInput!) {
-    changePassword(input: $input) {
-      message
+    auth {
+      changePassword(input: $input) {
+        message
+      }
     }
   }
 `;
@@ -99,9 +109,11 @@ export const CHANGE_PASSWORD = gql`
  */
 export const FORGOT_PASSWORD = gql`
   mutation ForgotPassword($input: ResetPasswordInput!) {
-    forgotPassword(input: $input) {
-      message
-      resetToken
+    auth {
+      forgotPassword(input: $input) {
+        message
+        resetToken
+      }
     }
   }
 `;
@@ -113,8 +125,10 @@ export const FORGOT_PASSWORD = gql`
  */
 export const RESET_PASSWORD = gql`
   mutation ResetPassword($input: ResetPasswordConfirmInput!) {
-    resetPassword(input: $input) {
-      message
+    auth {
+      resetPassword(input: $input) {
+        message
+      }
     }
   }
 `;

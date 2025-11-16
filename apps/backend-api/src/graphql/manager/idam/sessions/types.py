@@ -11,9 +11,12 @@ import strawberry
 
 from src.graphql.common import Node
 
+# Import at module level for Strawberry to resolve type hints
+# These need to be available in globals() for get_type_hints() to work
+from ..users.types import ManagerUser
 
 if TYPE_CHECKING:
-    from ..users.types import ManagerUser
+    pass
 
 
 @strawberry.type(description="Manager 세션")

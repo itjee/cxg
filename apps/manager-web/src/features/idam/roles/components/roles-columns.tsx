@@ -1,21 +1,61 @@
 "use client";
 
+/**
+ * @file roles-columns.tsx
+ * @description 역할 테이블 컬럼 정의
+ *
+ * TanStack Table 컬럼 정의, 포맷 함수, 상수를 포함합니다.
+ * - 상태 색상 및 라벨 매핑
+ * - 포맷 함수 (상태 포맷)
+ * - 컬럼 정의 (NO, 역할명, 설명, 상태, 액션)
+ */
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2 } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
-import type { Roles } from "../types/roles.types";
+import type { Role } from "../types/roles.types";
 
+/**
+ * 상수 정의 - 상태별 색상
+ */
+const statusColors = {
+  active: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+  inactive: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+} as const;
+
+const statusLabels = {
+  active: "활성",
+  inactive: "비활성",
+} as const;
+
+/**
+ * 포맷 함수 - 상태 포맷
+ */
+const formatStatus = (isActive: boolean) => {
+  return isActive ? statusLabels.active : statusLabels.inactive;
+};
+
+const getStatusColor = (isActive: boolean) => {
+  return isActive ? statusColors.active : statusColors.inactive;
+};
+
+/**
+ * 액션 핸들러 타입
+ */
 interface GetColumnsParams {
-  onEdit?: (role: Roles) => void;
-  onDelete?: (role: Roles) => void;
+  onEdit?: (role: Role) => void;
+  onDelete?: (role: Role) => void;
 }
 
+/**
+ * 컬럼 생성 함수
+ */
 export const getRolesColumns = ({
   onEdit,
   onDelete,
-}: GetColumnsParams = {}): ColumnDef<Roles>[] => [
+}: GetColumnsParams = {}): ColumnDef<Role>[] => [
   // NO 컬럼
   {
     id: "rowNumber",
@@ -50,12 +90,14 @@ export const getRolesColumns = ({
   // 상태
   {
     accessorKey: "is_active",
-    header: "상태",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="상태" />
+    ),
     cell: ({ row }) => {
       const isActive = row.getValue("is_active") as boolean;
       return (
-        <Badge variant={isActive ? "default" : "secondary"}>
-          {isActive ? "활성" : "비활성"}
+        <Badge variant="outline" className={getStatusColor(isActive)}>
+          {formatStatus(isActive)}
         </Badge>
       );
     },
@@ -63,13 +105,14 @@ export const getRolesColumns = ({
   // 액션
   {
     id: "actions",
-    header: () => <div className="text-right">액션</div>,
+    header: () => <div className="text-right">작업</div>,
     cell: ({ row }) => (
-      <div className="flex justify-end space-x-2">
+      <div className="flex justify-end gap-2">
         <Button
           variant="ghost"
           size="sm"
           onClick={() => onEdit?.(row.original)}
+          className="h-8 w-8 p-0"
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -77,10 +120,12 @@ export const getRolesColumns = ({
           variant="ghost"
           size="sm"
           onClick={() => onDelete?.(row.original)}
+          className="h-8 w-8 p-0 text-destructive hover:text-destructive"
         >
-          <Trash2 className="h-4 w-4 text-red-500" />
+          <Trash2 className="h-4 w-4" />
         </Button>
       </div>
     ),
+    enableSorting: false,
   },
 ];

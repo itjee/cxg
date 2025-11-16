@@ -1,35 +1,70 @@
 "use client";
 
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+/**
+ * @file roles-filters.tsx
+ * @description 역할 검색 및 필터 컴포넌트
+ *
+ * Filters 컴포넌트를 사용하여 검색 및 필터 기능 제공
+ */
+
+import { useMemo } from "react";
+import { Filters } from "@/components/filters/filters";
 import { useRolesStore } from "../stores/roles.store";
-import type { Roles } from "../types/roles.types";
 
-interface RolesFiltersProps {
-  roles: Roles[];
-}
+export function RolesFilters() {
+  const {
+    selectedStatus,
+    globalFilter,
+    setSelectedStatus,
+    setGlobalFilter,
+    resetFilters,
+  } = useRolesStore();
 
-export function RolesFilters({ roles }: RolesFiltersProps) {
-  const { selectedStatus, globalFilter, setSelectedStatus, setGlobalFilter } = useRolesStore();
+  const filterFields = useMemo(
+    () => [
+      {
+        key: "globalFilter",
+        type: "search" as const,
+        label: "검색",
+        placeholder: "역할명 검색...",
+      },
+      {
+        key: "selectedStatus",
+        type: "select" as const,
+        label: "상태",
+        placeholder: "전체",
+        options: [
+          { label: "활성", value: "active" },
+          { label: "비활성", value: "inactive" },
+        ],
+      },
+    ],
+    []
+  );
+
+  const filterValues = useMemo(
+    () => ({
+      globalFilter,
+      selectedStatus: selectedStatus || "",
+    }),
+    [globalFilter, selectedStatus]
+  );
+
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === "globalFilter") {
+      setGlobalFilter(value);
+    } else if (key === "selectedStatus") {
+      setSelectedStatus(value);
+    }
+  };
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div className="relative flex-1 max-w-sm">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-        <Input placeholder="role 검색..." value={globalFilter} onChange={(e) => setGlobalFilter(e.target.value)} className="pl-10" />
-      </div>
-      <div className="flex gap-2">
-        <Select value={selectedStatus || ""} onValueChange={(value) => setSelectedStatus(value as "active" | "inactive" | "")}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="상태" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">활성</SelectItem>
-            <SelectItem value="inactive">비활성</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-    </div>
+    <Filters
+      filters={filterFields}
+      values={filterValues}
+      onChange={handleFilterChange}
+      onReset={resetFilters}
+      title="검색필터"
+    />
   );
 }

@@ -1,12 +1,13 @@
+"use client";
+
 /**
- * @file page.tsx
- * @description API 키 관리 페이지
+ * API Keys List Page
+ *
+ * API 키 관리 페이지
+ * Apollo GraphQL Hooks를 사용합니다.
  */
 
-'use client';
-
-import { useMemo } from 'react';
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import {
   ApiKeysHeader,
   ApiKeysStats,
@@ -15,116 +16,91 @@ import {
   ApiKeysEdit,
   useApiKeys,
   useDeleteApiKey,
-  useUpdateApiKeyStatus,
+  useUpdateApiKey,
   useApiKeyStore,
-} from '@/features/idam/api_keys';
-import type { ApiKey } from '@/features/idam/api_keys';
+} from "@/features/idam/api-keys";
+import type { ApiKey } from "@/features/idam/api-keys";
 
 export default function ApiKeysPage() {
-  const {
-    globalFilter,
-    selectedStatus,
-    currentPage,
-    itemsPerPage,
-    openForm,
-  } = useApiKeyStore();
+  // Store에서 UI 상태 가져오기
+  const { selectedStatus, currentPage, itemsPerPage } =
+    useApiKeyStore();
 
+  // GraphQL 쿼리 - Apollo Hooks 사용
   const {
     data: apiKeysResponse,
-    isLoading,
-    error,
+    loading,
     refetch,
   } = useApiKeys({
-    page: currentPage + 1,
-    pageSize: itemsPerPage,
-    search: globalFilter,
-    status: selectedStatus ? (selectedStatus as any) : undefined,
+    limit: itemsPerPage,
+    offset: currentPage * itemsPerPage,
+    status: selectedStatus || undefined,
   });
 
-  const deleteMutation = useDeleteApiKey();
-  const statusMutation = useUpdateApiKeyStatus();
+  // GraphQL 뮤테이션 - 삭제, 수정
+  const [deleteApiKey, { loading: deleting }] = useDeleteApiKey();
+  const [updateApiKey, { loading: updating }] = useUpdateApiKey();
 
-  const apiKeys = apiKeysResponse?.data || [];
-
-  // 통계 계산
-  const stats = useMemo(() => {
-    const total = apiKeys.length;
-    const active = apiKeys.filter(key => key.status === 'ACTIVE').length;
-    const inactive = apiKeys.filter(key => key.status === 'INACTIVE').length;
-    const revoked = apiKeys.filter(key => key.status === 'REVOKED').length;
-    const totalUsage = apiKeys.reduce((sum, key) => sum + key.usage_count, 0);
-
-    return { total, active, inactive, revoked, totalUsage };
-  }, [apiKeys]);
+  // API 키 데이터
+  const apiKeys = apiKeysResponse?.apiKeys || [];
 
   const handleEdit = (apiKey: ApiKey) => {
+    const { openForm } = useApiKeyStore.getState();
     openForm(apiKey.id);
   };
 
-  const handleDelete = (apiKey: ApiKey) => {
-    if (confirm(`API 키 "${apiKey.key_name}"를 삭제하시겠습니까?\n키 ID: ${apiKey.key_id}`)) {
-      deleteMutation.mutate(apiKey.id, {
-        onSuccess: () => {
-          toast.success('API 키가 삭제되었습니다');
-        },
-        onError: (error) => {
-          toast.error(error.message || 'API 키 삭제에 실패했습니다');
-        },
-      });
+  const handleDelete = async (apiKey: ApiKey) => {
+    if (confirm(`API 키 "${apiKey.keyName}"를 삭제하시겠습니까?`)) {
+      try {
+        await deleteApiKey({
+          variables: {
+            id: apiKey.id,
+          },
+        });
+        toast.success("API 키가 삭제되었습니다");
+        refetch();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "알 수 없는 오류";
+        toast.error(`API 키 삭제 실패: ${message}`);
+        console.error("Failed to delete API key:", error);
+      }
     }
   };
 
-  const handleToggleStatus = (apiKey: ApiKey) => {
-    const newStatus = apiKey.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    const action = newStatus === 'ACTIVE' ? '활성화' : '비활성화';
-    
-    if (confirm(`API 키 "${apiKey.key_name}"를 ${action}하시겠습니까?`)) {
-      statusMutation.mutate(
-        { id: apiKey.id, status: newStatus },
-        {
-          onSuccess: () => {
-            toast.success(`API 키가 ${action}되었습니다`);
+  const handleToggleStatus = async (apiKey: ApiKey) => {
+    const newStatus = apiKey.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+    const action = newStatus === "ACTIVE" ? "활성화" : "비활성화";
+
+    if (confirm(`API 키 "${apiKey.keyName}"를 ${action}하시겠습니까?`)) {
+      try {
+        await updateApiKey({
+          variables: {
+            id: apiKey.id,
+            input: {
+              status: newStatus,
+            },
           },
-          onError: (error) => {
-            toast.error(error.message || `API 키 ${action}에 실패했습니다`);
-          },
-        }
-      );
+        });
+        toast.success(`API 키가 ${action}되었습니다`);
+        refetch();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "알 수 없는 오류";
+        toast.error(`API 키 ${action} 실패: ${message}`);
+        console.error("Failed to update API key status:", error);
+      }
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">로딩 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <p className="text-destructive mb-4">에러: {error.message}</p>
-          <button onClick={() => refetch()} className="text-primary hover:underline">
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6">로딩 중...</div>;
 
   return (
     <div className="space-y-6 p-6">
       <ApiKeysHeader onRefresh={() => refetch()} />
-      <ApiKeysStats {...stats} />
+      <ApiKeysStats data={apiKeys} />
       <ApiKeysFilters />
-      <ApiKeysTable 
-        data={apiKeys} 
-        onEdit={handleEdit} 
+      <ApiKeysTable
+        data={apiKeys}
+        onEdit={handleEdit}
         onDelete={handleDelete}
         onToggleStatus={handleToggleStatus}
       />

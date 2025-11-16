@@ -1,135 +1,193 @@
 /**
  * @file use-sessions.ts
- * @description 세션 관리 React Query hooks
+ * @description Sessions GraphQL Hooks
+ *
+ * Apollo Client를 사용한 GraphQL Hooks
+ * Feature-driven 아키텍처를 따릅니다.
+ *
+ * 타입 명명 규칙:
+ * - 목록 조회: SessionsQueryVariables (복수)
+ * - 단일 조회: SessionQueryVariables (단수)
+ * - 생성/수정/삭제/폐기: CreateSessionVariables, UpdateSessionVariables, DeleteSessionVariables, RevokeSessionVariables (단수)
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { sessionService } from "../services";
-import type {
-  Session,
-  CreateSessionRequest,
-  UpdateSessionRequest,
-  SessionQueryParams,
-} from "../types";
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_SESSIONS,
+  GET_SESSION,
+  CREATE_SESSION,
+  UPDATE_SESSION,
+  DELETE_SESSION,
+  REVOKE_SESSION,
+  REVOKE_USER_SESSIONS,
+  type SessionsQueryVariables,
+  type SessionQueryVariables,
+  type CreateSessionVariables,
+  type UpdateSessionVariables,
+  type DeleteSessionVariables,
+  type RevokeSessionVariables,
+  type RevokeUserSessionsVariables,
+} from "../graphql";
+import type { Session } from "../types";
+
+// ========== useQuery Hooks ==========
 
 /**
- * Query Key Factory
+ * 세션 목록 조회 (복수)
+ *
+ * @param variables 목록 조회 파라미터 (SessionsQueryVariables)
+ * @example
+ * const { data, loading, error, refetch } = useSessions({ limit: 20, offset: 0 });
  */
-export const sessionsKeys = {
-  all: ["sessions"] as const,
-  lists: () => [...sessionsKeys.all, "list"] as const,
-  list: (params?: SessionQueryParams) => [...sessionsKeys.lists(), params] as const,
-  detail: (id: string) => [...sessionsKeys.all, "detail", id] as const,
-};
-
-/**
- * 목록 조회 훅
- */
-export function useSessions(params?: SessionQueryParams) {
-  return useQuery({
-    queryKey: sessionsKeys.list(params),
-    queryFn: () => sessionService.listSessions(params),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
+export function useSessions(variables?: SessionsQueryVariables) {
+  return useQuery<
+    { sessions: Session[] },
+    SessionsQueryVariables
+  >(GET_SESSIONS, {
+    variables: {
+      limit: 20,
+      offset: 0,
+      ...variables,
+    },
+    fetchPolicy: "cache-and-network",
   });
 }
 
 /**
- * 상세 조회 훅
+ * 세션 상세 조회 (단수)
+ *
+ * @param id 세션 ID
+ * @example
+ * const { data, loading, error } = useSession("session-id");
  */
-export function useSession(id: string | null | undefined) {
-  return useQuery({
-    queryKey: sessionsKeys.detail(id!),
-    queryFn: () => sessionService.getSession(id!),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+export function useSession(id: string) {
+  return useQuery<{ session: Session }, SessionQueryVariables>(
+    GET_SESSION,
+    {
+      variables: { id },
+      skip: !id, // id가 없으면 쿼리 실행 안 함
+    }
+  );
 }
 
+// ========== useMutation Hooks ==========
+
 /**
- * 생성 훅
+ * 세션 생성
+ *
+ * @example
+ * const [createSession, { loading, error }] = useCreateSession();
+ * await createSession({
+ *   variables: {
+ *     input: { userId, ipAddress, expiresAt, ... }
+ *   }
+ * });
  */
 export function useCreateSession() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateSessionRequest) => sessionService.createSession(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("Failed to create session:", error);
-    },
+  return useMutation<
+    { createSession: Session },
+    CreateSessionVariables
+  >(CREATE_SESSION, {
+    refetchQueries: [
+      {
+        query: GET_SESSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 수정 훅
+ * 세션 수정
+ *
+ * @example
+ * const [updateSession, { loading, error }] = useUpdateSession();
+ * await updateSession({
+ *   variables: {
+ *     id: "session-id",
+ *     input: { status, lastActivityAt, ... }
+ *   }
+ * });
  */
 export function useUpdateSession() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateSessionRequest }) =>
-      sessionService.updateSession(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.detail(variables.id) });
-    },
-    onError: (error) => {
-      console.error("Failed to update session:", error);
-    },
+  return useMutation<
+    { updateSession: Session },
+    UpdateSessionVariables
+  >(UPDATE_SESSION, {
+    refetchQueries: [
+      {
+        query: GET_SESSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 삭제 훅
+ * 세션 삭제
+ *
+ * @example
+ * const [deleteSession, { loading, error }] = useDeleteSession();
+ * await deleteSession({
+ *   variables: { id: "session-id" }
+ * });
  */
 export function useDeleteSession() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => sessionService.deleteSession(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("Failed to delete session:", error);
-    },
+  return useMutation<
+    { deleteSession: { message: string } },
+    DeleteSessionVariables
+  >(DELETE_SESSION, {
+    refetchQueries: [
+      {
+        query: GET_SESSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 세션 취소 훅
+ * 세션 폐기 (Revoke)
+ *
+ * @example
+ * const [revokeSession, { loading, error }] = useRevokeSession();
+ * await revokeSession({
+ *   variables: { id: "session-id" }
+ * });
  */
 export function useRevokeSession() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => sessionService.revokeSession(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("Failed to revoke session:", error);
-    },
+  return useMutation<
+    { revokeSession: { id: string; status: string } },
+    RevokeSessionVariables
+  >(REVOKE_SESSION, {
+    refetchQueries: [
+      {
+        query: GET_SESSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 사용자 모든 세션 취소 훅
+ * 사용자의 모든 세션 폐기
+ *
+ * @example
+ * const [revokeUserSessions, { loading, error }] = useRevokeUserSessions();
+ * await revokeUserSessions({
+ *   variables: { userId: "user-id" }
+ * });
  */
 export function useRevokeUserSessions() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (userId: string) => sessionService.revokeUserSessions(userId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: sessionsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("Failed to revoke user sessions:", error);
-    },
+  return useMutation<
+    { revokeUserSessions: { message: string } },
+    RevokeUserSessionsVariables
+  >(REVOKE_USER_SESSIONS, {
+    refetchQueries: [
+      {
+        query: GET_SESSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }

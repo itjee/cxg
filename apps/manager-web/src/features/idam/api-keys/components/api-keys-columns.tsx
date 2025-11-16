@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
-import type { ApiKey, ApiKeyStatus } from "../types";
+import type { ApiKey, ApiKeyStatus } from "../types/api_keys.types";
 
 /**
  * 상수 정의 - 상태별 색상
@@ -110,33 +110,33 @@ export const getApiKeysColumns = ({
   },
   // 키 ID
   {
-    accessorKey: "key_id",
+    accessorKey: "keyId",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="키 ID" />
     ),
     cell: ({ row }) => (
       <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
-        {row.getValue("key_id")}
+        {row.getValue("keyId")}
       </code>
     ),
   },
   // 키 이름
   {
-    accessorKey: "key_name",
+    accessorKey: "keyName",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="키 이름" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("key_name")}</div>
+      <div className="font-medium">{row.getValue("keyName")}</div>
     ),
   },
   // 사용자 ID
   {
-    accessorKey: "user_id",
+    accessorKey: "userId",
     header: "사용자 ID",
     cell: ({ row }) => (
       <div className="text-muted-foreground text-xs font-mono">
-        {(row.getValue("user_id") as string).slice(0, 8)}...
+        {(row.getValue("userId") as string).slice(0, 8)}...
       </div>
     ),
   },
@@ -157,36 +157,36 @@ export const getApiKeysColumns = ({
   },
   // 사용 횟수
   {
-    accessorKey: "usage_count",
+    accessorKey: "usageCount",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="사용 횟수" />
     ),
     cell: ({ row }) => (
       <div className="text-right font-mono">
-        {formatNumber(row.getValue("usage_count"))}
+        {formatNumber(row.getValue("usageCount"))}
       </div>
     ),
   },
   // 마지막 사용일
   {
-    accessorKey: "last_used_at",
+    accessorKey: "lastUsedAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="마지막 사용" />
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground text-sm">
-        {formatDateTime(row.getValue("last_used_at"))}
+        {formatDateTime(row.getValue("lastUsedAt"))}
       </div>
     ),
   },
   // 만료일
   {
-    accessorKey: "expires_at",
+    accessorKey: "expiresAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="만료일" />
     ),
     cell: ({ row }) => {
-      const expiresAt = row.getValue("expires_at") as string | undefined;
+      const expiresAt = row.getValue("expiresAt") as string | undefined;
       const isExpired = expiresAt && new Date(expiresAt) < new Date();
       return (
         <div
@@ -199,13 +199,13 @@ export const getApiKeysColumns = ({
   },
   // 등록일
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="등록일" />
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        {formatDate(row.getValue("created_at"))}
+        {formatDate(row.getValue("createdAt"))}
       </div>
     ),
   },

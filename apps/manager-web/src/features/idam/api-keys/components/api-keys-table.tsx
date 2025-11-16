@@ -11,9 +11,9 @@
  */
 
 import { DataTable } from "@/components/data-table";
-import { useApiKeyStore } from "../stores";
+import { useApiKeyStore } from "../stores/api_keys.store";
 import { getApiKeysColumns } from "./api-keys-columns";
-import type { ApiKey } from "../types";
+import type { ApiKey } from "../types/api_keys.types";
 
 interface ApiKeysTableProps {
   data: ApiKey[];
@@ -35,7 +35,7 @@ export function ApiKeysTable({
     <DataTable
       columns={columns}
       data={data}
-      searchKey="key_name"
+      searchKey="keyName"
       searchPlaceholder="키 이름 또는 키 ID 검색..."
       showPagination={true}
       pageSize={20}

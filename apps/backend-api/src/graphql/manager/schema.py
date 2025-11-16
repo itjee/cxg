@@ -3,6 +3,8 @@
 import strawberry
 
 from .auth.mutations import ManagerAuthMutations
+from .auth.queries import ManagerAuthQueries
+from .auth.types import ManagerAuthUser
 from .dashboard import Activity, DashboardQueries, DashboardStats, TenantGrowthData
 from .idam.permissions import (
     ManagerPermission,
@@ -26,6 +28,12 @@ from .idam.users import ManagerUser, ManagerUserMutations, ManagerUserQueries
 @strawberry.type(description="Manager 시스템 Query")
 class ManagerQuery:
     """Manager 시스템 Query"""
+
+    # Auth
+    @strawberry.field(description="현재 로그인한 사용자 정보 조회")
+    async def me(self, info) -> "ManagerAuthUser | None":
+        """현재 로그인한 사용자 정보를 조회합니다."""
+        return await ManagerAuthQueries().me(info)
 
     # Dashboard
     @strawberry.field(description="Dashboard 통계 데이터")
@@ -131,45 +139,41 @@ class ManagerQuery:
 
 @strawberry.type(description="Manager 시스템 Mutation")
 class ManagerMutation:
-    """Manager 시스템 Mutation"""
+    """Manager 시스템 Mutation
 
-    # ===== Auth =====
-    # Authentication
-    signin = ManagerAuthMutations.signin
-    signup = ManagerAuthMutations.signup
-    refresh_token = ManagerAuthMutations.refresh_token
-    logout = ManagerAuthMutations.logout
-    change_password = ManagerAuthMutations.change_password
-    forgot_password = ManagerAuthMutations.forgot_password
-    reset_password = ManagerAuthMutations.reset_password
+    Manager 시스템의 모든 Mutation을 통합하여 제공합니다.
+    각 모듈의 Mutation 클래스를 네임스페이스로 노출합니다.
+    """
 
-    # ===== IDAM - Users =====
-    create_user = ManagerUserMutations.create_user
-    update_user = ManagerUserMutations.update_user
+    @strawberry.field(description="인증 관련 Mutation")
+    def auth(self) -> ManagerAuthMutations:
+        """인증 관련 Mutation (회원가입, 로그인, 토큰 갱신 등)"""
+        return ManagerAuthMutations()
 
-    # ===== IDAM - Roles =====
-    create_role = ManagerRoleMutations.create_role
-    update_role = ManagerRoleMutations.update_role
+    @strawberry.field(description="사용자 관련 Mutation")
+    def users(self) -> ManagerUserMutations:
+        """사용자 관련 Mutation (생성, 수정 등)"""
+        return ManagerUserMutations()
 
-    # ===== IDAM - Permissions =====
-    create_permission = ManagerPermissionMutations.create_permission
-    update_permission = ManagerPermissionMutations.update_permission
+    @strawberry.field(description="역할 관련 Mutation")
+    def roles(self) -> ManagerRoleMutations:
+        """역할 관련 Mutation (생성, 수정 등)"""
+        return ManagerRoleMutations()
 
-    # ===== IDAM - Role Permissions =====
-    assign_permission_to_role = ManagerRolePermissionMutations.assign_permission_to_role
-    remove_permission_from_role = ManagerRolePermissionMutations.remove_permission_from_role
-    bulk_assign_permissions_to_role = ManagerRolePermissionMutations.bulk_assign_permissions_to_role
-    bulk_remove_permissions_from_role = (
-        ManagerRolePermissionMutations.bulk_remove_permissions_from_role
-    )
+    @strawberry.field(description="권한 관련 Mutation")
+    def permissions(self) -> ManagerPermissionMutations:
+        """권한 관련 Mutation (생성, 수정 등)"""
+        return ManagerPermissionMutations()
 
-    # ===== IDAM - User Roles =====
-    assign_role_to_user = ManagerUserRoleMutations.assign_role_to_user
-    update_user_role = ManagerUserRoleMutations.update_user_role
-    revoke_role_from_user = ManagerUserRoleMutations.revoke_role_from_user
-    delete_user_role = ManagerUserRoleMutations.delete_user_role
-    bulk_assign_roles_to_user = ManagerUserRoleMutations.bulk_assign_roles_to_user
-    bulk_revoke_roles_from_user = ManagerUserRoleMutations.bulk_revoke_roles_from_user
+    @strawberry.field(description="역할-권한 관련 Mutation")
+    def role_permissions(self) -> ManagerRolePermissionMutations:
+        """역할-권한 관련 Mutation (할당, 제거 등)"""
+        return ManagerRolePermissionMutations()
+
+    @strawberry.field(description="사용자-역할 관련 Mutation")
+    def user_roles(self) -> ManagerUserRoleMutations:
+        """사용자-역할 관련 Mutation (할당, 제거 등)"""
+        return ManagerUserRoleMutations()
 
 
 __all__ = ["ManagerQuery", "ManagerMutation"]

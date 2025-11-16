@@ -1,63 +1,110 @@
 /**
  * @file roles.types.ts
- * @description Roles TypeScript 타입 정의
+ * @description 역할(Role) GraphQL 타입 정의 (camelCase - GraphQL 네이티브)
+ *
+ * 타입 명명 규칙:
+ * - 단일 조회/단일 모델: 단수형 (Role)
+ * - 목록 조회/목록 파라미터: 복수형 (Roles, RolesQueryVariables)
+ * - Create/Update Input: 단수형 (CreateRoleInput, UpdateRoleInput)
  */
 
+// ===== 단일 역할 타입 (단수) =====
+
 /**
- * Roles 정보
+ * Manager Role (Identity & Access Management)
+ * GraphQL 필드는 camelCase입니다
+ *
+ * @singular 단일 조회, 단일 엔티티 타입
  */
-export interface Roles {
-  // 기본 식별자
+export interface Role {
   id: string;
-  created_at: string;
-  updated_at?: string;
-  created_by?: string;
-  updated_by?: string;
-
-  // TODO: 필드 정의
+  code: string;
   name: string;
   description?: string;
-  
-  // 상태
-  is_active: boolean;
-  is_deleted: boolean;
+  category: string; // MANAGER_ADMIN, PLATFORM_SUPPORT, TENANT_ADMIN, TENANT_USER
+  level: number;
+  scope: string; // GLOBAL, TENANT
+  isDefault: boolean;
+  priority: number;
+  status: string; // ACTIVE, INACTIVE
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ===== Create/Update Input 타입 (단수) =====
+
+/**
+ * 역할 생성 입력
+ */
+export interface CreateRoleInput {
+  code: string;
+  name: string;
+  description?: string;
+  category: string;
+  level: number;
+  scope: string;
+  isDefault?: boolean;
+  priority?: number;
 }
 
 /**
- * Roles 생성 요청
+ * 역할 수정 입력
  */
-export interface CreateRolesRequest {
-  name: string;
-  description?: string;
-  is_active?: boolean;
-}
-
-/**
- * Roles 수정 요청
- */
-export interface UpdateRolesRequest {
+export interface UpdateRoleInput {
   name?: string;
   description?: string;
-  is_active?: boolean;
+  level?: number;
+  isDefault?: boolean;
+  priority?: number;
+  status?: string;
+}
+
+// ===== 목록 조회 파라미터 (복수) =====
+
+/**
+ * 역할 목록 조회 파라미터
+ *
+ * @plural 목록 조회 파라미터
+ */
+export interface RolesQueryVariables {
+  limit?: number;
+  offset?: number;
+  status?: string;
+}
+
+// ===== GraphQL 응답 타입 =====
+
+/**
+ * 역할 목록 조회 응답
+ */
+export interface GetRolesResponse {
+  roles: Role[];
 }
 
 /**
- * Roles 목록 응답
+ * 역할 상세 조회 응답
  */
-export interface RolesListResponse {
-  items: Roles[];
-  total: number;
-  page: number;
-  page_size: number;
-  total_pages: number;
+export interface GetRoleResponse {
+  role: Role;
 }
 
 /**
- * Roles 쿼리 파라미터
+ * 역할 생성 응답
  */
-export interface RolesQueryParams {
-  page?: number;
-  pageSize?: number;
-  search?: string;
-  active?: boolean;
+export interface CreateRoleResponse {
+  createRole: Role;
+}
+
+/**
+ * 역할 수정 응답
+ */
+export interface UpdateRoleResponse {
+  updateRole: Role;
+}
+
+/**
+ * 역할 삭제 응답
+ */
+export interface DeleteRoleResponse {
+  deleteRole: { message: string };
 }

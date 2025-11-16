@@ -1,13 +1,17 @@
-'use client';
+"use client";
 
 /**
  * @file api-keys-header.tsx
  * @description API 키 관리 페이지 헤더 컴포넌트
+ *
+ * PageHeader 컴포넌트를 사용하여 페이지 제목과 주요 액션 버튼을 제공합니다.
+ * - 새로고침 버튼
+ * - API 키 추가 버튼
  */
 
-import { Button } from '@/components/ui/button';
-import { Plus, RefreshCw } from 'lucide-react';
-import { useApiKeyStore } from '../stores';
+import { Plus, RefreshCw } from "lucide-react";
+import { PageHeader } from "@/components/layouts/page-header";
+import { useApiKeyStore } from "../stores/api_keys.store";
 
 interface ApiKeysHeaderProps {
   onRefresh?: () => void;
@@ -16,26 +20,32 @@ interface ApiKeysHeaderProps {
 export function ApiKeysHeader({ onRefresh }: ApiKeysHeaderProps) {
   const { openForm } = useApiKeyStore();
 
+  const actions = [
+    ...(onRefresh
+      ? [
+          {
+            id: "refresh",
+            label: "새로고침",
+            icon: RefreshCw,
+            onClick: onRefresh,
+            variant: "outline" as const,
+          },
+        ]
+      : []),
+    {
+      id: "add",
+      label: "API 키 추가",
+      icon: Plus,
+      onClick: () => openForm(),
+      variant: "default" as const,
+    },
+  ];
+
   return (
-    <div className="flex items-center justify-between">
-      <div>
-        <h1 className="text-3xl font-bold">API 키 관리</h1>
-        <p className="text-muted-foreground mt-2">
-          API 키를 생성하고 관리합니다
-        </p>
-      </div>
-      <div className="flex gap-2">
-        {onRefresh && (
-          <Button variant="outline" onClick={onRefresh}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            새로고침
-          </Button>
-        )}
-        <Button onClick={() => openForm()}>
-          <Plus className="mr-2 h-4 w-4" />
-          API 키 추가
-        </Button>
-      </div>
-    </div>
+    <PageHeader
+      title="API 키 관리"
+      description="API 키를 생성하고 관리합니다"
+      actions={actions}
+    />
   );
 }

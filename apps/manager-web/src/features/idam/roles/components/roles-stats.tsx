@@ -1,46 +1,75 @@
 "use client";
 
-import { Roles as RolesIcon, UserCheck, UserX, Shield } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import type { Roles } from "../types/roles.types";
+/**
+ * @file roles-stats.tsx
+ * @description 역할 통계 카드 컴포넌트
+ *
+ * StatsCards 컴포넌트를 사용하여 주요 지표 표시
+ */
 
-interface RolesStatsProps {
-  roles: Roles[];
+import { useMemo } from "react";
+import { Shield, Lock, CheckCircle, XCircle } from "lucide-react";
+import { StatsCards } from "@/components/stats/stats-cards";
+import type { Role } from "../types/roles.types";
+
+interface StatCardData {
+  title: string;
+  value: string | number;
+  description?: string;
+  icon?: React.ReactNode;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+    label?: string;
+  };
+  color?: "default" | "primary" | "success" | "warning" | "danger";
 }
 
-export function RolesStats({ roles }: RolesStatsProps) {
-  const total = roles.length;
-  const active = roles.filter((u) => u.is_active).length;
-  const inactive = total - active;
-  const admins = roles.filter((u) => u.is_active).length;
+interface RolesStatsProps {
+  data: Role[];
+}
 
-  const stats = [
-    { label: "전체 role", value: total, icon: RolesIcon, color: "text-blue-600", bgColor: "bg-blue-100" },
-    { label: "활성", value: active, icon: UserCheck, color: "text-green-600", bgColor: "bg-green-100" },
-    { label: "비활성", value: inactive, icon: UserX, color: "text-gray-600", bgColor: "bg-gray-100" },
-    { label: "관리자", value: admins, icon: Shield, color: "text-purple-600", bgColor: "bg-purple-100" },
-  ];
+export function RolesStats({ data }: RolesStatsProps) {
+  const stats: StatCardData[] = useMemo(() => {
+    const total = data.length;
+    const active = data.filter((u) => u.status === "ACTIVE").length;
+    const inactive = total - active;
 
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {stats.map((stat) => {
-        const Icon = stat.icon;
-        return (
-          <Card key={stat.label}>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-slate-600">{stat.label}</p>
-                  <p className="text-2xl font-bold mt-2">{stat.value}</p>
-                </div>
-                <div className={`p-3 rounded-full ${stat.bgColor}`}>
-                  <Icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
-    </div>
-  );
+    // 활성 역할 비율 계산
+    const activePercentage = total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
+    const inactivePercentage = total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
+
+    return [
+      {
+        title: "전체 역할",
+        value: total.toString(),
+        description: "총 역할 수",
+        icon: <Shield className="h-5 w-5" />,
+        color: "primary" as const,
+      },
+      {
+        title: "활성 역할",
+        value: active.toString(),
+        description: `전체의 ${activePercentage}%`,
+        icon: <CheckCircle className="h-5 w-5" />,
+        color: "success" as const,
+      },
+      {
+        title: "비활성 역할",
+        value: inactive.toString(),
+        description: `전체의 ${inactivePercentage}%`,
+        icon: <XCircle className="h-5 w-5" />,
+        color: "default" as const,
+      },
+      {
+        title: "권한 관리",
+        value: data.filter((r) => r.name?.toLowerCase().includes("admin")).length.toString(),
+        description: "관리자 관련 역할",
+        icon: <Lock className="h-5 w-5" />,
+        color: "warning" as const,
+      },
+    ];
+  }, [data]);
+
+  return <StatsCards cards={stats} columns={4} />;
 }

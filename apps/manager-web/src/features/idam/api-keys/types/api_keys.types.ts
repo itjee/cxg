@@ -1,199 +1,143 @@
 /**
  * @file api_keys.types.ts
- * @description API 키 관리 TypeScript 타입 정의
- * 
- * 데이터베이스 스키마와 1:1 매핑되는 타입 정의
- * - ApiKey: API 키 엔티티 (DB 스키마 기반)
- * - CreateApiKeyRequest: 생성 요청 DTO
- * - UpdateApiKeyRequest: 수정 요청 DTO
- * - ApiKeyListResponse: 목록 응답 DTO
- * 
- * @sync 데이터베이스 동기화
- * DB 스키마: /packages/database/schemas/manager/02_idam/06_api_keys.sql
+ * @description API Key GraphQL 타입 정의 (camelCase - GraphQL 네이티브)
+ *
+ * 타입 명명 규칙:
+ * - 단일 조회, 단일 모델 타입: 단수형 (ApiKey)
+ * - 목록 조회, 목록 파라미터: 복수형 (ApiKeysQueryVariables)
+ * - Create/Update Input: 단수형 (CreateApiKeyInput, UpdateApiKeyInput)
  */
+
+// ===== API 키 상태 타입 =====
 
 /**
  * API 키 상태
  */
 export type ApiKeyStatus = "ACTIVE" | "INACTIVE" | "REVOKED";
 
+// ===== 단일 API 키 타입 (단수) =====
+
 /**
- * API 키 정보 (DB 스키마 기반)
- * 
- * @description
- * 데이터베이스 테이블: idam.api_keys
- * 
- * @fields 기본 식별자 및 감사 필드
- * - id: UUID, API 키 고유 식별자
- * - created_at: TIMESTAMP, 생성일시
- * - created_by: UUID, 생성자 ID
- * - updated_at: TIMESTAMP, 수정일시
- * - updated_by: UUID, 수정자 ID
- * 
- * @fields API 키 정보
- * - key_id: VARCHAR(100), 공개 키 ID (ak_xxxxxxxxxx)
- * - key_hash: VARCHAR(255), 해시된 실제 키
- * - key_name: VARCHAR(100), 키 이름/설명
- * 
- * @fields 소유자 정보
- * - user_id: UUID, 사용자 ID
- * - tenant_context: UUID, 테넌트 컨텍스트
- * - service_account: VARCHAR(100), 서비스 계정명
- * 
- * @fields 권한 및 스코프
- * - scopes: TEXT[], API 키 권한 스코프 배열
- * - allowed_ips: INET[], 허용 IP 주소 배열
- * 
- * @fields 사용 제한
- * - rate_limit_per_minute: INTEGER, 분당 요청 제한
- * - rate_limit_per_hour: INTEGER, 시간당 요청 제한
- * - rate_limit_per_day: INTEGER, 일당 요청 제한
- * 
- * @fields 상태 및 만료
- * - status: VARCHAR(20), API 키 상태 (ACTIVE, INACTIVE, REVOKED)
- * - expires_at: TIMESTAMP, 만료일시
- * 
- * @fields 사용 통계
- * - last_used_at: TIMESTAMP, 마지막 사용일시
- * - last_used_ip: INET, 마지막 사용 IP
- * - usage_count: BIGINT, 사용 횟수
+ * API Key (Identity & Access Management)
+ * GraphQL 필드는 camelCase입니다
+ *
+ * @singular 단일 조회, 단일 엔티티 타입
  */
 export interface ApiKey {
-  // 기본 식별자 및 감사 필드
+  // 기본 식별자 및 메타데이터
   id: string;
-  created_at: string;
-  created_by?: string;
-  updated_at?: string;
-  updated_by?: string;
+  createdAt: string;
+  updatedAt: string;
+  createdBy?: string;
+  updatedBy?: string;
 
   // API 키 정보
-  key_id: string;
-  key_hash: string;
-  key_name: string;
+  keyId: string;
+  keyName: string;
 
   // 소유자 정보
-  user_id: string;
-  tenant_context?: string;
-  service_account?: string;
+  userId: string;
+  tenantContext?: string;
+  serviceAccount?: string;
 
   // 권한 및 스코프
   scopes?: string[];
-  allowed_ips?: string[];
+  allowedIps?: string[];
 
   // 사용 제한
-  rate_limit_per_minute: number;
-  rate_limit_per_hour: number;
-  rate_limit_per_day: number;
+  rateLimitPerMinute: number;
+  rateLimitPerHour: number;
+  rateLimitPerDay: number;
 
   // 상태 및 만료
   status: ApiKeyStatus;
-  expires_at?: string;
+  expiresAt?: string;
 
   // 사용 통계
-  last_used_at?: string;
-  last_used_ip?: string;
-  usage_count: number;
+  lastUsedAt?: string;
+  lastUsedIp?: string;
+  usageCount: number;
 }
 
+// ===== Create/Update Input 타입 (단수) =====
+
 /**
- * API 키 생성 요청 DTO
- * 
- * @required
- * - key_name: 키 이름/설명
- * - user_id: 사용자 ID
- * 
- * @optional
- * - tenant_context: 테넌트 컨텍스트
- * - service_account: 서비스 계정명
- * - scopes: API 키 권한 스코프 배열
- * - allowed_ips: 허용 IP 주소 배열
- * - rate_limit_per_minute: 분당 요청 제한 (기본값: 1000)
- * - rate_limit_per_hour: 시간당 요청 제한 (기본값: 10000)
- * - rate_limit_per_day: 일당 요청 제한 (기본값: 100000)
- * - expires_at: 만료일시
+ * API 키 생성 입력
  */
-export interface CreateApiKeyRequest {
-  key_name: string;
-  user_id: string;
-  tenant_context?: string;
-  service_account?: string;
+export interface CreateApiKeyInput {
+  keyName: string;
+  userId: string;
+  tenantContext?: string;
+  serviceAccount?: string;
   scopes?: string[];
-  allowed_ips?: string[];
-  rate_limit_per_minute?: number;
-  rate_limit_per_hour?: number;
-  rate_limit_per_day?: number;
-  expires_at?: string;
+  allowedIps?: string[];
+  rateLimitPerMinute?: number;
+  rateLimitPerHour?: number;
+  rateLimitPerDay?: number;
+  expiresAt?: string;
 }
 
 /**
- * API 키 수정 요청 DTO
- * 
- * @optional 모든 필드 선택적 (PATCH 방식)
- * - key_name: 키 이름/설명
- * - scopes: API 키 권한 스코프 배열
- * - allowed_ips: 허용 IP 주소 배열
- * - rate_limit_per_minute: 분당 요청 제한
- * - rate_limit_per_hour: 시간당 요청 제한
- * - rate_limit_per_day: 일당 요청 제한
- * - status: API 키 상태
- * - expires_at: 만료일시
+ * API 키 수정 입력
  */
-export interface UpdateApiKeyRequest {
-  key_name?: string;
+export interface UpdateApiKeyInput {
+  keyName?: string;
   scopes?: string[];
-  allowed_ips?: string[];
-  rate_limit_per_minute?: number;
-  rate_limit_per_hour?: number;
-  rate_limit_per_day?: number;
-  status?: ApiKeyStatus;
-  expires_at?: string;
+  allowedIps?: string[];
+  rateLimitPerMinute?: number;
+  rateLimitPerHour?: number;
+  rateLimitPerDay?: number;
+  status?: string;
+  expiresAt?: string;
 }
 
-/**
- * API 키 목록 응답 DTO
- * 
- * @description
- * 페이지네이션을 포함한 목록 응답
- * 
- * @fields
- * - data: API 키 배열
- * - total: 전체 개수
- * - page: 현재 페이지 (0-based)
- * - pageSize: 페이지당 항목 수
- */
-export interface ApiKeyListResponse {
-  data: ApiKey[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
+// ===== 목록 조회 파라미터 (복수) =====
 
 /**
- * API 키 상세 응답 DTO
+ * API 키 목록 조회 파라미터
+ *
+ * @plural 목록 조회 파라미터
  */
-export interface ApiKeyDetailResponse {
-  data: ApiKey;
-}
-
-/**
- * API 키 쿼리 파라미터
- * 
- * @description
- * 목록 조회 시 사용하는 쿼리 파라미터
- * 
- * @params
- * - page: 페이지 번호 (0-based)
- * - pageSize: 페이지당 항목 수
- * - search: 검색어 (key_name, key_id 검색)
- * - status: 상태 필터
- * - user_id: 사용자 ID 필터
- * - tenant_context: 테넌트 컨텍스트 필터
- */
-export type ApiKeyQueryParams = {
-  page?: number;
-  pageSize?: number;
+export interface ApiKeysQueryVariables {
+  limit?: number;
+  offset?: number;
+  status?: string;
   search?: string;
-  status?: ApiKeyStatus;
-  user_id?: string;
-  tenant_context?: string;
-};
+}
+
+// ===== GraphQL 응답 타입 =====
+
+/**
+ * API 키 목록 조회 응답
+ */
+export interface GetApiKeysResponse {
+  apiKeys: ApiKey[];
+}
+
+/**
+ * API 키 상세 조회 응답
+ */
+export interface GetApiKeyResponse {
+  apiKey: ApiKey;
+}
+
+/**
+ * API 키 생성 응답
+ */
+export interface CreateApiKeyResponse {
+  createApiKey: ApiKey;
+}
+
+/**
+ * API 키 수정 응답
+ */
+export interface UpdateApiKeyResponse {
+  updateApiKey: ApiKey;
+}
+
+/**
+ * API 키 삭제 응답
+ */
+export interface DeleteApiKeyResponse {
+  deleteApiKey: { message: string };
+}

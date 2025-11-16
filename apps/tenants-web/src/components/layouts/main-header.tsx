@@ -18,11 +18,11 @@ import { generateBreadcrumbs } from "@/lib/breadcrumbs";
 import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import { useBreadcrumb } from "@/contexts/breadcrumb.context";
 
-interface HeaderProps {
+export interface MainHeaderProps {
   onToggleSidebar?: () => void;
 }
 
-export function Header({ onToggleSidebar }: HeaderProps) {
+export function MainHeader({ onToggleSidebar }: MainHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { dynamicData } = useBreadcrumb();

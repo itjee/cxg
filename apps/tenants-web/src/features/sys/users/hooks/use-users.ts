@@ -260,36 +260,36 @@ export function useCreateUser(options?: {
       // 진행 중인 리페치 취소
       await queryClient.cancelQueries({ queryKey: usersKeys.lists() });
 
-      // 이전 데이터 스냅샷
-      const previousUsers = queryClient.getQueryData(usersKeys.lists());
+      // 이전 데이터 스냅샷 (첫 번째 페이지만 취급)
+      const previousUsers = queryClient.getQueryData(usersKeys.list());
 
-      // Optimistic Update
-      queryClient.setQueriesData({ queryKey: usersKeys.lists() }, (old: any) => {
+      // Optimistic Update (첫 번째 페이지만 업데이트)
+      queryClient.setQueryData(usersKeys.list(), (old: any) => {
         if (!old) return old;
         return {
           ...old,
-          data: [
-            ...(old.data || []),
+          items: [
             { ...newUser, id: "temp-id", createdAt: new Date().toISOString() },
+            ...(old.items || []),
           ],
+          total: (old.total || 0) + 1,
+          total_pages: Math.ceil(((old.total || 0) + 1) / (old.page_size || 10)),
         };
       });
 
       return { previousUsers };
     },
     onSuccess: (newUser) => {
+      // 모든 list 쿼리 무효화하여 서버에서 재조회
       queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
       options?.onSuccess?.(newUser);
     },
     onError: (error, variables, context) => {
       // 롤백
       if (context?.previousUsers) {
-        queryClient.setQueryData(usersKeys.lists(), context.previousUsers);
+        queryClient.setQueryData(usersKeys.list(), context.previousUsers);
       }
       options?.onError?.(error as Error);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
     },
     retry: 1,
   });
@@ -453,14 +453,16 @@ export function useDeleteUser(options?: {
     onMutate: async (id) => {
       await queryClient.cancelQueries({ queryKey: usersKeys.lists() });
 
-      const previousList = queryClient.getQueryData(usersKeys.lists());
+      const previousList = queryClient.getQueryData(usersKeys.list());
 
-      // Optimistic Update
-      queryClient.setQueriesData({ queryKey: usersKeys.lists() }, (old: any) => {
-        if (!old?.data) return old;
+      // ✅ Optimistic Update (첫 번째 페이지만 업데이트)
+      queryClient.setQueryData(usersKeys.list(), (old: any) => {
+        if (!old?.items) return old;
         return {
           ...old,
-          data: old.data.filter((user: User) => user.id !== id),
+          items: old.items.filter((user: User) => user.id !== id),
+          total: Math.max(0, (old.total || 0) - 1),
+          total_pages: Math.ceil(Math.max(0, (old.total || 0) - 1) / (old.page_size || 10)),
         };
       });
 
@@ -473,12 +475,9 @@ export function useDeleteUser(options?: {
     },
     onError: (error, id, context) => {
       if (context?.previousList) {
-        queryClient.setQueryData(usersKeys.lists(), context.previousList);
+        queryClient.setQueryData(usersKeys.list(), context.previousList);
       }
       options?.onError?.(error as Error);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
     },
     retry: 1,
   });
@@ -548,20 +547,21 @@ export function useToggleUserActive(options?: {
       await queryClient.cancelQueries({ queryKey: usersKeys.lists() });
 
       const previousUser = queryClient.getQueryData(usersKeys.detail(id));
-      const previousList = queryClient.getQueryData(usersKeys.lists());
+      const previousList = queryClient.getQueryData(usersKeys.list());
 
-      // Optimistic Update
+      // ✅ Optimistic Update - 상세 쿼리
       queryClient.setQueryData(usersKeys.detail(id), (old: any) => {
         if (!old) return old;
-        return { ...old, active };
+        return { ...old, is_active: active };
       });
 
-      queryClient.setQueriesData({ queryKey: usersKeys.lists() }, (old: any) => {
-        if (!old?.data) return old;
+      // ✅ Optimistic Update - 목록 쿼리 (첫 번째 페이지만)
+      queryClient.setQueryData(usersKeys.list(), (old: any) => {
+        if (!old?.items) return old;
         return {
           ...old,
-          data: old.data.map((user: User) =>
-            user.id === id ? { ...user, active } : user
+          items: old.items.map((user: User) =>
+            user.id === id ? { ...user, is_active: active } : user
           ),
         };
       });
@@ -569,6 +569,7 @@ export function useToggleUserActive(options?: {
       return { previousUser, previousList, id };
     },
     onSuccess: (_, { active }) => {
+      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
       options?.onSuccess?.(active);
     },
     onError: (error, { id }, context) => {
@@ -576,13 +577,9 @@ export function useToggleUserActive(options?: {
         queryClient.setQueryData(usersKeys.detail(id), context.previousUser);
       }
       if (context?.previousList) {
-        queryClient.setQueryData(usersKeys.lists(), context.previousList);
+        queryClient.setQueryData(usersKeys.list(), context.previousList);
       }
       options?.onError?.(error as Error);
-    },
-    onSettled: (_, __, { id }) => {
-      queryClient.invalidateQueries({ queryKey: usersKeys.detail(id) });
-      queryClient.invalidateQueries({ queryKey: usersKeys.lists() });
     },
     retry: 1,
   });

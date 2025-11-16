@@ -201,11 +201,13 @@ export function useAuth() {
 export function useSignin() {
   return useMutation<
     {
-      signin: {
-        accessToken: string;
-        refreshToken: string;
-        tokenType: string;
-        expiresIn: number;
+      auth: {
+        signin: {
+          accessToken: string;
+          refreshToken: string;
+          tokenType: string;
+          expiresIn: number;
+        };
       };
     },
     SigninVariables
@@ -218,14 +220,16 @@ export function useSignin() {
 export function useSignup() {
   return useMutation<
     {
-      signup: {
-        id: string;
-        username: string;
-        email: string;
-        fullName: string;
-        userType: string;
-        status: string;
-        createdAt: string;
+      auth: {
+        signup: {
+          id: string;
+          username: string;
+          email: string;
+          fullName: string;
+          userType: string;
+          status: string;
+          createdAt: string;
+        };
       };
     },
     SignupVariables
@@ -237,11 +241,13 @@ export function useSignup() {
  */
 export function useRefreshToken() {
   return useMutation<{
-    refreshToken: {
-      accessToken: string;
-      refreshToken: string;
-      tokenType: string;
-      expiresIn: number;
+    auth: {
+      refreshToken: {
+        accessToken: string;
+        refreshToken: string;
+        tokenType: string;
+        expiresIn: number;
+      };
     };
   }>(REFRESH_TOKEN);
 }
@@ -251,8 +257,10 @@ export function useRefreshToken() {
  */
 export function useLogout() {
   return useMutation<{
-    logout: {
-      message: string;
+    auth: {
+      logout: {
+        message: string;
+      };
     };
   }>(LOGOUT);
 }
@@ -263,8 +271,10 @@ export function useLogout() {
 export function useChangePassword() {
   return useMutation<
     {
-      changePassword: {
-        message: string;
+      auth: {
+        changePassword: {
+          message: string;
+        };
       };
     },
     ChangePasswordVariables
@@ -277,9 +287,11 @@ export function useChangePassword() {
 export function useForgotPassword() {
   return useMutation<
     {
-      forgotPassword: {
-        message: string;
-        resetToken?: string;
+      auth: {
+        forgotPassword: {
+          message: string;
+          resetToken?: string;
+        };
       };
     },
     ForgotPasswordVariables
@@ -292,8 +304,10 @@ export function useForgotPassword() {
 export function useResetPassword() {
   return useMutation<
     {
-      resetPassword: {
-        message: string;
+      auth: {
+        resetPassword: {
+          message: string;
+        };
       };
     },
     ResetPasswordVariables

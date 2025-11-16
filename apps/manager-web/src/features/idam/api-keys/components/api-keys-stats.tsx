@@ -1,85 +1,90 @@
-'use client';
+"use client";
 
 /**
  * @file api-keys-stats.tsx
- * @description API 키 관리 통계 카드 컴포넌트
+ * @description API 키 통계 카드 컴포넌트
+ *
+ * StatsCards 컴포넌트를 사용하여 주요 지표 표시
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Key, CheckCircle, XCircle, Ban, TrendingUp } from 'lucide-react';
+import { useMemo } from "react";
+import {
+  Key,
+  CheckCircle,
+  XCircle,
+  Ban,
+  TrendingUp,
+} from "lucide-react";
+import { StatsCards } from "@/components/stats/stats-cards";
+import type { ApiKey } from "../types/api_keys.types";
 
-interface ApiKeysStatsProps {
-  total: number;
-  active: number;
-  inactive: number;
-  revoked: number;
-  totalUsage: number;
+interface StatCardData {
+  title: string;
+  value: string | number;
+  description?: string;
+  icon?: React.ReactNode;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+    label?: string;
+  };
+  color?: "default" | "primary" | "success" | "warning" | "danger";
 }
 
-export function ApiKeysStats({ total, active, inactive, revoked, totalUsage }: ApiKeysStatsProps) {
-  return (
-    <div className="grid gap-4 md:grid-cols-5">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">전체 API 키</CardTitle>
-          <Key className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{total}</div>
-        </CardContent>
-      </Card>
+interface ApiKeysStatsProps {
+  data: ApiKey[];
+}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">활성</CardTitle>
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{active}</div>
-          <p className="text-xs text-muted-foreground">
-            {total > 0 ? ((active / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+export function ApiKeysStats({ data }: ApiKeysStatsProps) {
+  const stats: StatCardData[] = useMemo(() => {
+    const total = data.length;
+    const active = data.filter((k) => k.status === "ACTIVE").length;
+    const inactive = data.filter((k) => k.status === "INACTIVE").length;
+    const revoked = data.filter((k) => k.status === "REVOKED").length;
+    const totalUsage = data.reduce((sum, k) => sum + k.usageCount, 0);
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">비활성</CardTitle>
-          <XCircle className="h-4 w-4 text-gray-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{inactive}</div>
-          <p className="text-xs text-muted-foreground">
-            {total > 0 ? ((inactive / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+    const activePercentage = total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
+    const inactivePercentage = total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
+    const revokedPercentage = total > 0 ? ((revoked / total) * 100).toFixed(1) : "0.0";
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">취소됨</CardTitle>
-          <Ban className="h-4 w-4 text-red-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{revoked}</div>
-          <p className="text-xs text-muted-foreground">
-            {total > 0 ? ((revoked / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+    return [
+      {
+        title: "전체 API 키",
+        value: total.toString(),
+        description: "총 API 키 수",
+        icon: <Key className="h-5 w-5" />,
+        color: "primary" as const,
+      },
+      {
+        title: "활성",
+        value: active.toString(),
+        description: `전체의 ${activePercentage}%`,
+        icon: <CheckCircle className="h-5 w-5" />,
+        color: "success" as const,
+      },
+      {
+        title: "비활성",
+        value: inactive.toString(),
+        description: `전체의 ${inactivePercentage}%`,
+        icon: <XCircle className="h-5 w-5" />,
+        color: "default" as const,
+      },
+      {
+        title: "취소됨",
+        value: revoked.toString(),
+        description: `전체의 ${revokedPercentage}%`,
+        icon: <Ban className="h-5 w-5" />,
+        color: "danger" as const,
+      },
+      {
+        title: "총 사용 횟수",
+        value: totalUsage.toLocaleString(),
+        description: `평균 ${total > 0 ? Math.floor(totalUsage / total).toLocaleString() : 0}회`,
+        icon: <TrendingUp className="h-5 w-5" />,
+        color: "warning" as const,
+      },
+    ];
+  }, [data]);
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">총 사용 횟수</CardTitle>
-          <TrendingUp className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalUsage.toLocaleString()}</div>
-          <p className="text-xs text-muted-foreground">
-            평균 {total > 0 ? Math.floor(totalUsage / total).toLocaleString() : 0}회
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <StatsCards cards={stats} columns={5} />;
 }

@@ -8,18 +8,18 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { menuGroups } from "@/constants/menu-config";
 
-interface SidebarProps {
+export interface MainSidebarProps {
   collapsed: boolean;
   mobileOpen: boolean;
   onMobileClose: () => void;
   onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({
+export function MainSidebar({
   collapsed,
   mobileOpen,
   onMobileClose,
-}: SidebarProps) {
+}: MainSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [collapsedGroups, setCollapsedGroups] = useState<Set<string> | null>(

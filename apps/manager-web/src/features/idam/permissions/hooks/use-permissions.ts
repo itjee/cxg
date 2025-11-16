@@ -1,95 +1,143 @@
 /**
  * @file use-permissions.ts
- * @description Permissions React Query hooks
+ * @description Permissions GraphQL Hooks
+ *
+ * Apollo Client를 사용한 GraphQL Hooks
+ * Feature-driven 아키텍처를 따릅니다.
+ *
+ * 타입 명명 규칙:
+ * - 목록 조회: PermissionsQueryVariables (복수)
+ * - 단일 조회: PermissionQueryVariables (단수)
+ * - 생성/수정/삭제: CreatePermissionVariables, UpdatePermissionVariables, DeletePermissionVariables (단수)
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { permissionsService } from '../services/permissions.service';
-import type { 
-  PermissionsQueryParams,
-  CreatePermissionsRequest,
-  UpdatePermissionsRequest
-} from '../types/permissions.types';
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_PERMISSIONS,
+  GET_PERMISSION,
+  CREATE_PERMISSION,
+  UPDATE_PERMISSION,
+  DELETE_PERMISSION,
+  type PermissionsQueryVariables,
+  type PermissionQueryVariables,
+  type CreatePermissionVariables,
+  type UpdatePermissionVariables,
+  type DeletePermissionVariables,
+} from "../graphql";
+import type { Permission } from "../types";
+
+// ========== useQuery Hooks ==========
 
 /**
- * 목록 조회 hook
+ * 권한 목록 조회 (복수)
+ *
+ * @param variables 목록 조회 파라미터 (PermissionsQueryVariables)
+ * @example
+ * const { data, loading, error, refetch } = usePermissions({ limit: 20, offset: 0 });
  */
-export function usePermissions(params?: PermissionsQueryParams) {
-  return useQuery({
-    queryKey: ['permissions', params],
-    queryFn: ({ signal }) => permissionsService.listPermissions(params, signal),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-}
-
-/**
- * 상세 조회 hook
- */
-export function usePermissionsById(id: string) {
-  return useQuery({
-    queryKey: ['permissions', id],
-    queryFn: ({ signal }) => permissionsService.getPermissions(id, signal),
-    enabled: !!id,
-  });
-}
-
-/**
- * 생성 mutation hook
- */
-export function useCreatePermissions(options?: {
-  onSuccess?: (data: any) => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreatePermissionsRequest) => 
-      permissionsService.createPermissions(data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-      options?.onSuccess?.(data);
+export function usePermissions(variables?: PermissionsQueryVariables) {
+  return useQuery<
+    { permissions: Permission[] },
+    PermissionsQueryVariables
+  >(GET_PERMISSIONS, {
+    variables: {
+      limit: 20,
+      offset: 0,
+      ...variables,
     },
-    onError: options?.onError,
+    fetchPolicy: "cache-and-network",
   });
 }
 
 /**
- * 수정 mutation hook
+ * 권한 상세 조회 (단수)
+ *
+ * @param id 권한 ID
+ * @example
+ * const { data, loading, error } = usePermission("permission-id");
  */
-export function useUpdatePermissions(options?: {
-  onSuccess?: (data: any) => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
+export function usePermission(id: string) {
+  return useQuery<{ permission: Permission }, PermissionQueryVariables>(
+    GET_PERMISSION,
+    {
+      variables: { id },
+      skip: !id, // id가 없으면 쿼리 실행 안 함
+    }
+  );
+}
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdatePermissionsRequest }) =>
-      permissionsService.updatePermissions(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-      queryClient.invalidateQueries({ queryKey: ['permissions', variables.id] });
-      options?.onSuccess?.(data);
-    },
-    onError: options?.onError,
+// ========== useMutation Hooks ==========
+
+/**
+ * 권한 생성
+ *
+ * @example
+ * const [createPermission, { loading, error }] = useCreatePermission();
+ * await createPermission({
+ *   variables: {
+ *     input: { code, name, category, resource, action, ... }
+ *   }
+ * });
+ */
+export function useCreatePermission() {
+  return useMutation<
+    { createPermission: Permission },
+    CreatePermissionVariables
+  >(CREATE_PERMISSION, {
+    refetchQueries: [
+      {
+        query: GET_PERMISSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 삭제 mutation hook
+ * 권한 수정
+ *
+ * @example
+ * const [updatePermission, { loading, error }] = useUpdatePermission();
+ * await updatePermission({
+ *   variables: {
+ *     id: "permission-id",
+ *     input: { name, description, status, ... }
+ *   }
+ * });
  */
-export function useDeletePermissions(options?: {
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
+export function useUpdatePermission() {
+  return useMutation<
+    { updatePermission: Permission },
+    UpdatePermissionVariables
+  >(UPDATE_PERMISSION, {
+    refetchQueries: [
+      {
+        query: GET_PERMISSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
+  });
+}
 
-  return useMutation({
-    mutationFn: (id: string) => permissionsService.deletePermissions(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['permissions'] });
-      options?.onSuccess?.();
-    },
-    onError: options?.onError,
+/**
+ * 권한 삭제
+ *
+ * @example
+ * const [deletePermission, { loading, error }] = useDeletePermission();
+ * await deletePermission({
+ *   variables: { id: "permission-id" }
+ * });
+ */
+export function useDeletePermission() {
+  return useMutation<
+    { deletePermission: { message: string } },
+    DeletePermissionVariables
+  >(DELETE_PERMISSION, {
+    refetchQueries: [
+      {
+        query: GET_PERMISSIONS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }

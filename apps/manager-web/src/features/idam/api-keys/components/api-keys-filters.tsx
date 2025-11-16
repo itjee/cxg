@@ -1,57 +1,71 @@
-'use client';
+"use client";
 
 /**
  * @file api-keys-filters.tsx
- * @description API 키 필터 컴포넌트
+ * @description API 키 검색 및 필터 컴포넌트
+ *
+ * Filters 컴포넌트를 사용하여 검색 및 필터 기능 제공
  */
 
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useApiKeyStore } from '../stores';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import { useMemo } from "react";
+import { Filters } from "@/components/filters/filters";
+import { useApiKeyStore } from "../stores/api_keys.store";
 
 export function ApiKeysFilters() {
-  const { 
-    globalFilter, 
-    setGlobalFilter, 
-    selectedStatus, 
+  const {
+    selectedStatus,
+    globalFilter,
     setSelectedStatus,
-    resetFilters 
+    setGlobalFilter,
+    resetFilters,
   } = useApiKeyStore();
 
-  const hasFilters = globalFilter || selectedStatus;
+  const filterFields = useMemo(
+    () => [
+      {
+        key: "globalFilter",
+        type: "search" as const,
+        label: "검색",
+        placeholder: "키 이름 또는 키 ID 검색...",
+      },
+      {
+        key: "selectedStatus",
+        type: "select" as const,
+        label: "상태",
+        placeholder: "전체",
+        options: [
+          { label: "활성", value: "ACTIVE" },
+          { label: "비활성", value: "INACTIVE" },
+          { label: "취소됨", value: "REVOKED" },
+        ],
+      },
+    ],
+    []
+  );
+
+  const filterValues = useMemo(
+    () => ({
+      globalFilter,
+      selectedStatus: selectedStatus || "",
+    }),
+    [globalFilter, selectedStatus]
+  );
+
+  const handleFilterChange = (key: string, value: any) => {
+    if (key === "globalFilter") {
+      setGlobalFilter(value);
+    } else if (key === "selectedStatus") {
+      setSelectedStatus(value);
+    }
+  };
 
   return (
-    <div className="flex gap-4 items-center">
-      <Input
-        placeholder="키 이름 또는 키 ID 검색..."
-        value={globalFilter}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        className="max-w-sm"
-      />
-      
-      <Select value={selectedStatus || ""} onValueChange={setSelectedStatus}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="상태" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="ACTIVE">활성</SelectItem>
-          <SelectItem value="INACTIVE">비활성</SelectItem>
-          <SelectItem value="REVOKED">취소됨</SelectItem>
-        </SelectContent>
-      </Select>
-
-      {hasFilters && (
-        <Button
-          variant="ghost"
-          onClick={resetFilters}
-          className="h-8 px-2 lg:px-3"
-        >
-          초기화
-          <X className="ml-2 h-4 w-4" />
-        </Button>
-      )}
-    </div>
+    <Filters
+      filters={filterFields}
+      values={filterValues}
+      onChange={handleFilterChange}
+      onReset={resetFilters}
+      title="검색필터"
+    />
   );
 }

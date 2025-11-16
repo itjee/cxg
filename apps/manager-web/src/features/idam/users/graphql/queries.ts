@@ -1,5 +1,6 @@
 /**
- * Users GraphQL Queries
+ * @file queries.ts
+ * @description Users GraphQL Queries
  *
  * Manager Users 조회 쿼리 정의
  */
@@ -7,19 +8,19 @@
 import { gql } from "@apollo/client";
 
 /**
- * 사용자 목록 조회
+ * 사용자 목록 조회 (복수)
  */
 export const GET_USERS = gql`
   query GetUsers(
     $limit: Int
     $offset: Int
-    $user_type: String
+    $userType: String
     $status: String
   ) {
     users(
       limit: $limit
       offset: $offset
-      userType: $user_type
+      userType: $userType
       status: $status
     ) {
       id
@@ -47,7 +48,7 @@ export const GET_USERS = gql`
 `;
 
 /**
- * 사용자 상세 조회
+ * 사용자 상세 조회 (단수)
  */
 export const GET_USER = gql`
   query GetUser($id: ID!) {
@@ -76,15 +77,21 @@ export const GET_USER = gql`
   }
 `;
 
-// ===== 쿼리 변수 타입 =====
+// ===== 쿼리 변수 타입 (복수형) =====
 
-export interface GetUsersVariables {
+/**
+ * GET_USERS 쿼리 변수 (복수)
+ */
+export interface UsersQueryVariables {
   limit?: number;
   offset?: number;
   userType?: string;
   status?: string;
 }
 
-export interface GetUserVariables {
+/**
+ * GET_USER 쿼리 변수 (단수)
+ */
+export interface UserQueryVariables {
   id: string;
 }

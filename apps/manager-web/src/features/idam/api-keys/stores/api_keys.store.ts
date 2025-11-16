@@ -1,17 +1,17 @@
 /**
  * @file api_keys.store.ts
  * @description API 키 관리 Zustand 상태 저장소
- * 
+ *
  * UI 상태를 관리하는 클라이언트 사이드 스토어
- * - 서버 상태(데이터)는 TanStack Query가 관리
+ * - 서버 상태(데이터)는 Apollo Client가 관리
  * - UI 상태(필터, 페이징, 모달)만 Zustand로 관리
- * 
+ *
  * @state
  * - 모달: formOpen, editingId
  * - 필터: globalFilter, selectedStatus, selectedUser, selectedTenant
  * - 정렬: sorting
  * - 페이징: currentPage, itemsPerPage
- * 
+ *
  * @example
  * ```typescript
  * const { formOpen, openForm, closeForm } = useApiKeyStore();

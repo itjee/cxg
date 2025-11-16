@@ -1,125 +1,236 @@
 /**
- * @file roles.service.ts
- * @description Roles 서비스 레이어
+ * 역할 GraphQL 서비스 계층
+ *
+ * Apollo Client를 사용한 GraphQL 통신 계층입니다.
+ * 컴포넌트에서는 직접 Hooks를 사용하는 것을 권장합니다.
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
-import type {
-  Roles,
-  CreateRolesRequest,
-  UpdateRolesRequest,
-  RolesListResponse,
-  RolesQueryParams,
-} from "../types/roles.types";
-
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
-
-const ENDPOINT = "/api/v1/manager/idam/roles";
+import { apolloClient } from "@/lib/apollo-client";
+import {
+  GET_ROLES,
+  GET_ROLE,
+  CREATE_ROLE,
+  UPDATE_ROLE,
+  DELETE_ROLE,
+  type GetRolesVariables,
+  type GetRoleVariables,
+  type CreateRoleVariables,
+  type UpdateRoleVariables,
+  type DeleteRoleVariables,
+} from "../graphql";
+import type { Role } from "../types";
 
 /**
- * Roles 서비스 객체
+ * GraphQL 응답 타입
+ */
+interface GetRolesResponse {
+  roles: Role[];
+}
+
+interface GetRoleResponse {
+  role: Role;
+}
+
+interface CreateRoleResponse {
+  createRole: Role;
+}
+
+interface UpdateRoleResponse {
+  updateRole: Role;
+}
+
+interface DeleteRoleResponse {
+  deleteRole: {
+    message: string;
+  };
+}
+
+/**
+ * 역할 GraphQL 서비스
+ *
+ * Apollo Client를 사용한 직접적인 GraphQL 통신
+ * 주로 테스트 또는 특수한 상황에서 사용됩니다.
+ * 일반적으로 컴포넌트에서는 Hooks를 직접 사용 권장
  */
 export const rolesService = {
   /**
-   * 목록 조회
+   * 역할 목록 조회
+   *
+   * @param params - 쿼리 변수 (limit, offset, status 등)
+   * @returns 역할 목록 응답
    */
   async listRoles(
-    params?: RolesQueryParams,
-    signal?: AbortSignal
-  ): Promise<RolesListResponse> {
+    params?: GetRolesVariables
+  ): Promise<{ items: Role[]; total: number }> {
     try {
-      const response = await api.get<ApiResponse<RolesListResponse>>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          active: params?.active,
-        },
-        signal,
+      const variables: GetRolesVariables = {
+        limit: params?.limit || 20,
+        offset: params?.offset || 0,
+        status: params?.status,
+      };
+
+      const { data } = await apolloClient.query<GetRolesResponse>({
+        query: GET_ROLES,
+        variables,
+        fetchPolicy: "network-only",
       });
-      
-      return response.data.data || { 
-        items: [], 
-        total: 0, 
-        page: 1, 
-        page_size: 10,
-        total_pages: 0
+
+      const items = data?.roles || [];
+
+      return {
+        items,
+        total: items.length,
       };
     } catch (error) {
-      throw ApiError.fromAxiosError(error, "listRoles");
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getRoles(id: string, signal?: AbortSignal): Promise<Roles> {
-    try {
-      const response = await api.get<ApiResponse<Roles>>(
-        `${ENDPOINT}/${id}`,
-        { signal }
+      console.error("역할 목록 조회 오류:", error);
+      throw new Error(
+        `역할 목록 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
       );
-      
-      if (!response.data.data) {
-        throw new Error('Roles not found');
-      }
-      
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getRoles(${id})`);
     }
   },
 
   /**
-   * 생성
+   * 역할 상세 조회
+   *
+   * @param id - 역할 ID
+   * @returns 역할 정보
    */
-  async createRoles(
-    data: CreateRolesRequest,
-    signal?: AbortSignal
-  ): Promise<Roles> {
+  async getRole(id: string): Promise<Role> {
     try {
-      const response = await api.post<ApiResponse<Roles>>(ENDPOINT, data, {
-        signal,
+      const variables: GetRoleVariables = { id };
+
+      const { data } = await apolloClient.query<GetRoleResponse>({
+        query: GET_ROLE,
+        variables,
+        fetchPolicy: "network-only",
       });
-      return response.data.data || ({} as Roles);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createRoles");
-    }
-  },
 
-  /**
-   * 수정
-   */
-  async updateRoles(
-    id: string,
-    data: UpdateRolesRequest,
-    signal?: AbortSignal
-  ): Promise<Roles> {
-    try {
-      const response = await api.put<ApiResponse<Roles>>(
-        `${ENDPOINT}/${id}`,
-        data,
-        { signal }
+      if (!data?.role) {
+        throw new Error("역할을 찾을 수 없습니다");
+      }
+
+      return data.role;
+    } catch (error) {
+      console.error(`역할 조회 오류 (${id}):`, error);
+      throw new Error(
+        `역할 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
       );
-      return response.data.data || ({} as Roles);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateRoles(${id})`);
     }
   },
 
   /**
-   * 삭제
+   * 역할 생성
+   *
+   * @param data - 역할 생성 입력 데이터
+   * @returns 생성된 역할 정보
    */
-  async deleteRoles(id: string, signal?: AbortSignal): Promise<void> {
+  async createRole(data: CreateRoleVariables["input"]): Promise<Role> {
     try {
-      await api.delete(`${ENDPOINT}/${id}`, { signal });
+      const variables: CreateRoleVariables = { input: data };
+
+      const { data: responseData } =
+        await apolloClient.mutate<CreateRoleResponse>({
+          mutation: CREATE_ROLE,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_ROLES,
+              variables: { limit: 20, offset: 0 },
+            },
+          ],
+        });
+
+      if (!responseData?.createRole) {
+        throw new Error("역할 생성에 실패했습니다");
+      }
+
+      return responseData.createRole;
     } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteRoles(${id})`);
+      console.error("역할 생성 오류:", error);
+      throw new Error(
+        `역할 생성 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
+    }
+  },
+
+  /**
+   * 역할 수정
+   *
+   * @param id - 역할 ID
+   * @param data - 역할 수정 입력 데이터
+   * @returns 수정된 역할 정보
+   */
+  async updateRole(
+    id: string,
+    data: UpdateRoleVariables["input"]
+  ): Promise<Role> {
+    try {
+      const variables: UpdateRoleVariables = { id, input: data };
+
+      const { data: responseData } =
+        await apolloClient.mutate<UpdateRoleResponse>({
+          mutation: UPDATE_ROLE,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_ROLE,
+              variables: { id },
+            },
+          ],
+        });
+
+      if (!responseData?.updateRole) {
+        throw new Error("역할 수정에 실패했습니다");
+      }
+
+      return responseData.updateRole;
+    } catch (error) {
+      console.error(`역할 수정 오류 (${id}):`, error);
+      throw new Error(
+        `역할 수정 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
+    }
+  },
+
+  /**
+   * 역할 삭제
+   *
+   * @param id - 역할 ID
+   * @returns 삭제 결과 메시지
+   */
+  async deleteRole(id: string): Promise<void> {
+    try {
+      const variables: DeleteRoleVariables = { id };
+
+      const { data } = await apolloClient.mutate<DeleteRoleResponse>({
+        mutation: DELETE_ROLE,
+        variables,
+        refetchQueries: [
+          {
+            query: GET_ROLES,
+            variables: { limit: 20, offset: 0 },
+          },
+        ],
+      });
+
+      if (!data?.deleteRole) {
+        throw new Error("역할 삭제에 실패했습니다");
+      }
+    } catch (error) {
+      console.error(`역할 삭제 오류 (${id}):`, error);
+      throw new Error(
+        `역할 삭제 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   },
 };

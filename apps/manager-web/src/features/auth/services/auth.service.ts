@@ -42,7 +42,7 @@ export const authService = {
   async signup(data: SignupRequest): Promise<User> {
     try {
       const result = await apolloClient.mutate<
-        { signup: any },
+        { auth: { signup: any } },
         SignupVariables
       >({
         mutation: SIGNUP,
@@ -56,11 +56,11 @@ export const authService = {
         },
       });
 
-      if (!result.data?.signup) {
+      if (!result.data?.auth?.signup) {
         throw new Error("회원가입에 실패했습니다.");
       }
 
-      return result.data.signup;
+      return result.data.auth.signup;
     } catch (error: any) {
       const errorMessage =
         error?.graphQLErrors?.[0]?.message ||
@@ -80,7 +80,7 @@ export const authService = {
   async signin(data: SigninRequest): Promise<TokenResponse> {
     try {
       const result = await apolloClient.mutate<
-        { signin: any },
+        { auth: { signin: any } },
         SigninVariables
       >({
         mutation: SIGNIN,
@@ -92,11 +92,11 @@ export const authService = {
         },
       });
 
-      if (!result.data?.signin) {
+      if (!result.data?.auth?.signin) {
         throw new Error("로그인에 실패했습니다.");
       }
 
-      return result.data.signin;
+      return result.data.auth.signin;
     } catch (error: any) {
       const graphQLError = error?.graphQLErrors?.[0];
       const errorMessage =
@@ -118,7 +118,7 @@ export const authService = {
   async refreshToken(refreshToken: string): Promise<TokenResponse> {
     try {
       const result = await apolloClient.mutate<
-        { refreshToken: any },
+        { auth: { refreshToken: any } },
         { input: { refreshToken: string } }
       >({
         mutation: REFRESH_TOKEN,
@@ -129,11 +129,11 @@ export const authService = {
         },
       });
 
-      if (!result.data?.refreshToken) {
+      if (!result.data?.auth?.refreshToken) {
         throw new Error("토큰 갱신에 실패했습니다.");
       }
 
-      return result.data.refreshToken;
+      return result.data.auth.refreshToken;
     } catch (error: any) {
       const errorMessage =
         error?.graphQLErrors?.[0]?.message ||
@@ -194,7 +194,7 @@ export const authService = {
   ): Promise<void> {
     try {
       const result = await apolloClient.mutate<
-        { changePassword: any },
+        { auth: { changePassword: any } },
         ChangePasswordVariables
       >({
         mutation: CHANGE_PASSWORD,
@@ -206,7 +206,7 @@ export const authService = {
         },
       });
 
-      if (!result.data?.changePassword) {
+      if (!result.data?.auth?.changePassword) {
         throw new Error("비밀번호 변경에 실패했습니다.");
       }
     } catch (error: any) {
@@ -227,7 +227,7 @@ export const authService = {
   ): Promise<ForgotPasswordResponse> {
     try {
       const result = await apolloClient.mutate<
-        { forgotPassword: any },
+        { auth: { forgotPassword: any } },
         ForgotPasswordVariables
       >({
         mutation: FORGOT_PASSWORD,
@@ -238,13 +238,13 @@ export const authService = {
         },
       });
 
-      if (!result.data?.forgotPassword) {
+      if (!result.data?.auth?.forgotPassword) {
         throw new Error("비밀번호 재설정 요청에 실패했습니다.");
       }
 
       return {
-        message: result.data.forgotPassword.message,
-        reset_token: result.data.forgotPassword.resetToken,
+        message: result.data.auth.forgotPassword.message,
+        reset_token: result.data.auth.forgotPassword.resetToken,
       };
     } catch (error: any) {
       const errorMessage =
@@ -264,7 +264,7 @@ export const authService = {
   ): Promise<ResetPasswordResponse> {
     try {
       const result = await apolloClient.mutate<
-        { resetPassword: any },
+        { auth: { resetPassword: any } },
         ResetPasswordVariables
       >({
         mutation: RESET_PASSWORD,
@@ -277,12 +277,12 @@ export const authService = {
         },
       });
 
-      if (!result.data?.resetPassword) {
+      if (!result.data?.auth?.resetPassword) {
         throw new Error("비밀번호 재설정에 실패했습니다.");
       }
 
       return {
-        message: result.data.resetPassword.message,
+        message: result.data.auth.resetPassword.message,
       };
     } catch (error: any) {
       const errorMessage =

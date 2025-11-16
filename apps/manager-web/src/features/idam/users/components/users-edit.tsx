@@ -20,11 +20,11 @@ import {
 export function UsersEdit() {
   const { formOpen, selectedId, closeForm } = useUsersStore();
 
-  // 수정 모드: 선택된 사용자 조회
+  // 수정 모드: 선택된 사용자 조회 (단수)
   const { data: userResponse } = useUser(selectedId || "");
-  const editingUser = userResponse?.manager_user;
+  const editingUser = userResponse?.user;
 
-  // Apollo Mutation Hooks
+  // Apollo Mutation Hooks (튜플 반환)
   const [createUser, { loading: createLoading }] = useCreateUser();
   const [updateUser, { loading: updateLoading }] = useUpdateUser();
 
@@ -33,18 +33,19 @@ export function UsersEdit() {
   const handleSubmit = async (formData: any) => {
     try {
       if (selectedId) {
-        // 수정 모드
+        // 수정 모드: password 제외
+        const { password, ...updateData } = formData;
         await updateUser({
           variables: {
             id: selectedId,
-            input: formData,
+            input: updateData,
           },
         });
 
         toast.success("사용자가 수정되었습니다");
         closeForm();
       } else {
-        // 생성 모드
+        // 생성 모드: 전체 데이터 전송 (camelCase 유지)
         await createUser({
           variables: {
             input: formData,

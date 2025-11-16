@@ -6,16 +6,15 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 import strawberry
 
 from src.graphql.common import Node
 
-
-if TYPE_CHECKING:
-    from ..roles.types import ManagerRole
-    from ..users.types import ManagerUser
+# Import at module level for Strawberry to resolve type hints
+# These need to be available in globals() for get_type_hints() to work
+from ..roles.types import ManagerRole
+from ..users.types import ManagerUser
 
 
 @strawberry.type(name="ManagerUserRole", description="Manager 사용자-역할 매핑")
@@ -59,7 +58,7 @@ class ManagerUserRole(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="사용자 정보")
-    async def user(self, info) -> "ManagerUser | None":
+    async def user(self, info) -> ManagerUser | None:
         """
         매핑된 사용자 정보를 조회하는 필드 resolver
 
@@ -72,7 +71,7 @@ class ManagerUserRole(Node):
         return await resolve_manager_user_role_user(UUID(self.user_id), info)
 
     @strawberry.field(description="역할 정보")
-    async def role(self, info) -> "ManagerRole | None":
+    async def role(self, info) -> ManagerRole | None:
         """
         매핑된 역할 정보를 조회하는 필드 resolver
 
@@ -85,7 +84,7 @@ class ManagerUserRole(Node):
         return await resolve_manager_user_role_role(UUID(self.role_id), info)
 
     @strawberry.field(description="역할 부여자 정보")
-    async def granter(self, info) -> "ManagerUser | None":
+    async def granter(self, info) -> ManagerUser | None:
         """
         역할을 부여한 관리자 정보를 조회하는 필드 resolver
 

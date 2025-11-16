@@ -1,162 +1,237 @@
 /**
- * @file api_keys.service.ts
- * @description API 키 관리 서비스 레이어
- * 
- * API 호출을 담당하는 서비스 계층
- * - 모든 HTTP 요청은 axios 인스턴스 사용
- * - 에러는 ApiError로 변환하여 throw
- * - AbortSignal 지원으로 요청 취소 가능
- * 
- * @example
- * ```typescript
- * const apiKeys = await apiKeyService.listApiKeys({ page: 0, pageSize: 20 });
- * const apiKey = await apiKeyService.getApiKey('uuid');
- * ```
+ * API Key GraphQL 서비스 계층
+ *
+ * Apollo Client를 사용한 GraphQL 통신 계층입니다.
+ * 컴포넌트에서는 직접 Hooks를 사용하는 것을 권장합니다.
  */
 
-import axios from 'axios';
-import type {
-  ApiKey,
-  CreateApiKeyRequest,
-  UpdateApiKeyRequest,
-  ApiKeyListResponse,
-  ApiKeyDetailResponse,
-  ApiKeyQueryParams,
-} from '../types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100';
-const API_ENDPOINT = `${API_BASE_URL}/api/v1/manager/idam/api_keys`;
+import { apolloClient } from "@/lib/apollo-client";
+import {
+  GET_API_KEYS,
+  GET_API_KEY,
+  CREATE_API_KEY,
+  UPDATE_API_KEY,
+  DELETE_API_KEY,
+  type GetApiKeysVariables,
+  type GetApiKeyVariables,
+  type CreateApiKeyVariables,
+  type UpdateApiKeyVariables,
+  type DeleteApiKeyVariables,
+} from "../graphql";
+import type { ApiKey } from "../types";
 
 /**
- * API 키 서비스 객체
+ * GraphQL 응답 타입
+ */
+interface GetApiKeysResponse {
+  apiKeys: ApiKey[];
+}
+
+interface GetApiKeyResponse {
+  apiKey: ApiKey;
+}
+
+interface CreateApiKeyResponse {
+  createApiKey: ApiKey;
+}
+
+interface UpdateApiKeyResponse {
+  updateApiKey: ApiKey;
+}
+
+interface DeleteApiKeyResponse {
+  deleteApiKey: {
+    message: string;
+  };
+}
+
+/**
+ * API Key GraphQL 서비스
+ *
+ * Apollo Client를 사용한 직접적인 GraphQL 통신
+ * 주로 테스트 또는 특수한 상황에서 사용됩니다.
+ * 일반적으로 컴포넌트에서는 Hooks를 직접 사용 권장
  */
 export const apiKeyService = {
   /**
-   * 목록 조회
-   * 
-   * @param params - 쿼리 파라미터 (페이징, 검색, 필터)
-   * @returns ApiKeyListResponse - 페이지네이션 포함 목록
-   * 
-   * @example
-   * ```typescript
-   * const response = await apiKeyService.listApiKeys({ 
-   *   page: 0, 
-   *   pageSize: 20, 
-   *   search: '검색어',
-   *   status: 'ACTIVE' 
-   * });
-   * ```
+   * API 키 목록 조회
+   *
+   * @param params - 쿼리 변수 (limit, offset, status, search 등)
+   * @returns API 키 목록 응답
    */
-  async listApiKeys(params?: ApiKeyQueryParams): Promise<ApiKeyListResponse> {
+  async listApiKeys(
+    params?: GetApiKeysVariables
+  ): Promise<{ items: ApiKey[]; total: number }> {
     try {
-      const response = await axios.get<ApiKeyListResponse>(API_ENDPOINT, { params });
-      return response.data;
+      const variables: GetApiKeysVariables = {
+        limit: params?.limit || 20,
+        offset: params?.offset || 0,
+        status: params?.status,
+        search: params?.search,
+      };
+
+      const { data } = await apolloClient.query<GetApiKeysResponse>({
+        query: GET_API_KEYS,
+        variables,
+        fetchPolicy: "network-only",
+      });
+
+      const items = data?.apiKeys || [];
+
+      return {
+        items,
+        total: items.length,
+      };
     } catch (error) {
-      console.error('Error fetching API keys:', error);
-      throw error;
+      console.error("API 키 목록 조회 오류:", error);
+      throw new Error(
+        `API 키 목록 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   },
 
   /**
-   * 상세 조회
-   * 
+   * API 키 상세 조회
+   *
    * @param id - API 키 ID
-   * @returns ApiKeyDetailResponse - API 키 상세 정보
-   * 
-   * @example
-   * ```typescript
-   * const response = await apiKeyService.getApiKey('uuid');
-   * const apiKey = response.data;
-   * ```
+   * @returns API 키 정보
    */
-  async getApiKey(id: string): Promise<ApiKeyDetailResponse> {
+  async getApiKey(id: string): Promise<ApiKey> {
     try {
-      const response = await axios.get<ApiKeyDetailResponse>(`${API_ENDPOINT}/${id}`);
-      return response.data;
+      const variables: GetApiKeyVariables = { id };
+
+      const { data } = await apolloClient.query<GetApiKeyResponse>({
+        query: GET_API_KEY,
+        variables,
+        fetchPolicy: "network-only",
+      });
+
+      if (!data?.apiKey) {
+        throw new Error("API 키를 찾을 수 없습니다");
+      }
+
+      return data.apiKey;
     } catch (error) {
-      console.error(`Error fetching API key ${id}:`, error);
-      throw error;
+      console.error(`API 키 조회 오류 (${id}):`, error);
+      throw new Error(
+        `API 키 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   },
 
   /**
-   * 생성
-   * 
-   * @param data - 생성 요청 데이터
-   * @returns ApiKeyDetailResponse - 생성된 API 키 정보
-   * 
-   * @example
-   * ```typescript
-   * const response = await apiKeyService.createApiKey({
-   *   key_name: 'Production API Key',
-   *   user_id: 'user-uuid',
-   *   scopes: ['read:data', 'write:data']
-   * });
-   * ```
+   * API 키 생성
+   *
+   * @param data - API 키 생성 입력 데이터
+   * @returns 생성된 API 키 정보
    */
-  async createApiKey(data: CreateApiKeyRequest): Promise<ApiKeyDetailResponse> {
+  async createApiKey(data: CreateApiKeyVariables["input"]): Promise<ApiKey> {
     try {
-      const response = await axios.post<ApiKeyDetailResponse>(API_ENDPOINT, data);
-      return response.data;
+      const variables: CreateApiKeyVariables = { input: data };
+
+      const { data: responseData } =
+        await apolloClient.mutate<CreateApiKeyResponse>({
+          mutation: CREATE_API_KEY,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_API_KEYS,
+              variables: { limit: 20, offset: 0 },
+            },
+          ],
+        });
+
+      if (!responseData?.createApiKey) {
+        throw new Error("API 키 생성에 실패했습니다");
+      }
+
+      return responseData.createApiKey;
     } catch (error) {
-      console.error('Error creating API key:', error);
-      throw error;
+      console.error("API 키 생성 오류:", error);
+      throw new Error(
+        `API 키 생성 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   },
 
   /**
-   * 수정
-   * 
+   * API 키 수정
+   *
    * @param id - API 키 ID
-   * @param data - 수정 요청 데이터
-   * @returns ApiKeyDetailResponse - 수정된 API 키 정보
-   * 
-   * @example
-   * ```typescript
-   * const response = await apiKeyService.updateApiKey('uuid', {
-   *   key_name: 'Updated Name',
-   *   status: 'INACTIVE'
-   * });
-   * ```
+   * @param data - API 키 수정 입력 데이터
+   * @returns 수정된 API 키 정보
    */
-  async updateApiKey(id: string, data: UpdateApiKeyRequest): Promise<ApiKeyDetailResponse> {
+  async updateApiKey(
+    id: string,
+    data: UpdateApiKeyVariables["input"]
+  ): Promise<ApiKey> {
     try {
-      const response = await axios.put<ApiKeyDetailResponse>(`${API_ENDPOINT}/${id}`, data);
-      return response.data;
+      const variables: UpdateApiKeyVariables = { id, input: data };
+
+      const { data: responseData } =
+        await apolloClient.mutate<UpdateApiKeyResponse>({
+          mutation: UPDATE_API_KEY,
+          variables,
+          refetchQueries: [
+            {
+              query: GET_API_KEY,
+              variables: { id },
+            },
+          ],
+        });
+
+      if (!responseData?.updateApiKey) {
+        throw new Error("API 키 수정에 실패했습니다");
+      }
+
+      return responseData.updateApiKey;
     } catch (error) {
-      console.error(`Error updating API key ${id}:`, error);
-      throw error;
+      console.error(`API 키 수정 오류 (${id}):`, error);
+      throw new Error(
+        `API 키 수정 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
     }
   },
 
   /**
-   * 삭제
-   * 
+   * API 키 삭제
+   *
    * @param id - API 키 ID
-   * @returns void
-   * 
-   * @example
-   * ```typescript
-   * await apiKeyService.deleteApiKey('uuid');
-   * ```
+   * @returns 삭제 결과 메시지
    */
   async deleteApiKey(id: string): Promise<void> {
     try {
-      await axios.delete(`${API_ENDPOINT}/${id}`);
-    } catch (error) {
-      console.error(`Error deleting API key ${id}:`, error);
-      throw error;
-    }
-  },
+      const variables: DeleteApiKeyVariables = { id };
 
-  /**
-   * 상태 변경 (활성/비활성/취소)
-   * 
-   * @param id - API 키 ID
-   * @param status - 변경할 상태
-   * @returns ApiKeyDetailResponse - 상태 변경된 API 키 정보
-   */
-  async updateApiKeyStatus(id: string, status: 'ACTIVE' | 'INACTIVE' | 'REVOKED'): Promise<ApiKeyDetailResponse> {
-    return this.updateApiKey(id, { status });
+      const { data } = await apolloClient.mutate<DeleteApiKeyResponse>({
+        mutation: DELETE_API_KEY,
+        variables,
+        refetchQueries: [
+          {
+            query: GET_API_KEYS,
+            variables: { limit: 20, offset: 0 },
+          },
+        ],
+      });
+
+      if (!data?.deleteApiKey) {
+        throw new Error("API 키 삭제에 실패했습니다");
+      }
+    } catch (error) {
+      console.error(`API 키 삭제 오류 (${id}):`, error);
+      throw new Error(
+        `API 키 삭제 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
+        }`
+      );
+    }
   },
 };

@@ -1,95 +1,137 @@
 /**
- * @file use-roles.ts
- * @description Roles React Query hooks
+ * 역할 GraphQL Hooks
+ *
+ * Apollo Client를 사용한 GraphQL Hooks
+ * Feature-driven 아키텍처를 따릅니다.
  */
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { rolesService } from '../services/roles.service';
-import type { 
-  RolesQueryParams,
-  CreateRolesRequest,
-  UpdateRolesRequest
-} from '../types/roles.types';
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_ROLES,
+  GET_ROLE,
+  CREATE_ROLE,
+  UPDATE_ROLE,
+  DELETE_ROLE,
+  type RolesQueryVariables,
+  type RoleQueryVariables,
+  type CreateRoleVariables,
+  type UpdateRoleVariables,
+  type DeleteRoleVariables,
+} from "../graphql";
+import type { Role } from "../types";
+
+// ========== useQuery Hooks ==========
 
 /**
- * 목록 조회 hook
+ * 역할 목록 조회 (복수)
+ *
+ * @param variables 목록 조회 파라미터 (RolesQueryVariables)
+ * @example
+ * const { data, loading, error, refetch } = useRoles({ limit: 20, offset: 0 });
  */
-export function useRoles(params?: RolesQueryParams) {
-  return useQuery({
-    queryKey: ['roles', params],
-    queryFn: ({ signal }) => rolesService.listRoles(params, signal),
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
-}
-
-/**
- * 상세 조회 hook
- */
-export function useRolesById(id: string) {
-  return useQuery({
-    queryKey: ['roles', id],
-    queryFn: ({ signal }) => rolesService.getRoles(id, signal),
-    enabled: !!id,
-  });
-}
-
-/**
- * 생성 mutation hook
- */
-export function useCreateRoles(options?: {
-  onSuccess?: (data: any) => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateRolesRequest) => 
-      rolesService.createRoles(data),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      options?.onSuccess?.(data);
+export function useRoles(variables?: RolesQueryVariables) {
+  return useQuery<
+    { roles: Role[] },
+    RolesQueryVariables
+  >(GET_ROLES, {
+    variables: {
+      limit: 20,
+      offset: 0,
+      ...variables,
     },
-    onError: options?.onError,
+    fetchPolicy: "cache-and-network",
   });
 }
 
 /**
- * 수정 mutation hook
+ * 역할 상세 조회 (단수)
+ *
+ * @param id 역할 ID
+ * @example
+ * const { data, loading, error } = useRole("role-id");
  */
-export function useUpdateRoles(options?: {
-  onSuccess?: (data: any) => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
+export function useRole(id: string) {
+  return useQuery<{ role: Role }, RoleQueryVariables>(
+    GET_ROLE,
+    {
+      variables: { id },
+      skip: !id, // id가 없으면 쿼리 실행 안 함
+    }
+  );
+}
 
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateRolesRequest }) =>
-      rolesService.updateRoles(id, data),
-    onSuccess: (data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      queryClient.invalidateQueries({ queryKey: ['roles', variables.id] });
-      options?.onSuccess?.(data);
-    },
-    onError: options?.onError,
+// ========== useMutation Hooks ==========
+
+/**
+ * 역할 생성
+ *
+ * @example
+ * const [createRole, { loading, error }] = useCreateRole();
+ * await createRole({
+ *   variables: {
+ *     input: { name, description, status, ... }
+ *   }
+ * });
+ */
+export function useCreateRole() {
+  return useMutation<
+    { createRole: Role },
+    CreateRoleVariables
+  >(CREATE_ROLE, {
+    refetchQueries: [
+      {
+        query: GET_ROLES,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 삭제 mutation hook
+ * 역할 수정
+ *
+ * @example
+ * const [updateRole, { loading, error }] = useUpdateRole();
+ * await updateRole({
+ *   variables: {
+ *     id: "role-id",
+ *     input: { name, description, status, ... }
+ *   }
+ * });
  */
-export function useDeleteRoles(options?: {
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-}) {
-  const queryClient = useQueryClient();
+export function useUpdateRole() {
+  return useMutation<
+    { updateRole: Role },
+    UpdateRoleVariables
+  >(UPDATE_ROLE, {
+    refetchQueries: [
+      {
+        query: GET_ROLES,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
+  });
+}
 
-  return useMutation({
-    mutationFn: (id: string) => rolesService.deleteRoles(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['roles'] });
-      options?.onSuccess?.();
-    },
-    onError: options?.onError,
+/**
+ * 역할 삭제
+ *
+ * @example
+ * const [deleteRole, { loading, error }] = useDeleteRole();
+ * await deleteRole({
+ *   variables: { id: "role-id" }
+ * });
+ */
+export function useDeleteRole() {
+  return useMutation<
+    { deleteRole: { message: string } },
+    DeleteRoleVariables
+  >(DELETE_ROLE, {
+    refetchQueries: [
+      {
+        query: GET_ROLES,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
