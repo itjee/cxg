@@ -13,11 +13,11 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import User
+    from ..users.types import ManagerUser
 
 
 @strawberry.type(description="Manager 세션")
-class Session(Node):
+class ManagerSession(Node):
     """
     Manager 시스템 세션
 
@@ -64,13 +64,13 @@ class Session(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="세션 소유자 (사용자)")
-    async def user(self, info) -> "User | None":
+    async def user(self, info) -> "ManagerUser | None":
         """
         세션 소유자(사용자) 정보를 조회하는 필드 resolver
 
         Session과 User는 Many-to-One 관계입니다.
         """
-        from .resolvers import resolve_session_user
+        from .resolvers import resolve_manager_session_user
 
         # UUID를 그대로 전달
-        return await resolve_session_user(self.user_id, info)
+        return await resolve_manager_session_user(self.user_id, info)

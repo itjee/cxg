@@ -9,7 +9,7 @@ import { ApolloClient, InMemoryCache, HttpLink, ApolloLink, from, gql } from '@a
 import { onError } from '@apollo/client/link/error';
 import { setContext } from '@apollo/client/link/context';
 
-const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:8100/graphql';
+const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhost:8100/graphql/manager';
 
 /**
  * 토큰 갱신 뮤테이션 정의
@@ -101,7 +101,7 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
     const data = await response.json();
 
     if (data.errors) {
-      console.error('Token refresh error:', data.errors);
+      console.error('토큰 갱신 오류:', data.errors);
       return null;
     }
 
@@ -117,7 +117,7 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
 
     return { accessToken, refreshToken: newRefreshToken };
   } catch (error) {
-    console.error('Token refresh failed:', error);
+    console.error('토큰 갱신 실패:', error);
     return null;
   }
 }

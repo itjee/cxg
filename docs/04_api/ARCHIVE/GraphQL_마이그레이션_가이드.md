@@ -9,15 +9,18 @@
 ## 🎯 마이그레이션 전략
 
 ### 옵션 1: Big Bang (일괄 전환) ❌ 비추천
+
 - 모든 엔드포인트를 한 번에 GraphQL로 전환
 - 위험도 높음, 롤백 어려움
 
 ### 옵션 2: Strangler Fig Pattern ✅ 추천
+
 - 기존 REST API와 GraphQL을 병행 운영
 - 점진적으로 GraphQL로 이전
 - 문제 발생 시 즉시 롤백 가능
 
 ### 옵션 3: GraphQL 우선, REST 유지
+
 - 신규 기능은 GraphQL로만 개발
 - 기존 REST API는 유지보수만
 
@@ -30,6 +33,7 @@
 ### Phase 1: 준비 단계 (1-2주)
 
 #### 1.1 인프라 구축
+
 ```bash
 # Central Admin DB 생성
 createdb central_admin
@@ -47,6 +51,7 @@ python scripts/provision_tenant.py \
 ```
 
 #### 1.2 GraphQL 기본 구조 구축
+
 ```
 src/
 ├── graphql/
@@ -61,6 +66,7 @@ src/
 #### 1.3 기존 REST API와 병행 운영 설정
 
 **main.py 업데이트:**
+
 ```python
 from fastapi import FastAPI
 from strawberry.fastapi import GraphQLRouter
@@ -89,11 +95,13 @@ app.include_router(graphql_app, prefix="/graphql", tags=["GraphQL"])
 ### Phase 2: 핵심 모듈 마이그레이션 (2-3주)
 
 #### 우선순위 결정 기준
+
 1. **사용빈도 높음** → 먼저 전환
 2. **복잡도 낮음** → 먼저 전환
 3. **N+1 문제 심각** → 먼저 전환
 
 #### 추천 순서
+
 1. ✅ **User (사용자)** - 가장 기본, 사용빈도 높음
 2. ✅ **Branch (지점)** - 단순, 관계 적음
 3. ✅ **Department (부서)** - User와 연관
@@ -108,8 +116,9 @@ app.include_router(graphql_app, prefix="/graphql", tags=["GraphQL"])
 #### 3.1 User 모듈 마이그레이션
 
 **기존 REST API (src/modules/tenants/sys/users/router.py):**
+
 ```python
-@router.get("", response_model=EnvelopeResponse[UsersListResponse])
+@router.get("", response_model=EnvelopeResponse[UsersResponse])
 async def get_users_list(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
@@ -122,6 +131,7 @@ async def get_users_list(
 ```
 
 **GraphQL 전환 (src/graphql/types/tenants/user.py):**
+
 ```python
 import strawberry
 from typing import Optional
@@ -135,7 +145,7 @@ class User:
     full_name: str
     phone: Optional[str]
     is_active: bool
-    
+
     # 관계형 필드 (DataLoader 사용)
     @strawberry.field
     async def department(self, info) -> Optional["Department"]:
@@ -145,6 +155,7 @@ class User:
 ```
 
 **Query 리졸버 (src/graphql/queries/tenants/user.py):**
+
 ```python
 async def get_users_list(
     info,
@@ -153,23 +164,24 @@ async def get_users_list(
 ) -> UserConnection:
     """사용자 목록 조회"""
     db = info.context.db_session
-    
+
     stmt = select(Users).where(Users.is_deleted == False)
     if after:
         stmt = stmt.where(Users.id > UUID(after))
-    
+
     stmt = stmt.order_by(Users.id).limit(first + 1)
     result = await db.execute(stmt)
     users = result.scalars().all()
-    
+
     # ... (페이지네이션 로직)
-    
+
     return UserConnection(edges=edges, page_info=page_info)
 ```
 
 #### 3.2 기존 서비스 레이어 재사용
 
 **기존 UsersService 활용:**
+
 ```python
 # src/services/tenants/users.py (기존 service.py에서 이동)
 
@@ -179,7 +191,7 @@ class UsersService:
         """사용자 생성 (REST와 GraphQL 모두 사용)"""
         # 비밀번호 해싱
         hashed_password = get_password_hash(data["password"])
-        
+
         # 사용자 생성
         new_user = Users(
             username=data["username"],
@@ -188,15 +200,16 @@ class UsersService:
             full_name=data["full_name"],
             created_by=created_by,
         )
-        
+
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
-        
+
         return new_user
 ```
 
 **GraphQL Mutation에서 재사용:**
+
 ```python
 # src/graphql/mutations/tenants/user.py
 
@@ -205,7 +218,7 @@ from src.services.tenants.users import UsersService
 async def create_user(info, input: UserCreateInput) -> User:
     db = info.context.db_session
     creator_id = UUID(info.context.user_id)
-    
+
     # 기존 서비스 레이어 재사용!
     user_model = await UsersService.create_user(
         db,
@@ -217,7 +230,7 @@ async def create_user(info, input: UserCreateInput) -> User:
         },
         created_by=creator_id
     )
-    
+
     # ORM → GraphQL 타입 변환
     return User(
         id=user_model.id,
@@ -235,20 +248,22 @@ async def create_user(info, input: UserCreateInput) -> User:
 #### 4.1 Apollo Client 설정
 
 **기존 (REST - Axios):**
+
 ```typescript
 // api/users.ts
 export const getUsers = async (page: number, pageSize: number) => {
-  const response = await axios.get('/api/v1/tenants/sys/users', {
-    params: { page, page_size: pageSize }
+  const response = await axios.get("/api/v1/tenants/sys/users", {
+    params: { page, page_size: pageSize },
   });
   return response.data;
 };
 ```
 
 **전환 (GraphQL - Apollo Client):**
+
 ```typescript
 // graphql/queries/users.ts
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
 
 export const GET_USERS = gql`
   query GetUsers($first: Int!, $after: String) {
@@ -277,16 +292,17 @@ export const GET_USERS = gql`
 
 // 사용
 const { data, loading, error } = useQuery(GET_USERS, {
-  variables: { first: 20, after: null }
+  variables: { first: 20, after: null },
 });
 ```
 
 #### 4.2 코드 생성 (graphql-codegen)
 
 **설정 (codegen.yml):**
+
 ```yaml
 schema: http://localhost:8100/graphql
-documents: 'src/**/*.graphql'
+documents: "src/**/*.graphql"
 generates:
   src/generated/graphql.ts:
     plugins:
@@ -298,21 +314,23 @@ generates:
 ```
 
 **실행:**
+
 ```bash
 npm run graphql:codegen
 ```
 
 **생성된 타입 사용:**
+
 ```typescript
-import { useGetUsersQuery } from '@/generated/graphql';
+import { useGetUsersQuery } from "@/generated/graphql";
 
 const UserList = () => {
   const { data, loading } = useGetUsersQuery({
-    variables: { first: 20 }
+    variables: { first: 20 },
   });
-  
+
   if (loading) return <Loading />;
-  
+
   return (
     <ul>
       {data?.users.edges.map(({ node }) => (
@@ -330,6 +348,7 @@ const UserList = () => {
 #### 5.1 성능 측정
 
 **REST vs GraphQL 비교:**
+
 ```python
 # scripts/benchmark.py
 
@@ -345,7 +364,7 @@ async def benchmark_rest():
         # REST API 호출
         response = await client.get("/api/v1/tenants/sys/users?page=1&page_size=20")
         times.append(time.time() - start)
-    
+
     return {
         "mean": mean(times),
         "stdev": stdev(times),
@@ -373,7 +392,7 @@ async def benchmark_graphql():
         start = time.time()
         response = await client.post("/graphql", json={"query": query})
         times.append(time.time() - start)
-    
+
     return {
         "mean": mean(times),
         "stdev": stdev(times),
@@ -385,6 +404,7 @@ async def benchmark_graphql():
 #### 5.2 N+1 문제 검증
 
 **로깅 추가:**
+
 ```python
 # src/core/database.py
 
@@ -396,6 +416,7 @@ tenant_engine = create_async_engine(
 ```
 
 **DataLoader 효과 측정:**
+
 ```
 # DataLoader 사용 전
 SELECT * FROM users LIMIT 20;          -- 1번
@@ -425,7 +446,7 @@ class APIUsageMiddleware:
     async def __call__(self, request: Request, call_next):
         if request.url.path.startswith("/api/v1/"):
             API_USAGE[request.url.path] += 1
-        
+
         response = await call_next(request)
         return response
 
@@ -442,7 +463,7 @@ async def get_api_usage():
 async def get_users_list_deprecated(...):
     """
     ⚠️ DEPRECATED: 2025년 3월 31일 제거 예정
-    
+
     GraphQL 엔드포인트를 사용하세요:
     POST /graphql
     query { users { ... } }
@@ -470,6 +491,7 @@ async def get_users_list_deprecated(...):
 ### 자동 변환 스크립트
 
 **scripts/convert_rest_to_graphql.py:**
+
 ```python
 """REST 엔드포인트를 GraphQL 타입으로 자동 변환"""
 
@@ -482,34 +504,34 @@ def parse_pydantic_model(file_path: Path) -> dict:
     # schemas.py 파일에서 모델 추출
     with open(file_path) as f:
         content = f.read()
-    
+
     # AST 파싱으로 필드 추출
     tree = ast.parse(content)
     models = {}
-    
+
     for node in ast.walk(tree):
         if isinstance(node, ast.ClassDef):
             if any(base.id == "BaseModel" for base in node.bases if hasattr(base, 'id')):
                 fields = extract_fields(node)
                 models[node.name] = fields
-    
+
     return models
 
 def generate_strawberry_type(model_name: str, fields: dict) -> str:
     """Strawberry 타입 생성"""
     type_def = f"@strawberry.type\nclass {model_name}:\n"
-    
+
     for field_name, field_type in fields.items():
         graphql_type = map_python_to_graphql_type(field_type)
         type_def += f"    {field_name}: {graphql_type}\n"
-    
+
     return type_def
 
 # 실행
 if __name__ == "__main__":
     schemas_path = Path("src/modules/tenants/sys/users/schemas.py")
     models = parse_pydantic_model(schemas_path)
-    
+
     for model_name, fields in models.items():
         graphql_type = generate_strawberry_type(model_name, fields)
         print(graphql_type)
@@ -522,6 +544,7 @@ if __name__ == "__main__":
 ### 진행률 대시보드
 
 **scripts/migration_progress.py:**
+
 ```python
 """마이그레이션 진행 상황 추적"""
 
@@ -536,11 +559,11 @@ MODULES = {
     "sys.departments": "✅ 완료",
     "sys.roles": "🔄 진행중",
     "sys.permissions": "🔄 진행중",
-    
+
     # 고객 관리
     "crm.customers": "📅 예정",
     "crm.contacts": "📅 예정",
-    
+
     # 제품 관리
     "pim.products": "📅 예정",
     "pim.categories": "📅 예정",
@@ -551,7 +574,7 @@ def print_progress():
     completed = sum(1 for v in MODULES.values() if "완료" in v)
     in_progress = sum(1 for v in MODULES.values() if "진행중" in v)
     planned = total - completed - in_progress
-    
+
     print("=" * 60)
     print("🚀 GraphQL 마이그레이션 진행 상황")
     print("=" * 60)
@@ -561,7 +584,7 @@ def print_progress():
     print(f"📅 예정: {planned} ({planned/total*100:.1f}%)")
     print("=" * 60)
     print("\n모듈별 상세:")
-    
+
     for module, status in MODULES.items():
         print(f"  {status:<15} {module}")
 
@@ -570,6 +593,7 @@ if __name__ == "__main__":
 ```
 
 **출력:**
+
 ```
 ============================================================
 🚀 GraphQL 마이그레이션 진행 상황
@@ -597,6 +621,7 @@ if __name__ == "__main__":
 ## ⚠️ 주의사항
 
 ### 1. Breaking Changes 최소화
+
 ```python
 # ❌ 나쁜 예: 필드명 변경
 @strawberry.type
@@ -610,6 +635,7 @@ class User:
 ```
 
 ### 2. 점진적 롤아웃
+
 ```python
 # Feature Flag 사용
 if settings.use_graphql:
@@ -619,6 +645,7 @@ else:
 ```
 
 ### 3. 롤백 계획
+
 ```bash
 # Git tag로 버전 관리
 git tag -a graphql-migration-phase2 -m "Phase 2 완료"
@@ -632,6 +659,7 @@ git revert <commit-hash>
 ## 📈 성공 지표
 
 ### KPI
+
 - [ ] REST API 호출 수 → 0
 - [ ] GraphQL API 응답 시간 < 200ms (p95)
 - [ ] N+1 쿼리 제거 (DataLoader 적용률 100%)

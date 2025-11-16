@@ -9,14 +9,14 @@ from src.graphql.common import BaseDataLoader, BaseFieldLoader
 from src.models.manager.idam.permission import Permission as PermissionModel
 
 
-class PermissionLoader(BaseDataLoader[PermissionModel]):
+class ManagerPermissionLoader(BaseDataLoader[PermissionModel]):
     """Manager 권한 DataLoader (N+1 쿼리 최적화)"""
 
     def __init__(self, db: AsyncSession):
         super().__init__(db, PermissionModel)
 
 
-class PermissionByCodeLoader(BaseFieldLoader[PermissionModel]):
+class ManagerPermissionByCodeLoader(BaseFieldLoader[PermissionModel]):
     """Code로 권한 조회 DataLoader"""
 
     def __init__(self, db: AsyncSession):

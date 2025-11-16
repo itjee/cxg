@@ -51,7 +51,7 @@ class ManagerRolePermission(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="역할 정보")
-    async def role(self, info) -> "ManagerRole | None":
+    async def role(self, info) -> ManagerRole | None:
         """역할 정보를 조회하는 필드 resolver
 
         매핑된 역할의 상세 정보를 조회합니다.
@@ -68,7 +68,7 @@ class ManagerRolePermission(Node):
         return await resolve_manager_role_permission_role(UUID(self.role_id), info)
 
     @strawberry.field(description="권한 정보")
-    async def permission(self, info) -> "ManagerPermission | None":
+    async def permission(self, info) -> ManagerPermission | None:
         """권한 정보를 조회하는 필드 resolver
 
         매핑된 권한의 상세 정보를 조회합니다.

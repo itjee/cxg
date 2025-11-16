@@ -20,7 +20,7 @@ class CanViewAllManagerLoginLogs(CanView):
     message = "전체 로그인 이력을 조회할 권한이 없습니다"
 
 
-class IsMasterUser(IsMaster):
+class IsManagerMasterUser(IsMaster):
     """MASTER 사용자 권한"""
 
     message = "MASTER 권한이 필요합니다"

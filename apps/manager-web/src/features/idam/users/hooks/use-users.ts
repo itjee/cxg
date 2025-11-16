@@ -1,5 +1,5 @@
 /**
- * Users GraphQL Hooks
+ * 사용자 GraphQL Hooks
  *
  * Apollo Client를 사용한 GraphQL Hooks
  * Feature-driven 아키텍처를 따릅니다.

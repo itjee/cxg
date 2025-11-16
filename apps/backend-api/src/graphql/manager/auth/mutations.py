@@ -122,7 +122,7 @@ async def create_session(
     await db.commit()
 
 
-async def register_user(db: AsyncSession, data: SignupInput) -> ManagerAuthUser:
+async def signup_user(db: AsyncSession, data: SignupInput) -> ManagerAuthUser:
     """
     새로운 사용자 회원가입
 
@@ -172,7 +172,7 @@ async def register_user(db: AsyncSession, data: SignupInput) -> ManagerAuthUser:
     return user_to_graphql(user)
 
 
-async def login_user(db: AsyncSession, data: SigninInput, request: Request) -> TokenResponse:
+async def signin_user(db: AsyncSession, data: SigninInput, request: Request) -> TokenResponse:
     """
     사용자 로그인 및 토큰 발급
 
@@ -514,7 +514,7 @@ class ManagerAuthMutations:
         if not db:
             raise Exception("Manager database session not available")
 
-        return await register_user(db, input)
+        return await signup_user(db, input)
 
     @strawberry.mutation(description="로그인")
     async def signin(self, info, input: SigninInput) -> TokenResponse:
@@ -535,7 +535,7 @@ class ManagerAuthMutations:
             raise Exception("Manager database session not available")
 
         request = info.context.request
-        return await login_user(db, input, request)
+        return await signin_user(db, input, request)
 
     @strawberry.mutation(description="토큰 갱신")
     @require_auth

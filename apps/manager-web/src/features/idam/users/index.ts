@@ -22,12 +22,7 @@
 export * from "./components";
 
 // ===== GraphQL (Hooks & Queries) =====
-export {
-  useUsers,
-  useUser,
-  useCreateUser,
-  useUpdateUser,
-} from "./hooks";
+export { useUsers, useUser, useCreateUser, useUpdateUser } from "./hooks";
 export type {
   GetUsersVariables,
   GetUserVariables,
@@ -40,11 +35,7 @@ export type {
   User,
   CreateUserRequest,
   UpdateUserRequest,
-  UsersListResponse,
-  UsersQueryParams,
-  // Deprecated types (compatibility)
-  Users,
-  UsersListResponse,
+  UsersResponse,
   UsersQueryParams,
 } from "./types/users.types";
 

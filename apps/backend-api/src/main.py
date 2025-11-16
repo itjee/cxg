@@ -1,4 +1,4 @@
-"""ConexGrow API Main Application"""
+"""ConexGrow API 메인 애플리케이션"""
 
 from contextlib import asynccontextmanager
 
@@ -15,7 +15,8 @@ from src.core.database import close_db, init_db
 from src.core.exceptions import CXGError
 from src.core.middleware import RequestIDMiddleware, TimingMiddleware
 from src.graphql.context import get_context
-from src.graphql.schema import schema as graphql_schema
+from src.graphql.manager.root_schema import manager_schema
+from src.graphql.tenants.root_schema import tenants_schema
 from src.schemas import EnvelopeResponse
 
 
@@ -115,12 +116,20 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
-# GraphQL 라우터 등록
-graphql_app = GraphQLRouter(
-    graphql_schema,
+# GraphQL 라우터 등록 - 시스템별 분리
+# Manager 시스템 GraphQL
+manager_graphql_app = GraphQLRouter(
+    manager_schema,
     context_getter=get_context,
 )
-app.include_router(graphql_app, prefix="/graphql", tags=["GraphQL"])
+app.include_router(manager_graphql_app, prefix="/graphql/manager", tags=["GraphQL Manager"])
+
+# Tenants 시스템 GraphQL
+tenants_graphql_app = GraphQLRouter(
+    tenants_schema,
+    context_getter=get_context,
+)
+app.include_router(tenants_graphql_app, prefix="/graphql/tenants", tags=["GraphQL Tenants"])
 
 
 # RESTful API 라우터 (레거시 - 제거 예정)

@@ -17,7 +17,6 @@ from .schemas import (
     UserInviteRequest,
     UserInviteResponse,
     UsersCreate,
-    UsersListResponse,
     UsersResponse,
     UsersUpdate,
 )
@@ -47,7 +46,7 @@ async def create_users(
 
 @router.get(
     "",
-    response_model=EnvelopeResponse[UsersListResponse],
+    response_model=EnvelopeResponse[UsersResponse],
     summary="Users 목록 조회",
     description="Users 목록을 조회합니다.",
 )
@@ -56,7 +55,7 @@ async def get_users_list(
     page_size: int = Query(20, ge=1, le=100, description="페이지 크기"),
     db: AsyncSession = Depends(get_tenant_db),
     current_user: dict[str, Any] = Depends(get_current_user),
-) -> EnvelopeResponse[UsersListResponse]:
+) -> EnvelopeResponse[UsersResponse]:
     """Users 목록 조회"""
     items = await UsersService.get_list(
         db,

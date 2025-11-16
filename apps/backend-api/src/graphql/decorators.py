@@ -1,7 +1,7 @@
 """GraphQL 데코레이터 - 인증 및 권한 검증"""
 
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable
 
 from strawberry.types import Info
 
@@ -30,7 +30,7 @@ def require_auth(func: Callable) -> Callable:
             if isinstance(info, Info):
                 user_id = info.context.user_id
                 if not user_id:
-                    raise UnauthorizedError(message="Authentication required")
+                    raise UnauthorizedError(message="인증이 필요합니다")
 
         return await func(*args, **kwargs)
 
@@ -61,11 +61,11 @@ def require_role(required_role: str) -> Callable:
                     user_role = info.context.role
 
                     if not user_id:
-                        raise UnauthorizedError(message="Authentication required")
+                        raise UnauthorizedError(message="인증이 필요합니다")
 
                     if user_role != required_role:
                         raise UnauthorizedError(
-                            message=f"Required role: {required_role}",
+                            message=f"필수 역할: {required_role}",
                             detail={"required_role": required_role, "user_role": user_role},
                         )
 

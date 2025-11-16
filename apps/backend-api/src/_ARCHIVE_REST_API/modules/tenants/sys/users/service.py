@@ -2,7 +2,7 @@
 
 import secrets
 import string
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import UUID
 
 from fastapi import HTTPException, status
@@ -18,10 +18,10 @@ from .schemas import (
     UserInviteRequest,
     UserInviteResponse,
     UsersCreate,
-    UsersListResponse,
     UsersResponse,
     UsersUpdate,
 )
+
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -53,7 +53,7 @@ class UsersService:
     ) -> UserInviteResponse:
         """
         Invite a new user by creating account with temporary password.
-        
+
         Flow:
         1. Check if username or email already exists
         2. Generate temporary password
@@ -118,7 +118,7 @@ class UsersService:
     ) -> PasswordChangeResponse:
         """
         Change user password.
-        
+
         Validates current password and updates to new password.
         """
         # Get user
@@ -141,7 +141,7 @@ class UsersService:
 
         # Hash and update new password
         user.password = UsersService._hash_password(data.new_password)
-        user.updated_at = datetime.now(timezone.utc)
+        user.updated_at = datetime.now(UTC)
 
         await db.commit()
         await db.refresh(user)
@@ -152,7 +152,9 @@ class UsersService:
         )
 
     @staticmethod
-    async def create(db: AsyncSession, data: UsersCreate, created_by: UUID | None = None) -> UsersResponse:
+    async def create(
+        db: AsyncSession, data: UsersCreate, created_by: UUID | None = None
+    ) -> UsersResponse:
         """Create a new users record."""
         item = Users(
             **data.model_dump(),
@@ -229,7 +231,7 @@ class UsersService:
             setattr(item, field, value)
 
         item.updated_by = updated_by
-        item.updated_at = datetime.now(timezone.utc)
+        item.updated_at = datetime.now(UTC)
 
         await db.commit()
         await db.refresh(item)

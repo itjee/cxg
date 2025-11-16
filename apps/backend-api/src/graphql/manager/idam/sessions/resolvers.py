@@ -10,7 +10,7 @@ from sqlalchemy import select
 from src.models.manager.idam.user import User as UserModel
 
 
-async def resolve_session_user(user_id: UUID, info):
+async def resolve_manager_session_user(user_id: UUID, info):
     """
     세션의 사용자 정보 조회
 
@@ -28,9 +28,9 @@ async def resolve_session_user(user_id: UUID, info):
     if loader:
         user = await loader.load(user_id)
         if user:
-            from ..users.queries import user_to_graphql
+            from ..users.queries import manager_user_to_graphql
 
-            return user_to_graphql(user)
+            return manager_user_to_graphql(user)
         return None
 
     # 2. Fallback: 전역 loader가 없으면 직접 DB 조회
@@ -41,7 +41,7 @@ async def resolve_session_user(user_id: UUID, info):
         return None
 
     # 3. Import를 여기서 하여 순환 참조 방지
-    from ..users.queries import user_to_graphql
+    from ..users.queries import manager_user_to_graphql
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    return user_to_graphql(user)
+    return manager_user_to_graphql(user)

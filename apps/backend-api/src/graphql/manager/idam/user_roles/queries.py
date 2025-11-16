@@ -15,7 +15,7 @@ from src.models.manager.idam.user_role import UserRole as UserRoleModel
 from .types import ManagerUserRole
 
 
-def manager_user_role_to_graphql(user_role: UserRoleModel) -> ManagerUserRole:
+def manager_user_role_to_graphql(user_role: UserRoleModel) -> "ManagerUserRole":
     """
     UserRoleModel(DB 모델)을 UserRole(GraphQL 타입)으로 변환
 

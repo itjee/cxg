@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { fixed-assetsService } from '../services';
+import { fixedAssetsService } from '../services';
 
 const QUERY_KEY = ['fixed-assets'] as const;
 
 export function useFixedAssets(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => fixed-assetsService.list(params),
+    queryFn: () => fixedAssetsService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useFixedAssets(params?: any) {
 export function useFixedAssetsById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => fixed-assetsService.get(id!),
+    queryFn: () => fixedAssetsService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateFixedAssets() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => fixed-assetsService.create(data),
+    mutationFn: (data: any) => fixedAssetsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateFixedAssets(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => fixed-assetsService.update(id, data),
+    mutationFn: (data: any) => fixedAssetsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteFixedAssets(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => fixed-assetsService.delete(id),
+    mutationFn: () => fixedAssetsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

@@ -10,7 +10,7 @@ from sqlalchemy import select
 from src.models.manager.idam.user_role import UserRole as UserRoleModel
 
 
-async def resolve_user_roles(user_id: UUID, info):
+async def resolve_manager_user_roles(user_id: UUID, info):
     """
     사용자에게 할당된 역할 목록 조회
 
@@ -44,13 +44,13 @@ async def resolve_user_roles(user_id: UUID, info):
     roles = result.scalars().all()
 
     # 3. Import를 여기서 하여 순환 참조 방지
-    from ..roles.queries import role_to_graphql
+    from ..roles.queries import manager_role_to_graphql
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    return [role_to_graphql(role) for role in roles]
+    return [manager_role_to_graphql(role) for role in roles]
 
 
-async def resolve_user_sessions(user_id: UUID, info, status: str | None = None):
+async def resolve_manager_user_sessions(user_id: UUID, info, status: str | None = None):
     """
     사용자의 세션 목록 조회
 
@@ -81,13 +81,13 @@ async def resolve_user_sessions(user_id: UUID, info, status: str | None = None):
     sessions = result.scalars().all()
 
     # Import를 여기서 하여 순환 참조 방지
-    from ..sessions.queries import session_to_graphql
+    from ..sessions.queries import manager_session_to_graphql
 
     # DB 모델을 GraphQL 타입으로 변환
-    return [session_to_graphql(session) for session in sessions]
+    return [manager_session_to_graphql(session) for session in sessions]
 
 
-async def resolve_user_permissions(user_id: UUID, info):
+async def resolve_manager_user_permissions(user_id: UUID, info):
     """
     사용자의 유효 권한 목록 조회
 
@@ -120,7 +120,7 @@ async def resolve_user_permissions(user_id: UUID, info):
     permissions = result.scalars().all()
 
     # Import를 여기서 하여 순환 참조 방지
-    from ..permissions.queries import permission_to_graphql
+    from ..permissions.queries import manager_permission_to_graphql
 
     # DB 모델을 GraphQL 타입으로 변환
-    return [permission_to_graphql(permission) for permission in permissions]
+    return [manager_permission_to_graphql(permission) for permission in permissions]

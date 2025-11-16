@@ -4,21 +4,14 @@
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 import strawberry
 
 from src.graphql.common import Node
 
 
-if TYPE_CHECKING:
-    from ..permissions.types import ManagerPermission
-    from ..roles.types import ManagerRole
-    from ..sessions.types import ManagerSession
-
-
-@strawberry.type(description="Manager 사용자")
-class User(Node):
+@strawberry.type(name="ManagerUser", description="Manager 사용자")
+class ManagerUser(Node):
     """
     Manager 시스템 사용자
 
@@ -101,7 +94,7 @@ class User(Node):
 
 
 @strawberry.input(description="Manager 사용자 생성 입력")
-class UserCreateInput:
+class ManagerUserCreateInput:
     """
     Manager 사용자 생성
 
@@ -119,7 +112,7 @@ class UserCreateInput:
 
 
 @strawberry.input(description="Manager 사용자 수정 입력")
-class UserUpdateInput:
+class ManagerUserUpdateInput:
     """
     Manager 사용자 수정
 

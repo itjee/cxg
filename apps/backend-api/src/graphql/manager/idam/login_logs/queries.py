@@ -16,7 +16,7 @@ from src.models.manager.idam.login_log import LoginLog as LoginLogModel
 from .types import ManagerLoginLog
 
 
-def manager_login_log_to_graphql(log: LoginLogModel) -> ManagerLoginLog:
+def manager_login_log_to_graphql(log: LoginLogModel) -> "ManagerLoginLog":
     """
     LoginLogModel(DB 모델)을 ManagerLoginLog(GraphQL 타입)으로 변환
 

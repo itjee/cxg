@@ -1,26 +1,32 @@
 """Tenants SYS Users GraphQL Module"""
 
-from .loaders import TenantUserLoader, TenantUserByUsernameLoader, TenantUserByEmailLoader
-from .mutations import TenantUserMutations
-from .permissions import CanViewUsers, CanManageUsers, CanDeleteUsers, IsOwnerOrAdmin
-from .queries import TenantUserQueries
-from .types import TenantUser, TenantUserCreateInput, TenantUserUpdateInput
+from .loaders import TenantsUserByEmailLoader, TenantsUserByUsernameLoader, TenantsUserLoader
+from .mutations import TenantsUserMutations
+from .permissions import (
+    CanDeleteTenantsUsers,
+    CanManageTenantsUsers,
+    CanViewTenantsUsers,
+    IsTenantsOwnerOrAdmin,
+)
+from .queries import TenantsUserQueries
+from .types import TenantsUser, TenantsUserCreateInput, TenantsUserUpdateInput
+
 
 __all__ = [
     # Types
-    "TenantUser",
-    "TenantUserCreateInput",
-    "TenantUserUpdateInput",
+    "TenantsUser",
+    "TenantsUserCreateInput",
+    "TenantsUserUpdateInput",
     # Queries & Mutations
-    "TenantUserQueries",
-    "TenantUserMutations",
+    "TenantsUserQueries",
+    "TenantsUserMutations",
     # DataLoaders
-    "TenantUserLoader",
-    "TenantUserByUsernameLoader",
-    "TenantUserByEmailLoader",
+    "TenantsUserLoader",
+    "TenantsUserByUsernameLoader",
+    "TenantsUserByEmailLoader",
     # Permissions
-    "CanViewUsers",
-    "CanManageUsers",
-    "CanDeleteUsers",
-    "IsOwnerOrAdmin",
+    "CanViewTenantsUsers",
+    "CanManageTenantsUsers",
+    "CanDeleteTenantsUsers",
+    "IsTenantsOwnerOrAdmin",
 ]

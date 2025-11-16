@@ -10,7 +10,7 @@ from sqlalchemy import select
 from src.models.manager.idam import Permission, RolePermission
 
 
-async def resolve_role_permissions(role_id: UUID, info) -> list:
+async def resolve_manager_role_permissions(role_id: UUID, info) -> list:
     """
     역할에 할당된 권한 목록 조회
 
@@ -24,7 +24,7 @@ async def resolve_role_permissions(role_id: UUID, info) -> list:
     db = info.context.manager_db_session
 
     # 1. Context에 등록된 전역 DataLoader 사용 시도 (최적화)
-    loader = info.context.loaders.get("permissions_by_role_loader")
+    loader = info.context.loaders.get("manager_permissions_by_role_loader")
     if loader:
         return await loader.load(role_id)
 
@@ -39,7 +39,7 @@ async def resolve_role_permissions(role_id: UUID, info) -> list:
     permissions = result.scalars().all()
 
     # 3. Import를 여기서 하여 순환 참조 방지
-    from ..permissions.queries import permission_to_graphql
+    from ..permissions.queries import manager_permission_to_graphql
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    return [permission_to_graphql(perm) for perm in permissions]
+    return [manager_permission_to_graphql(perm) for perm in permissions]

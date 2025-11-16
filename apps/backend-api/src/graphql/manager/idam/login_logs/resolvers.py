@@ -11,7 +11,7 @@ from sqlalchemy import select
 from src.models.manager.idam import User
 
 
-async def resolve_login_log_user(user_id: UUID | None, info):
+async def resolve_manager_login_log_user(user_id: UUID | None, info):
     """
     로그인 이력 사용자 정보 조회
 
@@ -55,7 +55,7 @@ async def resolve_login_log_user(user_id: UUID | None, info):
         return None
 
     # 4. Import를 여기서 하여 순환 참조 방지
-    from ..users.queries import user_to_graphql
+    from ..users.queries import manager_user_to_graphql
 
     # 5. DB 모델을 GraphQL 타입으로 변환
-    return user_to_graphql(user)
+    return manager_user_to_graphql(user)

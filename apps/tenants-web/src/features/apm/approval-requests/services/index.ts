@@ -1,1 +1,1 @@
-export { approval-requestsService } from './approval-requests.service';
+export { approvalRequestsService } from './approval-requests.service';

@@ -3,14 +3,14 @@ Users module
 """
 
 from .router import router
-from .service import UsersService
 from .schemas import (
     UsersBase,
     UsersCreate,
-    UsersUpdate,
     UsersResponse,
-    UsersListResponse,
+    UsersUpdate,
 )
+from .service import UsersService
+
 
 __all__ = [
     "router",
@@ -19,5 +19,4 @@ __all__ = [
     "UsersCreate",
     "UsersUpdate",
     "UsersResponse",
-    "UsersListResponse",
 ]

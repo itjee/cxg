@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { approval-requestsService } from '../services';
+import { approvalRequestsService } from '../services';
 
 const QUERY_KEY = ['approval-requests'] as const;
 
 export function useApprovalRequests(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => approval-requestsService.list(params),
+    queryFn: () => approvalRequestsService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useApprovalRequests(params?: any) {
 export function useApprovalRequestsById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => approval-requestsService.get(id!),
+    queryFn: () => approvalRequestsService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateApprovalRequests() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => approval-requestsService.create(data),
+    mutationFn: (data: any) => approvalRequestsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateApprovalRequests(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => approval-requestsService.update(id, data),
+    mutationFn: (data: any) => approvalRequestsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteApprovalRequests(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => approval-requestsService.delete(id),
+    mutationFn: () => approvalRequestsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

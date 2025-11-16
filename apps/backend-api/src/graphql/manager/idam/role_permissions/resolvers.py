@@ -6,7 +6,7 @@ Type 필드의 복잡한 resolver 로직 구현
 from uuid import UUID
 
 
-async def resolve_role_permission_role(role_id: UUID, info):
+async def resolve_manager_role_permission_role(role_id: UUID, info):
     """
     역할 정보 조회
 
@@ -35,12 +35,12 @@ async def resolve_role_permission_role(role_id: UUID, info):
         return None
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    from ..roles.queries import role_to_graphql
+    from ..roles.queries import manager_role_to_graphql
 
-    return role_to_graphql(role_model)
+    return manager_role_to_graphql(role_model)
 
 
-async def resolve_role_permission_permission(permission_id: UUID, info):
+async def resolve_manager_role_permission_permission(permission_id: UUID, info):
     """
     권한 정보 조회
 
@@ -69,6 +69,6 @@ async def resolve_role_permission_permission(permission_id: UUID, info):
         return None
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    from ..permissions.queries import permission_to_graphql
+    from ..permissions.queries import manager_permission_to_graphql
 
-    return permission_to_graphql(permission_model)
+    return manager_permission_to_graphql(permission_model)

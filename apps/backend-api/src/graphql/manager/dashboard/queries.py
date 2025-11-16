@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 import strawberry
 
-from .types import Activity, DashboardStats, TenantGrowthData, User
+from .types import Activity, Actor, DashboardStats, TenantGrowthData
 
 
 @strawberry.type
@@ -37,9 +37,7 @@ class DashboardQueries:
         )
 
     @strawberry.field(description="테넌트 성장 데이터 조회")
-    async def tenant_growth(
-        self, period: str = "month"
-    ) -> list[TenantGrowthData]:
+    async def tenant_growth(self, period: str = "month") -> list[TenantGrowthData]:
         """
         테넌트 성장 데이터를 조회합니다.
         차트 렌더링에 사용됩니다.
@@ -84,7 +82,7 @@ class DashboardQueries:
                 id=strawberry.ID("1"),
                 action="CREATE",
                 description="새로운 테넌트 생성",
-                actor=User(
+                actor=Actor(
                     id=strawberry.ID("user1"),
                     username="admin",
                     full_name="Administrator",
@@ -95,7 +93,7 @@ class DashboardQueries:
                 id=strawberry.ID("2"),
                 action="UPDATE",
                 description="사용자 정보 수정",
-                actor=User(
+                actor=Actor(
                     id=strawberry.ID("user1"),
                     username="admin",
                     full_name="Administrator",
@@ -106,7 +104,7 @@ class DashboardQueries:
                 id=strawberry.ID("3"),
                 action="DELETE",
                 description="불활성 테넌트 삭제",
-                actor=User(
+                actor=Actor(
                     id=strawberry.ID("user1"),
                     username="admin",
                     full_name="Administrator",

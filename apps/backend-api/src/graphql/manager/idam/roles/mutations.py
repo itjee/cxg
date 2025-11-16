@@ -12,11 +12,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import create_entity, update_entity
 from src.models.manager.idam.role import Role as RoleModel
 
-from .queries import role_to_graphql
-from .types import Role, RoleCreateInput, RoleUpdateInput
+from .queries import manager_role_to_graphql
+from .types import ManagerRole, ManagerRoleCreateInput, ManagerRoleUpdateInput
 
 
-async def create_role(db: AsyncSession, input_data: RoleCreateInput) -> Role:
+async def create_manager_role(db: AsyncSession, input_data: ManagerRoleCreateInput) -> ManagerRole:
     """
     Manager 역할 생성
 
@@ -31,13 +31,13 @@ async def create_role(db: AsyncSession, input_data: RoleCreateInput) -> Role:
         db=db,
         model_class=RoleModel,
         input_data=input_data,
-        to_graphql=role_to_graphql,
+        to_graphql=manager_role_to_graphql,
     )
 
 
-async def update_role(
-    db: AsyncSession, role_id: UUID, input_data: RoleUpdateInput
-) -> Role | None:
+async def update_manager_role(
+    db: AsyncSession, role_id: UUID, input_data: ManagerRoleUpdateInput
+) -> ManagerRole | None:
     """
     Manager 역할 수정
 
@@ -54,12 +54,12 @@ async def update_role(
         model_class=RoleModel,
         entity_id=role_id,
         input_data=input_data,
-        to_graphql=role_to_graphql,
+        to_graphql=manager_role_to_graphql,
     )
 
 
 @strawberry.type
-class RoleMutations:
+class ManagerRoleMutations:
     """
     Manager IDAM Roles Mutation
 
@@ -67,7 +67,7 @@ class RoleMutations:
     """
 
     @strawberry.mutation(description="Manager 역할 생성")
-    async def create_role(self, info, input: RoleCreateInput) -> Role:
+    async def create_role(self, info, input: ManagerRoleCreateInput) -> ManagerRole:
         """
         새로운 역할 생성
 
@@ -81,12 +81,12 @@ class RoleMutations:
             Exception: 역할 코드 중복 등의 오류
         """
         db = info.context.manager_db_session
-        return await create_role(db, input)
+        return await create_manager_role(db, input)
 
     @strawberry.mutation(description="Manager 역할 수정")
     async def update_role(
-        self, info, id: strawberry.ID, input: RoleUpdateInput
-    ) -> Role | None:
+        self, info, id: strawberry.ID, input: ManagerRoleUpdateInput
+    ) -> ManagerRole | None:
         """
         기존 역할 수정
 
@@ -98,4 +98,4 @@ class RoleMutations:
             Role: 수정된 역할 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await update_role(db, UUID(id), input)
+        return await update_manager_role(db, UUID(id), input)

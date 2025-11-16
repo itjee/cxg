@@ -14,11 +14,11 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import User
+    from ..users.types import ManagerUser
 
 
 @strawberry.type(description="Manager 로그인 이력")
-class LoginLog(Node):
+class ManagerLoginLog(Node):
     """
     Manager 시스템 로그인 이력
 
@@ -46,16 +46,16 @@ class LoginLog(Node):
     )
 
     @strawberry.field(description="로그인 사용자")
-    async def user(self, info) -> "User | None":
+    async def user(self, info) -> "ManagerUser | None":
         """
         로그인 이력 사용자 정보 조회
 
         성공한 로그인의 경우 사용자 정보를 조회할 수 있습니다.
         실패한 로그인이나 존재하지 않는 사용자의 경우 None을 반환합니다.
         """
-        from .resolvers import resolve_login_log_user
+        from .resolvers import resolve_manager_login_log_user
 
-        return await resolve_login_log_user(self.user_id, info)
+        return await resolve_manager_login_log_user(self.user_id, info)
 
     # 로그인 시도 정보
     attempt_type: str = strawberry.field(
@@ -93,7 +93,7 @@ class LoginLog(Node):
 
 
 @strawberry.input(description="Manager 로그인 이력 생성 입력")
-class LoginLogCreateInput:
+class ManagerLoginLogCreateInput:
     """
     Manager 로그인 이력 생성 입력 타입
 

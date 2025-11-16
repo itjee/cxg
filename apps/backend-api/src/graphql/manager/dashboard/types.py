@@ -1,7 +1,6 @@
 """Dashboard GraphQL Types"""
 
 from datetime import datetime
-from typing import Optional
 
 import strawberry
 
@@ -27,7 +26,7 @@ class TenantGrowthData:
 
 
 @strawberry.type
-class User:
+class Actor:
     """활동 로그의 사용자 정보"""
 
     id: strawberry.ID = strawberry.field(description="사용자 ID")
@@ -42,5 +41,5 @@ class Activity:
     id: strawberry.ID = strawberry.field(description="활동 ID")
     action: str = strawberry.field(description="작업 타입 (CREATE, UPDATE, DELETE, etc)")
     description: str = strawberry.field(description="활동 설명")
-    actor: User = strawberry.field(description="작업 수행자")
+    actor: Actor = strawberry.field(description="작업 수행자")
     created_at: datetime = strawberry.field(description="생성 시간")

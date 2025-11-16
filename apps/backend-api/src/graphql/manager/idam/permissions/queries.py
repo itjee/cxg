@@ -15,7 +15,7 @@ from src.models.manager.idam.permission import Permission as PermissionModel
 from .types import ManagerPermission
 
 
-def manager_permission_to_graphql(permission: PermissionModel) -> ManagerPermission:
+def manager_permission_to_graphql(permission: PermissionModel) -> "ManagerPermission":
     """
     PermissionModel(DB 모델)을 Permission(GraphQL 타입)으로 변환
 

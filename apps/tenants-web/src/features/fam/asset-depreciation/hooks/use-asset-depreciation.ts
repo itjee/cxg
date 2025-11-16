@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { asset-depreciationService } from '../services';
+import { assetDepreciationService } from '../services';
 
 const QUERY_KEY = ['asset-depreciation'] as const;
 
 export function useAssetDepreciation(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => asset-depreciationService.list(params),
+    queryFn: () => assetDepreciationService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useAssetDepreciation(params?: any) {
 export function useAssetDepreciationById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => asset-depreciationService.get(id!),
+    queryFn: () => assetDepreciationService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateAssetDepreciation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => asset-depreciationService.create(data),
+    mutationFn: (data: any) => assetDepreciationService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateAssetDepreciation(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => asset-depreciationService.update(id, data),
+    mutationFn: (data: any) => assetDepreciationService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteAssetDepreciation(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => asset-depreciationService.delete(id),
+    mutationFn: () => assetDepreciationService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

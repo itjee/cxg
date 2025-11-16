@@ -11,7 +11,7 @@ from sqlalchemy import select
 from src.models.manager.idam import User
 
 
-async def resolve_api_key_user(user_id: UUID, info):
+async def resolve_manager_api_key_user(user_id: UUID, info):
     """
     API 키 소유자 정보 조회
 
@@ -45,7 +45,7 @@ async def resolve_api_key_user(user_id: UUID, info):
         return None
 
     # 3. Import를 여기서 하여 순환 참조 방지
-    from ..users.queries import user_to_graphql
+    from ..users.queries import manager_user_to_graphql
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    return user_to_graphql(user)
+    return manager_user_to_graphql(user)

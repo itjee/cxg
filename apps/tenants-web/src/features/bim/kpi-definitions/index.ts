@@ -21,7 +21,7 @@ export {
 } from './hooks';
 
 // Services
-export { kpi-definitionsService } from './services';
+export { kpiDefinitionsService } from './services';
 
 // Types
 export type {

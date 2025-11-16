@@ -13,11 +13,11 @@ from src.core.security import hash_password
 from src.graphql.common import create_entity, update_entity
 from src.models.manager.idam.user import User as UserModel
 
-from .queries import user_to_graphql
-from .types import User, UserCreateInput, UserUpdateInput
+from .queries import manager_user_to_graphql
+from .types import ManagerUser, ManagerUserCreateInput, ManagerUserUpdateInput
 
 
-def prepare_user_create_data(input_data: UserCreateInput) -> dict:
+def prepare_manager_user_create_data(input_data: ManagerUserCreateInput) -> dict:
     """
     사용자 생성 데이터 준비
 
@@ -41,7 +41,7 @@ def prepare_user_create_data(input_data: UserCreateInput) -> dict:
     }
 
 
-async def create_user(db: AsyncSession, input_data: UserCreateInput) -> User:
+async def create_manager_user(db: AsyncSession, input_data: ManagerUserCreateInput) -> ManagerUser:
     """
     Manager 사용자 생성
 
@@ -62,14 +62,14 @@ async def create_user(db: AsyncSession, input_data: UserCreateInput) -> User:
         db=db,
         model_class=UserModel,
         input_data=input_data,
-        to_graphql=user_to_graphql,
-        prepare_data=prepare_user_create_data,
+        to_graphql=manager_user_to_graphql,
+        prepare_data=prepare_manager_user_create_data,
     )
 
 
-async def update_user(
-    db: AsyncSession, user_id: UUID, input_data: UserUpdateInput
-) -> User | None:
+async def update_manager_user(
+    db: AsyncSession, user_id: UUID, input_data: ManagerUserUpdateInput
+) -> ManagerUser | None:
     """
     Manager 사용자 수정
 
@@ -89,12 +89,12 @@ async def update_user(
         model_class=UserModel,
         entity_id=user_id,
         input_data=input_data,
-        to_graphql=user_to_graphql,
+        to_graphql=manager_user_to_graphql,
     )
 
 
 @strawberry.type
-class UserMutations:
+class ManagerUserMutations:
     """
     Manager IDAM Users Mutation
 
@@ -102,7 +102,7 @@ class UserMutations:
     """
 
     @strawberry.mutation(description="Manager 사용자 생성")
-    async def create_user(self, info, input: UserCreateInput) -> User:
+    async def create_user(self, info, input: ManagerUserCreateInput) -> ManagerUser:
         """
         새로운 Manager 사용자 생성
 
@@ -113,12 +113,12 @@ class UserMutations:
             User: 생성된 사용자 객체
         """
         db = info.context.manager_db_session
-        return await create_user(db, input)
+        return await create_manager_user(db, input)
 
     @strawberry.mutation(description="Manager 사용자 수정")
     async def update_user(
-        self, info, id: strawberry.ID, input: UserUpdateInput
-    ) -> User | None:
+        self, info, id: strawberry.ID, input: ManagerUserUpdateInput
+    ) -> ManagerUser | None:
         """
         기존 Manager 사용자 수정
 
@@ -130,4 +130,4 @@ class UserMutations:
             User: 수정된 사용자 객체 또는 None
         """
         db = info.context.manager_db_session
-        return await update_user(db, UUID(id), input)
+        return await update_manager_user(db, UUID(id), input)

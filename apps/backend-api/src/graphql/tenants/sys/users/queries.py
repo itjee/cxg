@@ -1,6 +1,5 @@
 """Tenants SYS Users - Queries"""
 
-from typing import Optional
 from uuid import UUID
 
 import strawberry
@@ -8,19 +7,20 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.tenants.sys.users import Users as UserModel
-from .types import TenantUser
+
+from .types import TenantsUser
 
 
-async def get_tenant_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[TenantUser]:
+async def get_tenants_user_by_id(db: AsyncSession, user_id: UUID) -> TenantsUser | None:
     """ID로 Tenant 사용자 조회"""
-    stmt = select(UserModel).where(UserModel.id == user_id, UserModel.is_deleted == False)
+    stmt = select(UserModel).where(UserModel.id == user_id, UserModel.is_active)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if not user:
         return None
-    
-    return TenantUser(
+
+    return TenantsUser(
         id=strawberry.ID(str(user.id)),
         user_code=user.user_code,
         username=user.username,
@@ -45,20 +45,22 @@ async def get_tenant_user_by_id(db: AsyncSession, user_id: UUID) -> Optional[Ten
     )
 
 
-async def get_tenant_users(db: AsyncSession, limit: int = 20, offset: int = 0) -> list[TenantUser]:
+async def get_tenants_users(
+    db: AsyncSession, limit: int = 20, offset: int = 0
+) -> list[TenantsUser]:
     """Tenant 사용자 목록 조회"""
     stmt = (
         select(UserModel)
-        .where(UserModel.is_deleted == False)
+        .where(UserModel.is_active)
         .limit(limit)
         .offset(offset)
         .order_by(UserModel.created_at.desc())
     )
     result = await db.execute(stmt)
     users = result.scalars().all()
-    
+
     return [
-        TenantUser(
+        TenantsUser(
             id=strawberry.ID(str(user.id)),
             user_code=user.user_code,
             username=user.username,
@@ -86,26 +88,21 @@ async def get_tenant_users(db: AsyncSession, limit: int = 20, offset: int = 0) -
 
 
 @strawberry.type
-class TenantUserQueries:
+class TenantsUserQueries:
     """Tenants SYS Users Query"""
-    
+
     @strawberry.field(description="Tenant 사용자 조회 (ID)")
-    async def tenant_user(self, info, id: strawberry.ID) -> Optional[TenantUser]:
+    async def user(self, info, id: strawberry.ID) -> TenantsUser | None:
         """Tenant 사용자 단건 조회"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        return await get_tenant_user_by_id(db, UUID(id))
-    
+        return await get_tenants_user_by_id(db, UUID(id))
+
     @strawberry.field(description="Tenant 사용자 목록")
-    async def tenant_users(
-        self,
-        info,
-        limit: int = 20,
-        offset: int = 0
-    ) -> list[TenantUser]:
+    async def users(self, info, limit: int = 20, offset: int = 0) -> list[TenantsUser]:
         """Tenant 사용자 목록 조회"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        return await get_tenant_users(db, limit, offset)
+        return await get_tenants_users(db, limit, offset)

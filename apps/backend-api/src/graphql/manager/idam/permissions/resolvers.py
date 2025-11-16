@@ -11,7 +11,7 @@ from sqlalchemy import select
 from src.models.manager.idam import Role, RolePermission
 
 
-async def resolve_permission_roles(permission_id: UUID, info) -> list:
+async def resolve_manager_permission_roles(permission_id: UUID, info) -> list:
     """
     권한에 할당된 역할 목록 조회
 
@@ -57,7 +57,7 @@ async def resolve_permission_roles(permission_id: UUID, info) -> list:
     roles = result.scalars().all()
 
     # 3. Import를 여기서 하여 순환 참조 방지
-    from ..roles.queries import role_to_graphql
+    from ..roles.queries import manager_role_to_graphql
 
     # 4. DB 모델을 GraphQL 타입으로 변환
-    return [role_to_graphql(role) for role in roles]
+    return [manager_role_to_graphql(role) for role in roles]

@@ -6,21 +6,21 @@
 from src.graphql.common import CanDelete, CanManage, CanView
 
 
-class CanViewRoles(CanView):
+class CanViewManagerRoles(CanView):
     """Manager 역할 목록 조회 권한"""
 
     resource = "roles"
     message = "Manager 역할 목록을 조회할 권한이 없습니다"
 
 
-class CanManageRoles(CanManage):
+class CanManageManagerRoles(CanManage):
     """Manager 역할 관리(생성/수정) 권한"""
 
     resource = "roles"
     message = "Manager 역할을 관리할 권한이 없습니다"
 
 
-class CanDeleteRoles(CanDelete):
+class CanDeleteManagerRoles(CanDelete):
     """Manager 역할 삭제 권한"""
 
     resource = "roles"

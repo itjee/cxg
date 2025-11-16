@@ -14,7 +14,7 @@ from src.graphql.common import Node
 
 
 if TYPE_CHECKING:
-    from ..users.types import User
+    from ..users.types import ManagerUser
 
 
 @strawberry.type(description="Manager API 키")
@@ -48,15 +48,15 @@ class ManagerApiKey(Node):
     )
 
     @strawberry.field(description="API 키 소유자")
-    async def user(self, info) -> "User | None":
+    async def user(self, info) -> "ManagerUser | None":
         """
         API 키 소유자 정보 조회
 
         관계형 필드로 사용자 정보를 한 번에 가져옵니다.
         """
-        from .resolvers import resolve_api_key_user
+        from .resolvers import resolve_manager_api_key_user
 
-        return await resolve_api_key_user(self.user_id, info)
+        return await resolve_manager_api_key_user(self.user_id, info)
 
     # 권한 및 스코프
     scopes: list[str] | None = strawberry.field(

@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { kpi-definitionsService } from '../services';
+import { kpiDefinitionsService } from '../services';
 
 const QUERY_KEY = ['kpi-definitions'] as const;
 
 export function useKpiDefinitions(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => kpi-definitionsService.list(params),
+    queryFn: () => kpiDefinitionsService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useKpiDefinitions(params?: any) {
 export function useKpiDefinitionsById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => kpi-definitionsService.get(id!),
+    queryFn: () => kpiDefinitionsService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateKpiDefinitions() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => kpi-definitionsService.create(data),
+    mutationFn: (data: any) => kpiDefinitionsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateKpiDefinitions(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => kpi-definitionsService.update(id, data),
+    mutationFn: (data: any) => kpiDefinitionsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteKpiDefinitions(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => kpi-definitionsService.delete(id),
+    mutationFn: () => kpiDefinitionsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

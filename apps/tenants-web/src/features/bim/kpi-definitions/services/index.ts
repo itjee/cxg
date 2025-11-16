@@ -1,1 +1,1 @@
-export { kpi-definitionsService } from './kpi-definitions.service';
+export { kpiDefinitionsService } from './kpi-definitions.service';

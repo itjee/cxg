@@ -10,8 +10,18 @@ import { gql } from "@apollo/client";
  * 사용자 목록 조회
  */
 export const GET_USERS = gql`
-  query GetUsers($limit: Int, $offset: Int, $user_type: String, $status: String) {
-    users(limit: $limit, offset: $offset, userType: $user_type, status: $status) {
+  query GetUsers(
+    $limit: Int
+    $offset: Int
+    $user_type: String
+    $status: String
+  ) {
+    users(
+      limit: $limit
+      offset: $offset
+      userType: $user_type
+      status: $status
+    ) {
       id
       userType
       fullName

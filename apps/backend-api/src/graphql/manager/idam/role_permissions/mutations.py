@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.manager.idam.role_permission import RolePermission as RolePermissionModel
 
-from .queries import role_permission_to_graphql
+from .queries import manager_role_permission_to_graphql
 from .types import (
     ManagerRolePermission,
     ManagerRolePermissionCreateInput,
@@ -56,7 +56,7 @@ async def create_manager_role_permission(
 
     if existing:
         # 이미 존재하면 기존 매핑 반환 (멱등성 보장)
-        return role_permission_to_graphql(existing)
+        return manager_role_permission_to_graphql(existing)
 
     # 새로운 매핑 생성
     role_permission = RolePermissionModel(
@@ -70,7 +70,7 @@ async def create_manager_role_permission(
     await db.flush()
     await db.refresh(role_permission)
 
-    return role_permission_to_graphql(role_permission)
+    return manager_role_permission_to_graphql(role_permission)
 
 
 async def delete_manager_role_permission(
@@ -101,7 +101,7 @@ async def delete_manager_role_permission(
     return result.rowcount > 0 if result.rowcount else False  # type: ignore[attr-defined]
 
 
-async def bulk_assign_permissions_to_role(
+async def bulk_assign_manager_permissions_to_role(
     db: AsyncSession,
     role_id: UUID,
     permission_ids: list[UUID],
@@ -134,7 +134,7 @@ async def bulk_assign_permissions_to_role(
     return result
 
 
-async def bulk_remove_permissions_from_role(
+async def bulk_remove_manager_permissions_from_role(
     db: AsyncSession,
     role_id: UUID,
     permission_ids: list[UUID],
@@ -212,7 +212,7 @@ class ManagerRolePermissionMutations:
         """
         db = info.context.manager_db_session
         granted_by = None  # info.context.current_user.id
-        return await bulk_assign_permissions_to_role(
+        return await bulk_assign_manager_permissions_to_role(
             db,
             UUID(role_id),
             [UUID(pid) for pid in permission_ids],
@@ -232,7 +232,7 @@ class ManagerRolePermissionMutations:
         반환값은 실제 삭제된 매핑의 개수입니다.
         """
         db = info.context.manager_db_session
-        return await bulk_remove_permissions_from_role(
+        return await bulk_remove_manager_permissions_from_role(
             db,
             UUID(role_id),
             [UUID(pid) for pid in permission_ids],

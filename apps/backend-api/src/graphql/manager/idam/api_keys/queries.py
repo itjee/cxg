@@ -15,7 +15,7 @@ from src.models.manager.idam.api_key import ApiKey as ApiKeyModel
 from .types import ManagerApiKey
 
 
-def manager_api_key_to_graphql(api_key: ApiKeyModel) -> ManagerApiKey:
+def manager_api_key_to_graphql(api_key: ApiKeyModel) -> "ManagerApiKey":
     """
     ApiKeyModel(DB 모델)을 ManagerApiKey(GraphQL 타입)으로 변환
 

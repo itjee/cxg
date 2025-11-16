@@ -11,13 +11,12 @@ import strawberry
 
 from src.graphql.common import Node
 
-
 if TYPE_CHECKING:
     from ..permissions.types import ManagerPermission
 
 
-@strawberry.type(description="Manager 역할")
-class Role(Node):
+@strawberry.type(name="ManagerRole", description="Manager 역할")
+class ManagerRole(Node):
     """
     Manager 시스템 역할
 
@@ -49,21 +48,21 @@ class Role(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="역할에 할당된 권한 목록")
-    async def permissions(self, info) -> list["ManagerPermission"]:
+    async def permissions(self, info) -> "list[ManagerPermission]":
         """
         역할에 할당된 권한 목록을 조회하는 필드 resolver
 
         Role과 Permission은 Many-to-Many 관계로,
         RolePermission 중간 테이블을 통해 연결됩니다.
         """
-        from .resolvers import resolve_role_permissions
+        from .resolvers import resolve_manager_role_permissions
 
         # strawberry.ID를 UUID로 변환하여 resolver 호출
-        return await resolve_role_permissions(UUID(self.id), info)
+        return await resolve_manager_role_permissions(UUID(self.id), info)
 
 
 @strawberry.input(description="Manager 역할 생성 입력")
-class RoleCreateInput:
+class ManagerRoleCreateInput:
     """
     Manager 역할 생성 입력 타입
 
@@ -81,7 +80,7 @@ class RoleCreateInput:
 
 
 @strawberry.input(description="Manager 역할 수정 입력")
-class RoleUpdateInput:
+class ManagerRoleUpdateInput:
     """
     Manager 역할 수정 입력 타입
 

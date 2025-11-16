@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { approval-linesService } from '../services';
+import { approvalLinesService } from '../services';
 
 const QUERY_KEY = ['approval-lines'] as const;
 
 export function useApprovalLines(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => approval-linesService.list(params),
+    queryFn: () => approvalLinesService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useApprovalLines(params?: any) {
 export function useApprovalLinesById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => approval-linesService.get(id!),
+    queryFn: () => approvalLinesService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateApprovalLines() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => approval-linesService.create(data),
+    mutationFn: (data: any) => approvalLinesService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateApprovalLines(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => approval-linesService.update(id, data),
+    mutationFn: (data: any) => approvalLinesService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteApprovalLines(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => approval-linesService.delete(id),
+    mutationFn: () => approvalLinesService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

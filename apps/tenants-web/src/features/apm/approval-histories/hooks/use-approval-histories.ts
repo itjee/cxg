@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { approval-historiesService } from '../services';
+import { approvalHistoriesService } from '../services';
 
 const QUERY_KEY = ['approval-histories'] as const;
 
 export function useApprovalHistories(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => approval-historiesService.list(params),
+    queryFn: () => approvalHistoriesService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

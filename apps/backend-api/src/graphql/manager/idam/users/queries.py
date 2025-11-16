@@ -15,7 +15,7 @@ from src.models.manager.idam.user import User as UserModel
 from .types import ManagerUser
 
 
-def manager_user_to_graphql(user: UserModel) -> ManagerUser:
+def manager_user_to_graphql(user: UserModel) -> "ManagerUser":
     """
     UserModel(DB 모델)을 User(GraphQL 타입)으로 변환
 

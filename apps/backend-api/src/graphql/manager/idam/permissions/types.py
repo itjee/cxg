@@ -17,8 +17,8 @@ if TYPE_CHECKING:
     from ..roles.types import ManagerRole
 
 
-@strawberry.type(description="Manager 권한")
-class Permission(Node):
+@strawberry.type(name="ManagerPermission", description="Manager 권한")
+class ManagerPermission(Node):
     """
     Manager 시스템 권한
 
@@ -82,7 +82,7 @@ class Permission(Node):
     updated_at: datetime | None = strawberry.field(default=None, description="수정일시")
 
     @strawberry.field(description="이 권한을 가진 역할 목록")
-    async def roles(self, info) -> list["ManagerRole"]:
+    async def roles(self, info) -> "list[ManagerRole]":
         """
         권한에 할당된 역할 목록 조회
 
@@ -92,13 +92,13 @@ class Permission(Node):
         Returns:
             list[ManagerRole]: 이 권한을 가진 역할 목록
         """
-        from .resolvers import resolve_permission_roles
+        from .resolvers import resolve_manager_permission_roles
 
-        return await resolve_permission_roles(UUID(self.id), info)
+        return await resolve_manager_permission_roles(UUID(self.id), info)
 
 
 @strawberry.input(description="Manager 권한 생성 입력")
-class PermissionCreateInput:
+class ManagerPermissionCreateInput:
     """
     Manager 권한 생성 입력 타입
 
@@ -125,7 +125,7 @@ class PermissionCreateInput:
 
 
 @strawberry.input(description="Manager 권한 수정 입력")
-class PermissionUpdateInput:
+class ManagerPermissionUpdateInput:
     """
     Manager 권한 수정 입력 타입
 

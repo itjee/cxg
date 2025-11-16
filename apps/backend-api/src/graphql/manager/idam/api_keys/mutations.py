@@ -13,7 +13,7 @@ from src.core.security import generate_api_key
 from src.graphql.common import update_entity
 from src.models.manager.idam.api_key import ApiKey as ApiKeyModel
 
-from .queries import api_key_to_graphql
+from .queries import manager_api_key_to_graphql
 from .types import (
     ManagerApiKey,
     ManagerApiKeyCreateInput,
@@ -74,7 +74,7 @@ async def create_manager_api_key(
     await db.refresh(api_key)
 
     # 5. GraphQL 타입으로 변환하여 반환
-    return api_key_to_graphql(api_key), full_api_key
+    return manager_api_key_to_graphql(api_key), full_api_key
 
 
 async def update_manager_api_key(
@@ -106,7 +106,7 @@ async def update_manager_api_key(
         model_class=ApiKeyModel,
         entity_id=api_key_id,
         input_data=input_data,
-        to_graphql=api_key_to_graphql,
+        to_graphql=manager_api_key_to_graphql,
     )
 
     if result is None:
@@ -124,7 +124,7 @@ class ManagerApiKeyMutations:
     """
 
     @strawberry.field(description="Manager API 키 생성")
-    async def create_manager_api_key(
+    async def create_api_key(
         self, info, input: ManagerApiKeyCreateInput
     ) -> ManagerApiKeyCreateResponse:
         """
@@ -166,7 +166,7 @@ class ManagerApiKeyMutations:
         )
 
     @strawberry.field(description="Manager API 키 수정")
-    async def update_manager_api_key(
+    async def update_api_key(
         self, info, id: strawberry.ID, input: ManagerApiKeyUpdateInput
     ) -> ManagerApiKey:
         """

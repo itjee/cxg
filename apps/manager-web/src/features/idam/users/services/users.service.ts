@@ -1,5 +1,5 @@
 /**
- * Users GraphQL Service Layer
+ * 사용자 GraphQL 서비스 계층
  *
  * Apollo Client를 사용한 GraphQL 통신 계층입니다.
  * 컴포넌트에서는 직접 Hooks를 사용하는 것을 권장합니다.
@@ -16,7 +16,7 @@ import {
   type CreateUserVariables,
   type UpdateUserVariables,
 } from "../graphql";
-import type { User, UsersListResponse } from "../types/users.types";
+import type { User, UsersResponse } from "../types/users.types";
 
 /**
  * GraphQL 응답 타입
@@ -38,7 +38,7 @@ interface UpdateUserResponse {
 }
 
 /**
- * Users GraphQL Service
+ * 사용자 GraphQL 서비스
  *
  * Apollo Client를 사용한 직접적인 GraphQL 통신
  * 주로 테스트 또는 특수한 상황에서 사용됩니다.
@@ -72,10 +72,10 @@ export const usersService = {
         total: items.length,
       };
     } catch (error) {
-      console.error("listUsers error:", error);
+      console.error("사용자 목록 조회 오류:", error);
       throw new Error(
-        `Failed to fetch users: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `사용자 목록 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
         }`
       );
     }
@@ -95,15 +95,15 @@ export const usersService = {
       });
 
       if (!data?.user) {
-        throw new Error("User not found");
+        throw new Error("사용자를 찾을 수 없습니다");
       }
 
       return data.user;
     } catch (error) {
-      console.error(`getUser(${id}) error:`, error);
+      console.error(`사용자 조회 오류 (${id}):`, error);
       throw new Error(
-        `Failed to fetch user: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `사용자 조회 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
         }`
       );
     }
@@ -129,15 +129,15 @@ export const usersService = {
         });
 
       if (!responseData?.createUser) {
-        throw new Error("Failed to create user");
+        throw new Error("사용자 생성에 실패했습니다");
       }
 
       return responseData.createUser;
     } catch (error) {
-      console.error("createUser error:", error);
+      console.error("사용자 생성 오류:", error);
       throw new Error(
-        `Failed to create user: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `사용자 생성 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
         }`
       );
     }
@@ -166,15 +166,15 @@ export const usersService = {
         });
 
       if (!responseData?.updateUser) {
-        throw new Error("Failed to update user");
+        throw new Error("사용자 수정에 실패했습니다");
       }
 
       return responseData.updateUser;
     } catch (error) {
-      console.error(`updateUser(${id}) error:`, error);
+      console.error(`사용자 수정 오류 (${id}):`, error);
       throw new Error(
-        `Failed to update user: ${
-          error instanceof Error ? error.message : "Unknown error"
+        `사용자 수정 실패: ${
+          error instanceof Error ? error.message : "알 수 없는 오류"
         }`
       );
     }

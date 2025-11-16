@@ -4,14 +4,14 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { sales-analyticsService } from '../services';
+import { salesAnalyticsService } from '../services';
 
 const QUERY_KEY = ['sales-analytics'] as const;
 
 export function useSalesAnalytics(params?: any) {
   return useQuery({
     queryKey: [...QUERY_KEY, params],
-    queryFn: () => sales-analyticsService.list(params),
+    queryFn: () => salesAnalyticsService.list(params),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -20,7 +20,7 @@ export function useSalesAnalytics(params?: any) {
 export function useSalesAnalyticsById(id: string | null | undefined) {
   return useQuery({
     queryKey: [...QUERY_KEY, 'detail', id],
-    queryFn: () => sales-analyticsService.get(id!),
+    queryFn: () => salesAnalyticsService.get(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
@@ -31,7 +31,7 @@ export function useCreateSalesAnalytics() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => sales-analyticsService.create(data),
+    mutationFn: (data: any) => salesAnalyticsService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },
@@ -45,7 +45,7 @@ export function useUpdateSalesAnalytics(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: any) => sales-analyticsService.update(id, data),
+    mutationFn: (data: any) => salesAnalyticsService.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: [...QUERY_KEY, 'detail', id] });
@@ -60,7 +60,7 @@ export function useDeleteSalesAnalytics(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => sales-analyticsService.delete(id),
+    mutationFn: () => salesAnalyticsService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEY });
     },

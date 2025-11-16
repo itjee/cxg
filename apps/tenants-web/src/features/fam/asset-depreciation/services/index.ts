@@ -1,1 +1,1 @@
-export { asset-depreciationService } from './asset-depreciation.service';
+export { assetDepreciationService } from './asset-depreciation.service';

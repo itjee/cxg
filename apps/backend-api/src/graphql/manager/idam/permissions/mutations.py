@@ -12,13 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import create_entity, update_entity
 from src.models.manager.idam.permission import Permission as PermissionModel
 
-from .queries import permission_to_graphql
-from .types import Permission, PermissionCreateInput, PermissionUpdateInput
+from .queries import manager_permission_to_graphql
+from .types import ManagerPermission, ManagerPermissionCreateInput, ManagerPermissionUpdateInput
 
 
-async def create_permission(
-    db: AsyncSession, input_data: PermissionCreateInput
-) -> Permission:
+async def create_manager_permission(
+    db: AsyncSession, input_data: ManagerPermissionCreateInput
+) -> ManagerPermission:
     """
     Manager 권한 생성
 
@@ -44,13 +44,13 @@ async def create_permission(
         db=db,
         model_class=PermissionModel,
         input_data=input_data,
-        to_graphql=permission_to_graphql,
+        to_graphql=manager_permission_to_graphql,
     )
 
 
-async def update_permission(
-    db: AsyncSession, permission_id: UUID, input_data: PermissionUpdateInput
-) -> Permission | None:
+async def update_manager_permission(
+    db: AsyncSession, permission_id: UUID, input_data: ManagerPermissionUpdateInput
+) -> ManagerPermission | None:
     """
     Manager 권한 수정
 
@@ -77,12 +77,12 @@ async def update_permission(
         model_class=PermissionModel,
         entity_id=permission_id,
         input_data=input_data,
-        to_graphql=permission_to_graphql,
+        to_graphql=manager_permission_to_graphql,
     )
 
 
 @strawberry.type
-class PermissionMutations:
+class ManagerPermissionMutations:
     """
     Manager IDAM Permissions Mutation
 
@@ -91,8 +91,8 @@ class PermissionMutations:
 
     @strawberry.mutation(description="Manager 권한 생성")
     async def create_permission(
-        self, info, input: PermissionCreateInput
-    ) -> Permission:
+        self, info, input: ManagerPermissionCreateInput
+    ) -> ManagerPermission:
         """
         Manager 권한 생성
 
@@ -126,12 +126,12 @@ class PermissionMutations:
             }
         """
         db = info.context.manager_db_session
-        return await create_permission(db, input)
+        return await create_manager_permission(db, input)
 
     @strawberry.mutation(description="Manager 권한 수정")
     async def update_permission(
-        self, info, id: strawberry.ID, input: PermissionUpdateInput
-    ) -> Permission | None:
+        self, info, id: strawberry.ID, input: ManagerPermissionUpdateInput
+    ) -> ManagerPermission | None:
         """
         Manager 권한 수정
 
@@ -162,4 +162,4 @@ class PermissionMutations:
             }
         """
         db = info.context.manager_db_session
-        return await update_permission(db, UUID(id), input)
+        return await update_manager_permission(db, UUID(id), input)

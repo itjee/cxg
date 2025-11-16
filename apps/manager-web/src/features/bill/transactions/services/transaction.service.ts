@@ -18,12 +18,12 @@ import type {
 const ENDPOINT = "/api/v1/manager/bill/transactions";
 
 /**
- * 백엔드 응답 구조: { success: true, data: {...}, error: null }
+ * 백엔드 응답 구조: { success: true, data: {...}, 오류: null }
  */
 interface ApiResponse<T> {
   success: boolean;
   data: T;
-  error: null | { code: string; message: string; detail?: unknown };
+  오류: null | { code: string; message: string; detail?: unknown };
 }
 
 export const transactionService = {

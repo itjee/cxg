@@ -1,7 +1,5 @@
 """GraphQL Context - 멀티 DB 지원"""
 
-from typing import Optional
-
 import strawberry
 from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,24 +13,24 @@ from src.core.security import decode_access_token
 class GraphQLContext(BaseContext):
     """
     GraphQL 컨텍스트
-    
+
     3단계 구조를 위한 멀티 DB 세션 지원:
     - Manager DB: manager.idam, manager.tenant_mgmt
     - Tenant DB: tenants.sys, tenants.crm, tenants.hrm
     """
-    
+
     request: strawberry.Private[Request]
-    
+
     # 인증 정보
     user_id: str
     username: str
     role: str
-    tenant_key: Optional[str] = None
-    
+    tenant_key: str | None = None
+
     # DB 세션
     manager_db_session: strawberry.Private[AsyncSession]
-    tenant_db_session: strawberry.Private[Optional[AsyncSession]] = None
-    
+    tenant_db_session: strawberry.Private[AsyncSession | None] = None
+
     # DataLoaders (3단계 네이밍: 시스템.스키마.엔티티)
     loaders: strawberry.Private[dict]
 
@@ -67,7 +65,7 @@ async def get_context(request: Request) -> GraphQLContext:
             username = token_data.get("username", "")
             role = token_data.get("role", "")
             tenant_key = token_data.get("tenant_key")
-        except Exception as e:
+        except Exception:
             # 토큰 파싱 실패 시 무시 (인증 필요 없는 작업용)
             pass
 
@@ -78,6 +76,7 @@ async def get_context(request: Request) -> GraphQLContext:
 
     # 3. DataLoaders 생성
     from .loaders import create_loaders
+
     loaders = create_loaders(manager_db, tenant_db)
 
     return GraphQLContext(

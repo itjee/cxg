@@ -16,7 +16,7 @@ import { onError } from "@apollo/client/link/error";
 import { setContext } from "@apollo/client/link/context";
 
 const GRAPHQL_ENDPOINT =
-  process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:8100/graphql";
+  process.env.NEXT_PUBLIC_GRAPHQL_URL || "http://localhost:8100/graphql/tenants";
 
 /**
  * HTTP Link 생성

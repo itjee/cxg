@@ -8,7 +8,7 @@
 
 from .mutations import ManagerSessionMutations
 from .queries import ManagerSessionQueries
-from .resolvers import resolve_session_user
+from .resolvers import resolve_manager_session_user
 from .types import ManagerSession
 
 
@@ -16,5 +16,5 @@ __all__ = [
     "ManagerSession",
     "ManagerSessionQueries",
     "ManagerSessionMutations",
-    "resolve_session_user",
+    "resolve_manager_session_user",
 ]

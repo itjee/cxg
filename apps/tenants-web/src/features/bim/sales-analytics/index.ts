@@ -21,7 +21,7 @@ export {
 } from './hooks';
 
 // Services
-export { sales-analyticsService } from './services';
+export { salesAnalyticsService } from './services';
 
 // Types
 export type {

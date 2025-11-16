@@ -15,7 +15,7 @@ from src.models.manager.idam.session import Session as SessionModel
 from .types import ManagerSession
 
 
-def manager_session_to_graphql(session: SessionModel) -> ManagerSession:
+def manager_session_to_graphql(session: SessionModel) -> "ManagerSession":
     """
     SessionModel(DB 모델)을 ManagerSession(GraphQL 타입)으로 변환
 

@@ -8,7 +8,7 @@ import axios from 'axios';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8100';
 const API_ENDPOINT = `${API_BASE_URL}/api/bim/kpi-definitions`;
 
-export const kpi-definitionsService = {
+export const kpiDefinitionsService = {
   async list(params?: any): Promise<any> {
     try {
       const response = await axios.get(API_ENDPOINT, { params });

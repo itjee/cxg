@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.graphql.common import delete_entity, update_entity
 from src.models.manager.idam.session import Session as SessionModel
 
-from .queries import session_to_graphql
+from .queries import manager_session_to_graphql
 from .types import ManagerSession
 
 
@@ -40,7 +40,7 @@ async def revoke_manager_session(db: AsyncSession, session_id: UUID) -> ManagerS
         model_class=SessionModel,
         entity_id=session_id,
         input_data=SessionRevokeInput(),
-        to_graphql=session_to_graphql,
+        to_graphql=manager_session_to_graphql,
     )
 
 
@@ -75,7 +75,7 @@ class ManagerSessionMutations:
     """
 
     @strawberry.mutation(description="Manager 세션 폐기")
-    async def revoke_manager_session(self, info, id: strawberry.ID) -> ManagerSession | None:
+    async def revoke_session(self, info, id: strawberry.ID) -> ManagerSession | None:
         """
         세션 폐기 (로그아웃 처리)
 
@@ -89,7 +89,7 @@ class ManagerSessionMutations:
         return await revoke_manager_session(db, UUID(id))
 
     @strawberry.mutation(description="Manager 세션 삭제")
-    async def delete_manager_session(self, info, id: strawberry.ID) -> bool:
+    async def delete_session(self, info, id: strawberry.ID) -> bool:
         """
         세션 완전 삭제
 

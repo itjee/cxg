@@ -1,6 +1,5 @@
 """Tenants SYS Users - Mutations"""
 
-from typing import Optional
 from uuid import UUID
 
 import strawberry
@@ -9,19 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.security import hash_password
 from src.models.tenants.sys.users import Users as UserModel
-from .types import TenantUser, TenantUserCreateInput, TenantUserUpdateInput
+
+from .types import TenantsUser, TenantsUserCreateInput, TenantsUserUpdateInput
 
 
-async def create_tenant_user(
-    db: AsyncSession,
-    input_data: TenantUserCreateInput,
-    created_by: UUID
-) -> TenantUser:
+async def create_tenants_user(
+    db: AsyncSession, input_data: TenantsUserCreateInput, created_by: UUID
+) -> TenantsUser:
     """Tenant 사용자 생성"""
-    
+
     # 비밀번호 해시화
     password_hash = hash_password(input_data.password)
-    
+
     # 사용자 생성
     user = UserModel(
         user_code=input_data.user_code,
@@ -37,12 +35,12 @@ async def create_tenant_user(
         created_by=created_by,
         updated_by=created_by,
     )
-    
+
     db.add(user)
     await db.commit()
     await db.refresh(user)
-    
-    return TenantUser(
+
+    return TenantsUser(
         id=strawberry.ID(str(user.id)),
         user_code=user.user_code,
         username=user.username,
@@ -67,21 +65,18 @@ async def create_tenant_user(
     )
 
 
-async def update_tenant_user(
-    db: AsyncSession,
-    user_id: UUID,
-    input_data: TenantUserUpdateInput,
-    updated_by: UUID
-) -> Optional[TenantUser]:
+async def update_tenants_user(
+    db: AsyncSession, user_id: UUID, input_data: TenantsUserUpdateInput, updated_by: UUID
+) -> TenantsUser | None:
     """Tenant 사용자 수정"""
-    
-    stmt = select(UserModel).where(UserModel.id == user_id, UserModel.is_deleted == False)
+
+    stmt = select(UserModel).where(UserModel.id == user_id, UserModel.is_active)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
-    
+
     if not user:
         return None
-    
+
     # 입력된 필드만 업데이트
     if input_data.email is not None:
         user.email = input_data.email
@@ -99,13 +94,13 @@ async def update_tenant_user(
         user.role_id = UUID(input_data.role_id)
     if input_data.is_active is not None:
         user.is_active = input_data.is_active
-    
+
     user.updated_by = updated_by
-    
+
     await db.commit()
     await db.refresh(user)
-    
-    return TenantUser(
+
+    return TenantsUser(
         id=strawberry.ID(str(user.id)),
         user_code=user.user_code,
         username=user.username,
@@ -131,34 +126,27 @@ async def update_tenant_user(
 
 
 @strawberry.type
-class TenantUserMutations:
+class TenantsUserMutations:
     """Tenants SYS Users Mutation"""
-    
+
     @strawberry.mutation(description="Tenant 사용자 생성")
-    async def create_tenant_user(
-        self,
-        info,
-        input: TenantUserCreateInput
-    ) -> TenantUser:
+    async def create_user(self, info, input: TenantsUserCreateInput) -> TenantsUser:
         """Tenant 사용자 생성"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        
+
         current_user_id = UUID(info.context.user_id)
-        return await create_tenant_user(db, input, current_user_id)
-    
+        return await create_tenants_user(db, input, current_user_id)
+
     @strawberry.mutation(description="Tenant 사용자 수정")
-    async def update_tenant_user(
-        self,
-        info,
-        id: strawberry.ID,
-        input: TenantUserUpdateInput
-    ) -> Optional[TenantUser]:
+    async def update_user(
+        self, info, id: strawberry.ID, input: TenantsUserUpdateInput
+    ) -> TenantsUser | None:
         """Tenant 사용자 수정"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        
+
         current_user_id = UUID(info.context.user_id)
-        return await update_tenant_user(db, UUID(id), input, current_user_id)
+        return await update_tenants_user(db, UUID(id), input, current_user_id)

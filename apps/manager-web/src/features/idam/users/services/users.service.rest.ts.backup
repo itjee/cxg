@@ -9,7 +9,7 @@ import type {
   Users,
   CreateUsersRequest,
   UpdateUsersRequest,
-  UsersListResponse,
+  UsersResponse,
   UsersQueryParams,
 } from "../types/users.types";
 
@@ -31,9 +31,9 @@ export const usersService = {
   async listUsers(
     params?: UsersQueryParams,
     signal?: AbortSignal
-  ): Promise<UsersListResponse> {
+  ): Promise<UsersResponse> {
     try {
-      const response = await api.get<ApiResponse<UsersListResponse>>(ENDPOINT, {
+      const response = await api.get<ApiResponse<UsersResponse>>(ENDPOINT, {
         params: {
           page: params?.page,
           page_size: params?.pageSize,

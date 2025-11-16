@@ -66,7 +66,7 @@ export interface UpdateUserRequest {
 /**
  * 사용자 목록 응답
  */
-export interface UsersListResponse {
+export interface UsersResponse {
   items: User[];
   total: number;
   page: number;
@@ -85,30 +85,3 @@ export interface UsersQueryParams {
   userType?: string;
   status?: string;
 }
-
-// ===== 호환성 타입 (기존 코드 지원) =====
-
-/**
- * @deprecated User 사용 권장
- */
-export type Users = User;
-
-/**
- * @deprecated CreateUserRequest 사용 권장
- */
-export type CreateUsersRequest = CreateUserRequest;
-
-/**
- * @deprecated UpdateUserRequest 사용 권장
- */
-export type UpdateUsersRequest = UpdateUserRequest;
-
-/**
- * @deprecated UsersListResponse 사용 권장
- */
-export type UsersListResponse = UsersListResponse;
-
-/**
- * @deprecated UsersQueryParams 사용 권장
- */
-export type UsersQueryParams = UsersQueryParams;

@@ -1,1 +1,1 @@
-export { approval-linesService } from './approval-lines.service';
+export { approvalLinesService } from './approval-lines.service';

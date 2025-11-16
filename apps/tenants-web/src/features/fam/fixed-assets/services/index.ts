@@ -1,1 +1,1 @@
-export { fixed-assetsService } from './fixed-assets.service';
+export { fixedAssetsService } from './fixed-assets.service';

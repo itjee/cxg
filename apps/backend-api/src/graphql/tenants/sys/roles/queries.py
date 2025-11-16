@@ -1,6 +1,5 @@
 """Tenants SYS Roles - Queries"""
 
-from typing import Optional
 from uuid import UUID
 
 import strawberry
@@ -8,19 +7,20 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.models.tenants.sys.roles import Roles as RoleModel
-from .types import TenantRole
+
+from .types import TenantsRole
 
 
-async def get_tenant_role_by_id(db: AsyncSession, role_id: UUID) -> Optional[TenantRole]:
+async def get_tenants_role_by_id(db: AsyncSession, role_id: UUID) -> TenantsRole | None:
     """ID로 Tenant 역할 조회"""
     stmt = select(RoleModel).where(RoleModel.id == role_id, RoleModel.is_deleted == False)
     result = await db.execute(stmt)
     role = result.scalar_one_or_none()
-    
+
     if not role:
         return None
-    
-    return TenantRole(
+
+    return TenantsRole(
         id=strawberry.ID(str(role.id)),
         code=role.code,
         name=role.name,
@@ -35,23 +35,26 @@ async def get_tenant_role_by_id(db: AsyncSession, role_id: UUID) -> Optional[Ten
     )
 
 
-async def get_tenant_roles(
-    db: AsyncSession,
-    limit: int = 20,
-    offset: int = 0,
-    is_active: Optional[bool] = None
-) -> list[TenantRole]:
+async def get_tenants_roles(
+    db: AsyncSession, limit: int = 20, offset: int = 0, is_active: bool | None = None
+) -> list[TenantsRole]:
     """Tenant 역할 목록 조회"""
-    stmt = select(RoleModel).where(RoleModel.is_deleted == False).limit(limit).offset(offset).order_by(RoleModel.code)
-    
+    stmt = (
+        select(RoleModel)
+        .where(RoleModel.is_deleted == False)
+        .limit(limit)
+        .offset(offset)
+        .order_by(RoleModel.code)
+    )
+
     if is_active is not None:
         stmt = stmt.where(RoleModel.is_active == is_active)
-    
+
     result = await db.execute(stmt)
     roles = result.scalars().all()
-    
+
     return [
-        TenantRole(
+        TenantsRole(
             id=strawberry.ID(str(role.id)),
             code=role.code,
             name=role.name,
@@ -69,27 +72,23 @@ async def get_tenant_roles(
 
 
 @strawberry.type
-class TenantRoleQueries:
+class TenantsRoleQueries:
     """Tenants SYS Roles Query"""
-    
+
     @strawberry.field(description="Tenant 역할 조회 (ID)")
-    async def tenant_role(self, info, id: strawberry.ID) -> Optional[TenantRole]:
+    async def tenant_role(self, info, id: strawberry.ID) -> TenantsRole | None:
         """Tenant 역할 단건 조회"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        return await get_tenant_role_by_id(db, UUID(id))
-    
+        return await get_tenants_role_by_id(db, UUID(id))
+
     @strawberry.field(description="Tenant 역할 목록")
-    async def tenant_roles(
-        self,
-        info,
-        limit: int = 20,
-        offset: int = 0,
-        is_active: Optional[bool] = None
-    ) -> list[TenantRole]:
+    async def tenants_roles(
+        self, info, limit: int = 20, offset: int = 0, is_active: bool | None = None
+    ) -> list[TenantsRole]:
         """Tenant 역할 목록 조회"""
         db = info.context.tenant_db_session
         if not db:
             raise Exception("Tenant database session not available")
-        return await get_tenant_roles(db, limit, offset, is_active)
+        return await get_tenants_roles(db, limit, offset, is_active)

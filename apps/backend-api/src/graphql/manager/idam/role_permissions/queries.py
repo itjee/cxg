@@ -21,7 +21,7 @@ from .types import ManagerRolePermission
 
 def manager_role_permission_to_graphql(
     role_permission: RolePermissionModel,
-) -> ManagerRolePermission:
+) -> "ManagerRolePermission":
     """RolePermissionModel을 RolePermission GraphQL 타입으로 변환
     Args:
         role_permission: SQLAlchemy 모델 인스턴스

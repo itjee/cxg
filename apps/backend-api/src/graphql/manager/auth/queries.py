@@ -18,7 +18,7 @@ from .types import ManagerAuthUser
 
 def user_to_graphql(user: User) -> ManagerAuthUser:
     """
-    User 모델을 ManagerAuthUser GraphQL 타입으로 변환
+    User 모델을 AuthUser GraphQL 타입으로 변환
 
     Args:
         user: 데이터베이스 User 모델
