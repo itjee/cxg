@@ -65,9 +65,7 @@ function HintIcon({ hint }: { hint: string }) {
           <HelpCircle className="w-4 h-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 text-xs p-2">
-        {hint}
-      </PopoverContent>
+      <PopoverContent className="w-48 text-xs p-2">{hint}</PopoverContent>
     </Popover>
   );
 }
@@ -120,7 +118,11 @@ export function UsersForm({
       email: initialData?.email || "",
       fullName: initialData?.fullName || "",
       password: "",
-      userType: initialData?.userType || "USER",
+      userType: (["ADMIN", "MANAGER", "USER"].includes(
+        initialData?.userType as string
+      )
+        ? initialData?.userType
+        : "USER") as "ADMIN" | "MANAGER" | "USER",
       phone: initialData?.phone || "",
       department: initialData?.department || "",
       position: initialData?.position || "",
@@ -140,7 +142,11 @@ export function UsersForm({
         email: initialData.email || "",
         fullName: initialData.fullName || "",
         password: "",
-        userType: initialData.userType || "USER",
+        userType: (["ADMIN", "MANAGER", "USER"].includes(
+          initialData?.userType as string
+        )
+          ? initialData?.userType
+          : "USER") as "ADMIN" | "MANAGER" | "USER",
         phone: initialData?.phone || "",
         department: initialData?.department || "",
         position: initialData?.position || "",
@@ -157,7 +163,7 @@ export function UsersForm({
         email: "",
         fullName: "",
         password: "",
-        userType: "USER",
+        userType: "USER" as "ADMIN" | "MANAGER" | "USER",
         phone: "",
         department: "",
         position: "",
@@ -272,7 +278,11 @@ export function UsersForm({
               name="userType"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
+                >
                   <SelectTrigger id="userType">
                     <SelectValue placeholder="사용자 유형을 선택하세요" />
                   </SelectTrigger>
@@ -292,7 +302,9 @@ export function UsersForm({
           {/* 전화 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="phone" className="text-xs">전화</Label>
+              <Label htmlFor="phone" className="text-xs">
+                전화
+              </Label>
               <HintIcon hint={fieldHints.phone} />
             </div>
             <Input
@@ -306,7 +318,9 @@ export function UsersForm({
           {/* 부서 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="department" className="text-xs">부서</Label>
+              <Label htmlFor="department" className="text-xs">
+                부서
+              </Label>
               <HintIcon hint={fieldHints.department} />
             </div>
             <Input
@@ -320,7 +334,9 @@ export function UsersForm({
           {/* 직책 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="position" className="text-xs">직책</Label>
+              <Label htmlFor="position" className="text-xs">
+                직책
+              </Label>
               <HintIcon hint={fieldHints.position} />
             </div>
             <Input
@@ -347,7 +363,11 @@ export function UsersForm({
               name="status"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={isLoading}
+                >
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
