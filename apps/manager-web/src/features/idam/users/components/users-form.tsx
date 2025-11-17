@@ -9,10 +9,11 @@
  * - 사용자 수정 모드: 기존 데이터 로드
  */
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { HelpCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,8 +23,54 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { EntityFormButtons } from "@/components/features";
 import type { User } from "../types/users.types";
+
+/**
+ * 필드별 힌트 설명
+ */
+const fieldHints = {
+  username: "3자 이상의 고유한 사용자명을 입력하세요",
+  email: "유효한 이메일 주소를 입력하세요",
+  fullName: "사용자의 실제 이름을 입력하세요",
+  password: "보안을 위해 8자 이상의 복잡한 비밀번호를 설정하세요",
+  userType: "사용자의 역할에 따라 적절한 유형을 선택하세요",
+  phone: "연락 가능한 전화번호를 입력하세요",
+  department: "소속 부서명을 입력하세요",
+  position: "사용자의 직책/직급을 입력하세요",
+};
+
+/**
+ * 힌트 아이콘 컴포넌트
+ */
+function HintIcon({ hint }: { hint: string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center justify-center w-4 h-4 ml-1 text-muted-foreground hover:text-foreground transition-colors"
+          onClick={(e) => {
+            e.preventDefault();
+            setOpen(!open);
+          }}
+        >
+          <HelpCircle className="w-4 h-4" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 text-xs p-2">
+        {hint}
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 /**
  * 폼 유효성 검증 스키마
@@ -119,9 +166,12 @@ export function UsersForm({
         <div className="grid grid-cols-2 gap-4">
           {/* 사용자명 */}
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-xs">
-              사용자명 <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center">
+              <Label htmlFor="username" className="text-xs">
+                사용자명 <span className="text-red-500">*</span>
+              </Label>
+              <HintIcon hint={fieldHints.username} />
+            </div>
             <Input
               id="username"
               {...register("username")}
@@ -135,9 +185,12 @@ export function UsersForm({
 
           {/* 이메일 */}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs">
-              이메일 <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center">
+              <Label htmlFor="email" className="text-xs">
+                이메일 <span className="text-red-500">*</span>
+              </Label>
+              <HintIcon hint={fieldHints.email} />
+            </div>
             <Input
               id="email"
               type="email"
@@ -152,9 +205,12 @@ export function UsersForm({
 
           {/* 전체 이름 */}
           <div className="space-y-2">
-            <Label htmlFor="fullName" className="text-xs">
-              전체 이름 <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center">
+              <Label htmlFor="fullName" className="text-xs">
+                전체 이름 <span className="text-red-500">*</span>
+              </Label>
+              <HintIcon hint={fieldHints.fullName} />
+            </div>
             <Input
               id="fullName"
               {...register("fullName")}
@@ -169,9 +225,12 @@ export function UsersForm({
           {/* 비밀번호 (생성 모드에서만 필수) */}
           {!isEditing && (
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs">
-                비밀번호 <span className="text-red-500">*</span>
-              </Label>
+              <div className="flex items-center">
+                <Label htmlFor="password" className="text-xs">
+                  비밀번호 <span className="text-red-500">*</span>
+                </Label>
+                <HintIcon hint={fieldHints.password} />
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -189,9 +248,12 @@ export function UsersForm({
 
           {/* 사용자 유형 */}
           <div className="space-y-2">
-            <Label htmlFor="userType" className="text-xs">
-              사용자 유형 <span className="text-red-500">*</span>
-            </Label>
+            <div className="flex items-center">
+              <Label htmlFor="userType" className="text-xs">
+                사용자 유형 <span className="text-red-500">*</span>
+              </Label>
+              <HintIcon hint={fieldHints.userType} />
+            </div>
             <Controller
               name="userType"
               control={control}
@@ -215,7 +277,10 @@ export function UsersForm({
 
           {/* 전화 */}
           <div className="space-y-2">
-            <Label htmlFor="phone" className="text-xs">전화</Label>
+            <div className="flex items-center">
+              <Label htmlFor="phone" className="text-xs">전화</Label>
+              <HintIcon hint={fieldHints.phone} />
+            </div>
             <Input
               id="phone"
               {...register("phone")}
@@ -226,7 +291,10 @@ export function UsersForm({
 
           {/* 부서 */}
           <div className="space-y-2">
-            <Label htmlFor="department" className="text-xs">부서</Label>
+            <div className="flex items-center">
+              <Label htmlFor="department" className="text-xs">부서</Label>
+              <HintIcon hint={fieldHints.department} />
+            </div>
             <Input
               id="department"
               {...register("department")}
@@ -237,7 +305,10 @@ export function UsersForm({
 
           {/* 직책 */}
           <div className="space-y-2">
-            <Label htmlFor="position" className="text-xs">직책</Label>
+            <div className="flex items-center">
+              <Label htmlFor="position" className="text-xs">직책</Label>
+              <HintIcon hint={fieldHints.position} />
+            </div>
             <Input
               id="position"
               {...register("position")}
