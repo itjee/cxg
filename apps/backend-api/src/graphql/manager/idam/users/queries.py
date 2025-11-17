@@ -125,17 +125,25 @@ async def get_manager_users(
             )
         )
 
-    # 생성일시 범위 필터
+    # 생성일시 범위 필터 (날짜만 받음: YYYY-MM-DD 형식)
+    # from: 해당 날짜의 00:00:00 이상
+    # to: 해당 날짜의 23:59:59 이하
     if created_after:
         try:
-            created_after_dt = datetime.fromisoformat(created_after.replace('Z', '+00:00'))
+            # YYYY-MM-DD 형식을 datetime으로 변환하여 00:00:00으로 설정
+            from datetime import timezone
+            created_after_dt = datetime.strptime(created_after, "%Y-%m-%d").replace(tzinfo=timezone.utc)
             extra_conditions.append(UserModel.created_at >= created_after_dt)
         except (ValueError, AttributeError):
             pass
 
     if created_before:
         try:
-            created_before_dt = datetime.fromisoformat(created_before.replace('Z', '+00:00'))
+            # YYYY-MM-DD 형식을 datetime으로 변환하여 23:59:59로 설정
+            from datetime import timezone, timedelta
+            created_before_dt = datetime.strptime(created_before, "%Y-%m-%d").replace(
+                hour=23, minute=59, second=59, tzinfo=timezone.utc
+            )
             extra_conditions.append(UserModel.created_at <= created_before_dt)
         except (ValueError, AttributeError):
             pass
