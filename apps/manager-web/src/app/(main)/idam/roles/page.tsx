@@ -4,15 +4,15 @@
  * Roles List Page
  *
  * 역할 관리 페이지
- * Jira 스타일 필터링: 검색 + 필터 팝업
+ * Jira 스타일 필터링: 쿼리 + 필터 팝업
  *
  * 필터링 아키텍처:
- * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
- * - isActive → status 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - queryText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - status/category → status/category 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
  * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   RolesHeader,
@@ -21,81 +21,120 @@ import {
   RolesTable,
   RolesEdit,
   useRoles,
-  useDeleteRole,
-  type RolesFilterState,
+  useUpdateRole,
+  useRolesStore,
+  type Role,
 } from "@/features/idam/roles";
-import { useRolesStore } from "@/features/idam/roles/stores/roles.store";
 
 export default function RolesPage() {
-  const { setSearchText, setSelectedStatus } = useRolesStore();
+  // Store에서 UI 상태 가져오기
+  const { currentPage, itemsPerPage, setSearchText, setCurrentPage, openForm, setSelectedId } =
+    useRolesStore();
 
-  // 로컬 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 확정)
-  const [localFilters, setLocalFilters] = useState<RolesFilterState>({
-    isActive: null,
+  // 쿼리 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
+  const [queryFilters, setQueryFilters] = useState<Record<string, string[] | null>>({
+    status: null,
+    category: null,
   });
 
-  // 서버에 전달할 필터 상태
-  const [appliedFilters, setAppliedFilters] = useState<RolesFilterState>({
-    isActive: null,
+  const [queryText, setQueryTextLocal] = useState("");
+  const [debouncedQueryText, setDebouncedQueryText] = useState("");
+
+  // 쿼리 텍스트 debounce (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQueryText(queryText);
+      setSearchText(queryText);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [queryText, setSearchText]);
+
+  // GraphQL 쿼리 - Apollo Hooks 사용
+  const {
+    data: rolesResponse,
+    loading,
+    refetch,
+  } = useRoles({
+    limit: itemsPerPage,
+    offset: currentPage * itemsPerPage,
+    category: queryFilters.category ? queryFilters.category.join(",") : undefined,
+    status: queryFilters.status ? queryFilters.status.join(",") : undefined,
+    search: debouncedQueryText || undefined,
   });
 
-  const [searchText, setSearchTextLocal] = useState("");
+  // GraphQL 뮤테이션 - 수정
+  const [updateRole, { loading: updating }] = useUpdateRole();
 
-  const { data: rolesResponse, refetch, loading } = useRoles({
-    limit: 20,
-    offset: 0,
-    status: appliedFilters.isActive || undefined,
-    search: searchText || undefined,
-  });
-
-  const [deleteRole] = useDeleteRole();
-
+  // 역할 데이터
   const roles = rolesResponse?.roles || [];
 
-  const handleSearchChange = (text: string) => {
-    setSearchTextLocal(text);
-    setSearchText(text);
+  const handleQueryTextChange = (text: string) => {
+    setQueryTextLocal(text);
   };
 
-  const handleApplyFilters = () => {
-    setAppliedFilters(localFilters);
-    setSelectedStatus(localFilters.isActive || null);
+  const handleApplyQuery = () => {
+    // 필터 적용 시 필요한 추가 작업이 있으면 여기에 작성
+    // 현재는 queryFilters 상태 업데이트로 useRoles가 자동으로 refetch됨
   };
 
-  const handleDeleteRole = async (roleId: string, roleName: string) => {
-    if (confirm(`'${roleName}' 역할을 삭제하시겠습니까?`)) {
+  const handleClearAllFilters = () => {
+    // 모든 필터 초기화
+    setQueryFilters({
+      status: null,
+      category: null,
+    });
+    // 쿼리 텍스트도 초기화
+    setSearchText("");
+    setQueryTextLocal("");
+    setDebouncedQueryText("");
+    // 페이지 번호 초기화 (첫 페이지로)
+    setCurrentPage(0);
+  };
+
+  const handleEdit = (role: Role) => {
+    // 선택된 역할 ID를 store에 저장
+    setSelectedId(role.id);
+    // 수정 폼 오픈
+    openForm();
+  };
+
+  const handleDelete = async (role: Role) => {
+    if (confirm(`'${role.name}' 역할을 삭제하시겠습니까?`)) {
       try {
-        await deleteRole({
-          variables: { id: roleId },
+        await updateRole({
+          variables: {
+            id: role.id,
+            input: { status: "INACTIVE" },
+          },
         });
         toast.success("역할이 삭제되었습니다");
+        refetch();
       } catch (error) {
-        const message = error instanceof Error ? error.message : "역할 삭제에 실패했습니다";
-        toast.error(message);
+        toast.error("역할 삭제에 실패했습니다");
+        console.error("Failed to delete role:", error);
       }
     }
   };
 
+  if (loading) return <div className="p-6">로딩 중...</div>;
+
   return (
     <div className="space-y-6">
-      <RolesHeader onRefresh={() => refetch?.()} />
+      <RolesHeader onRefresh={() => refetch()} />
       <RolesStats data={roles} />
 
-      {/* Jira 스타일 검색 + 필터 */}
+      {/* Jira 스타일 쿼리 + 필터 팝업 */}
       <RolesFilter
-        searchText={searchText}
-        onSearchChange={handleSearchChange}
-        filters={localFilters}
-        onFiltersChange={setLocalFilters}
-        onApplyFilters={handleApplyFilters}
+        queryText={queryText}
+        onQueryTextChange={handleQueryTextChange}
+        queryFilters={queryFilters}
+        onQueryFiltersChange={setQueryFilters}
+        onApplyQuery={handleApplyQuery}
+        onClearAllFilters={handleClearAllFilters}
       />
 
-      <RolesTable
-        data={roles}
-        isLoading={loading}
-        onEdit={(role) => useRolesStore.getState().openForm(role.id)}
-        onDelete={(role) => handleDeleteRole(role.id, role.name)}
-      />
+      <RolesTable data={roles} isLoading={updating} onEdit={handleEdit} onDelete={handleDelete} />
       <RolesEdit />
     </div>
   );

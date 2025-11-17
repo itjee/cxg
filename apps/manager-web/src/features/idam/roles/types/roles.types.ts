@@ -70,6 +70,7 @@ export interface RolesQueryVariables {
   limit?: number;
   offset?: number;
   status?: string;
+  category?: string;
   search?: string;
 }
 

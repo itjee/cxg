@@ -61,6 +61,7 @@ export const rolesService = {
         limit: params?.limit || 20,
         offset: params?.offset || 0,
         status: params?.status,
+        category: params?.category,
         search: params?.search,
       };
 
