@@ -33,9 +33,14 @@ export default function UsersPage() {
     useUsersStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
-  const [searchFilters, setSearchFilters] = useState<Record<string, string[] | null>>({
+  const [searchFilters, setSearchFilters] = useState<
+    Record<string, string[] | null | { type: string; value: string }>
+  >({
     status: null,
     userType: null,
+    mfaEnabled: null,
+    forcePasswordChange: null,
+    createdAt: null,
   });
 
   const [searchText, setSearchTextLocal] = useState("");
@@ -51,7 +56,61 @@ export default function UsersPage() {
     return () => clearTimeout(timer);
   }, [searchText, setSearchText]);
 
+  // 필터에서 GraphQL 변수 추출
+  const getMfaEnabled = (): boolean | undefined => {
+    const mfaFilter = searchFilters.mfaEnabled;
+    if (!mfaFilter || !Array.isArray(mfaFilter) || mfaFilter.length === 0) {
+      return undefined;
+    }
+    // mfaEnabled 필터는 "true" 또는 "false" 문자열로 온다
+    if (mfaFilter.includes("true") && !mfaFilter.includes("false")) {
+      return true;
+    }
+    if (mfaFilter.includes("false") && !mfaFilter.includes("true")) {
+      return false;
+    }
+    // 둘 다 선택되면 필터링 하지 않음
+    return undefined;
+  };
+
+  const getForcePasswordChange = (): boolean | undefined => {
+    const passwordFilter = searchFilters.forcePasswordChange;
+    if (!passwordFilter || !Array.isArray(passwordFilter) || passwordFilter.length === 0) {
+      return undefined;
+    }
+    if (passwordFilter.includes("true") && !passwordFilter.includes("false")) {
+      return true;
+    }
+    if (passwordFilter.includes("false") && !passwordFilter.includes("true")) {
+      return false;
+    }
+    return undefined;
+  };
+
+  const getCreatedDateRange = (): {
+    createdAfter?: string;
+    createdBefore?: string;
+  } => {
+    const dateFilter = searchFilters.createdAt;
+    if (!dateFilter || typeof dateFilter !== "object" || !("type" in dateFilter)) {
+      return {};
+    }
+
+    const result: { createdAfter?: string; createdBefore?: string } = {};
+
+    if (dateFilter.type === "range" && "value" in dateFilter) {
+      const value = dateFilter.value as string | { from?: string; to?: string };
+      if (typeof value === "object") {
+        if (value.from) result.createdAfter = value.from;
+        if (value.to) result.createdBefore = value.to;
+      }
+    }
+
+    return result;
+  };
+
   // GraphQL 쿼리 - Apollo Hooks 사용
+  const dateRange = getCreatedDateRange();
   const {
     data: usersResponse,
     loading,
@@ -62,6 +121,10 @@ export default function UsersPage() {
     userType: searchFilters.userType ? searchFilters.userType.join(",") : undefined,
     status: searchFilters.status ? searchFilters.status.join(",") : undefined,
     search: debouncedSearchText || undefined,
+    mfaEnabled: getMfaEnabled(),
+    forcePasswordChange: getForcePasswordChange(),
+    createdAfter: dateRange.createdAfter,
+    createdBefore: dateRange.createdBefore,
   });
 
   // GraphQL 뮤테이션 - 수정
@@ -84,6 +147,9 @@ export default function UsersPage() {
     setSearchFilters({
       status: null,
       userType: null,
+      mfaEnabled: null,
+      forcePasswordChange: null,
+      createdAt: null,
     });
     // 검색 텍스트도 초기화
     setSearchText("");

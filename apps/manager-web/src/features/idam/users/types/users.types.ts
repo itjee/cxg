@@ -82,6 +82,10 @@ export interface UsersQueryVariables {
   userType?: string;
   status?: string;
   search?: string;
+  mfaEnabled?: boolean;
+  forcePasswordChange?: boolean;
+  createdAfter?: string;
+  createdBefore?: string;
 }
 
 /**
@@ -146,8 +150,12 @@ export interface UpdateUserResponse {
  * FilterPopup 컴포넌트에서 사용하는 필터 상태 타입 (멀티 선택)
  * - 각 필터는 여러 값을 배열로 저장
  * - null이면 필터가 선택되지 않은 상태
+ * - 날짜 범위 필터는 { type, value } 객체 형식
  */
 export interface UsersFilterState {
   status: string[] | null;      // ["ACTIVE", "LOCKED"] 등 여러 상태 선택 가능
-  userType: string[] | null;    // ["ADMIN", "USER"] 등 여러 타입 선택 가능
+  userType: string[] | null;    // ["MASTER", "ADMIN"] 등 여러 타입 선택 가능
+  mfaEnabled: string[] | null;  // ["true", "false"] 등 MFA 상태 선택 가능
+  forcePasswordChange: string[] | null; // ["true", "false"] 등 비밀번호 상태 선택 가능
+  createdAt: { type: string; value: { from?: string; to?: string } } | null; // 생성일시 범위 필터
 }

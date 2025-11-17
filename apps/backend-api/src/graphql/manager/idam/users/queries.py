@@ -76,6 +76,10 @@ async def get_manager_users(
     user_type: str | None = None,
     status: str | None = None,
     search: str | None = None,
+    mfa_enabled: bool | None = None,
+    force_password_change: bool | None = None,
+    created_after: str | None = None,
+    created_before: str | None = None,
 ) -> "list[ManagerUser]":
     """
     Manager 사용자 목록 조회
@@ -87,10 +91,15 @@ async def get_manager_users(
         user_type: 사용자 타입 필터 (선택)
         status: 상태 필터 (선택)
         search: 사용자 검색어 (full_name, email, username 검색)
+        mfa_enabled: MFA 활성화 여부 필터 (선택)
+        force_password_change: 비밀번호 변경 강제 여부 필터 (선택)
+        created_after: 생성일시 이후 (ISO 8601 형식, 선택)
+        created_before: 생성일시 이전 (ISO 8601 형식, 선택)
 
     Returns:
         list[User]: 사용자 객체 리스트
     """
+    from datetime import datetime
     from sqlalchemy import or_
 
     # 필터 조건 구성
@@ -99,6 +108,10 @@ async def get_manager_users(
         filters["user_type"] = user_type
     if status:
         filters["status"] = status
+    if mfa_enabled is not None:
+        filters["mfa_enabled"] = mfa_enabled
+    if force_password_change is not None:
+        filters["force_password_change"] = force_password_change
 
     # search 조건 (복잡한 OR 조건이므로 extra_conditions에서 처리)
     extra_conditions = []
@@ -111,6 +124,21 @@ async def get_manager_users(
                 UserModel.username.ilike(search_pattern),
             )
         )
+
+    # 생성일시 범위 필터
+    if created_after:
+        try:
+            created_after_dt = datetime.fromisoformat(created_after.replace('Z', '+00:00'))
+            extra_conditions.append(UserModel.created_at >= created_after_dt)
+        except (ValueError, AttributeError):
+            pass
+
+    if created_before:
+        try:
+            created_before_dt = datetime.fromisoformat(created_before.replace('Z', '+00:00'))
+            extra_conditions.append(UserModel.created_at <= created_before_dt)
+        except (ValueError, AttributeError):
+            pass
 
     # 공통 모듈을 사용한 리스트 조회
     return await get_list(
@@ -156,6 +184,10 @@ class ManagerUserQueries:
         user_type: str | None = None,
         status: str | None = None,
         search: str | None = None,
+        mfa_enabled: bool | None = None,
+        force_password_change: bool | None = None,
+        created_after: str | None = None,
+        created_before: str | None = None,
     ) -> "list[ManagerUser]":
         """
         사용자 목록 조회 (페이징 및 필터링 지원)
@@ -166,9 +198,24 @@ class ManagerUserQueries:
             user_type: 사용자 타입 필터
             status: 상태 필터
             search: 사용자 검색어 (full_name, email, username 검색)
+            mfa_enabled: MFA 활성화 여부 필터
+            force_password_change: 비밀번호 변경 강제 여부 필터
+            created_after: 생성일시 이후 (ISO 8601 형식)
+            created_before: 생성일시 이전 (ISO 8601 형식)
 
         Returns:
             list[User]: 사용자 객체 리스트
         """
         db = info.context.manager_db_session
-        return await get_manager_users(db, limit, offset, user_type, status, search)
+        return await get_manager_users(
+            db,
+            limit,
+            offset,
+            user_type,
+            status,
+            search,
+            mfa_enabled,
+            force_password_change,
+            created_after,
+            created_before,
+        )

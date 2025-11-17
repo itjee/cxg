@@ -14,12 +14,22 @@ export const GET_USERS = gql`
     $offset: Int
     $userType: String
     $status: String
+    $search: String
+    $mfaEnabled: Boolean
+    $forcePasswordChange: Boolean
+    $createdAfter: String
+    $createdBefore: String
   ) {
     Users(
       limit: $limit
       offset: $offset
       userType: $userType
       status: $status
+      search: $search
+      mfaEnabled: $mfaEnabled
+      forcePasswordChange: $forcePasswordChange
+      createdAfter: $createdAfter
+      createdBefore: $createdBefore
     ) {
       id
       userType
@@ -149,6 +159,11 @@ export interface GetUsersVariables {
   offset?: number;
   userType?: string;
   status?: string;
+  search?: string;
+  mfaEnabled?: boolean;
+  forcePasswordChange?: boolean;
+  createdAfter?: string;
+  createdBefore?: string;
 }
 
 export interface GetUserVariables {
