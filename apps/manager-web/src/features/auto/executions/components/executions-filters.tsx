@@ -12,7 +12,7 @@
  */
 
 import { useMemo } from "react";
-import { QueryFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilters, type FilterConfig } from "@/components/filters";
 import { useExecutionsStore } from "../stores";
 import type { Execution } from "../types";
 
@@ -84,7 +84,7 @@ export function ExecutionsFilters({ data }: ExecutionsFiltersProps) {
   };
 
   return (
-    <QueryFilters
+    <SearchFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

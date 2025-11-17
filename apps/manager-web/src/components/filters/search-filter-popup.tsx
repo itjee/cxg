@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * @file query-filter-popup.tsx
- * @description Query 필터 조건 선택 팝업 (Jira 스타일)
+ * @file search-filter-popup.tsx
+ * @description Search 필터 조건 선택 팝업 (Jira 스타일)
  *
- * 좌측: 쿼리 필터 항목 목록
- * 우측: 선택된 쿼리 필터의 옵션 (체크박스)
+ * 좌측: 검색 필터 항목 목록
+ * 우측: 선택된 검색 필터의 옵션 (체크박스)
  * 하단: 버튼들 (모두 지우기, 이 필터 지우기, 취소, 적용)
  *
  * 용어:
- * - queryFilters: 쿼리 필터 조건들 (선택형 옵션)
+ * - searchFilters: 검색 필터 조건들 (선택형 옵션)
  */
 
 import { useState, useCallback, useMemo } from "react";
@@ -26,23 +26,23 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
-import { CheckboxGroup } from "./query-checkbox-group";
-import type { FilterItemConfig } from "./query-popup.types";
+import { CheckboxGroup } from "./search-checkbox-group";
+import type { FilterItemConfig } from "./search-popup.types";
 
 /**
- * Query 필터 팝업 Props
+ * Search 필터 팝업 Props
  */
-export interface QueryFilterPopupProps {
+export interface SearchFilterPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  queryFilters: Record<string, string[] | null>;
-  onQueryFiltersChange: (filters: Record<string, string[] | null>) => void;
+  searchFilters: Record<string, string[] | null>;
+  onSearchFiltersChange: (filters: Record<string, string[] | null>) => void;
   onApply: () => void;
   items: FilterItemConfig[];
 }
 
 /**
- * 활성 쿼리 필터 개수 계산
+ * 활성 검색 필터 개수 계산
  * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계)
  *
  * 예시:
@@ -50,8 +50,8 @@ export interface QueryFilterPopupProps {
  * - userType: ["ADMIN"] → 1개
  * - 총: 3개
  */
-function countActiveQueryFilters(queryFilters: Record<string, string[] | null>): number {
-  return Object.values(queryFilters).reduce((total, value) => {
+function countActiveSearchFilters(searchFilters: Record<string, string[] | null>): number {
+  return Object.values(searchFilters).reduce((total, value) => {
     if (Array.isArray(value) && value.length > 0) {
       return total + value.length;
     }
@@ -60,19 +60,19 @@ function countActiveQueryFilters(queryFilters: Record<string, string[] | null>):
 }
 
 /**
- * Query 필터 조건 선택 팝업 (Jira 스타일)
+ * Search 필터 조건 선택 팝업 (Jira 스타일)
  *
- * 좌우 분할 레이아웃으로 쿼리 필터 조건을 선택합니다.
+ * 좌우 분할 레이아웃으로 검색 필터 조건을 선택합니다.
  */
-export function QueryFilterPopup({
+export function SearchFilterPopup({
   open,
   onOpenChange,
-  queryFilters,
-  onQueryFiltersChange,
+  searchFilters,
+  onSearchFiltersChange,
   onApply,
   items,
-}: QueryFilterPopupProps) {
-  // 현재 선택된 쿼리 필터 항목 (좌측에서 선택)
+}: SearchFilterPopupProps) {
+  // 현재 선택된 검색 필터 항목 (좌측에서 선택)
   const [selectedItemKey, setSelectedItemKey] = useState<string | null>(
     items.length > 0 ? items[0].key : null
   );
@@ -81,25 +81,25 @@ export function QueryFilterPopup({
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // 팝업 내에서의 임시 필터 상태 (적용 전까지 임시로 보관)
-  const [tempQueryFilters, setTempQueryFilters] = useState<Record<string, string[] | null>>(queryFilters);
+  const [tempSearchFilters, setTempSearchFilters] = useState<Record<string, string[] | null>>(searchFilters);
 
-  const activeQueryFilterCount = countActiveQueryFilters(tempQueryFilters);
+  const activeSearchFilterCount = countActiveSearchFilters(tempSearchFilters);
 
-  // 현재 선택된 쿼리 필터 항목 객체
+  // 현재 선택된 검색 필터 항목 객체
   const selectedItem = items.find((item) => item.key === selectedItemKey);
 
-  // 팝업이 열릴 때 tempQueryFilters 초기화
+  // 팝업이 열릴 때 tempSearchFilters 초기화
   const handleOpenChange = useCallback((newOpen: boolean) => {
     if (newOpen) {
-      // 팝업 열 때: 부모의 queryFilters를 임시 상태로 복사
-      setTempQueryFilters(queryFilters);
+      // 팝업 열 때: 부모의 searchFilters를 임시 상태로 복사
+      setTempSearchFilters(searchFilters);
       setSearchQuery("");
     } else {
       // 팝업 닫을 때: 취소 시 임시 상태 버림
-      setTempQueryFilters(queryFilters);
+      setTempSearchFilters(searchFilters);
     }
     onOpenChange(newOpen);
-  }, [queryFilters, onOpenChange]);
+  }, [searchFilters, onOpenChange]);
 
   // 검색어에 따라 필터링된 옵션들
   const filteredOptions = useMemo(() => {
@@ -113,22 +113,22 @@ export function QueryFilterPopup({
   }, [selectedItem, searchQuery]);
 
   /**
-   * 선택된 쿼리 필터 항목의 체크박스 값 변경 (임시 상태만 업데이트)
+   * 선택된 검색 필터 항목의 체크박스 값 변경 (임시 상태만 업데이트)
    */
   const handleCheckboxChange = useCallback(
     (values: string[]) => {
       if (selectedItemKey) {
-        setTempQueryFilters({
-          ...tempQueryFilters,
+        setTempSearchFilters({
+          ...tempSearchFilters,
           [selectedItemKey]: values.length > 0 ? values : null,
         });
       }
     },
-    [selectedItemKey, tempQueryFilters]
+    [selectedItemKey, tempSearchFilters]
   );
 
   /**
-   * 모든 쿼리 필터 초기화 (임시 상태)
+   * 모든 검색 필터 초기화 (임시 상태)
    */
   const handleClearAll = useCallback(() => {
     const resetFilters = items.reduce(
@@ -138,32 +138,32 @@ export function QueryFilterPopup({
       },
       {} as Record<string, string[] | null>
     );
-    setTempQueryFilters(resetFilters);
+    setTempSearchFilters(resetFilters);
   }, [items]);
 
   /**
-   * 현재 선택된 쿼리 필터만 초기화 (임시 상태)
+   * 현재 선택된 검색 필터만 초기화 (임시 상태)
    */
   const handleClearCurrent = useCallback(() => {
     if (selectedItemKey) {
-      setTempQueryFilters({
-        ...tempQueryFilters,
+      setTempSearchFilters({
+        ...tempSearchFilters,
         [selectedItemKey]: null,
       });
     }
-  }, [selectedItemKey, tempQueryFilters]);
+  }, [selectedItemKey, tempSearchFilters]);
 
   /**
    * 적용: 임시 필터를 부모에 반영하고 팝업 닫기
    */
   const handleApply = useCallback(() => {
     // 임시 필터를 부모 상태로 반영
-    onQueryFiltersChange(tempQueryFilters);
+    onSearchFiltersChange(tempSearchFilters);
     // 콜백 실행
     onApply();
     // 팝업 닫기
     onOpenChange(false);
-  }, [tempQueryFilters, onQueryFiltersChange, onApply, onOpenChange]);
+  }, [tempSearchFilters, onSearchFiltersChange, onApply, onOpenChange]);
 
   /**
    * 필터 항목 선택 (검색어 초기화)
@@ -180,14 +180,14 @@ export function QueryFilterPopup({
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <DialogTitle className="text-lg">쿼리 필터</DialogTitle>
+              <DialogTitle className="text-lg">검색 필터</DialogTitle>
               <DialogDescription className="text-sm text-muted-foreground mt-1">
                 필터 항목을 선택하고 값을 검색하여 멀티 선택할 수 있습니다.
               </DialogDescription>
             </div>
-            {activeQueryFilterCount > 0 && (
+            {activeSearchFilterCount > 0 && (
               <Badge variant="secondary" className="rounded-md px-2 py-1 flex-shrink-0">
-                {activeQueryFilterCount}개 선택됨
+                {activeSearchFilterCount}개 선택됨
               </Badge>
             )}
           </div>
@@ -195,13 +195,13 @@ export function QueryFilterPopup({
 
         {/* 본문: 좌우 분할 */}
         <div className="flex flex-1 gap-6 min-h-0">
-          {/* 좌측: 쿼리 필터 항목 목록 */}
+          {/* 좌측: 검색 필터 항목 목록 */}
           <div className="w-48 border-r flex flex-col">
             <div className="space-y-0.5 overflow-y-auto pr-2">
               {items.map((item) => {
                 const isSelected = selectedItemKey === item.key;
                 const hasValue =
-                  tempQueryFilters[item.key] && tempQueryFilters[item.key]!.length > 0;
+                  tempSearchFilters[item.key] && tempSearchFilters[item.key]!.length > 0;
 
                 return (
                   <button
@@ -220,7 +220,7 @@ export function QueryFilterPopup({
                           variant={isSelected ? "default" : "secondary"}
                           className="h-5 w-5 ml-2 flex items-center justify-center p-0 text-xs rounded-full flex-shrink-0"
                         >
-                          {tempQueryFilters[item.key]!.length}
+                          {tempSearchFilters[item.key]!.length}
                         </Badge>
                       )}
                     </span>
@@ -230,7 +230,7 @@ export function QueryFilterPopup({
             </div>
           </div>
 
-          {/* 우측: 선택된 쿼리 필터의 옵션 */}
+          {/* 우측: 선택된 검색 필터의 옵션 */}
           <div className="flex-1 min-w-0">
             {selectedItem ? (
               <div className="space-y-4 h-full flex flex-col">
@@ -259,8 +259,8 @@ export function QueryFilterPopup({
                     size="sm"
                     onClick={handleClearCurrent}
                     disabled={
-                      !tempQueryFilters[selectedItem.key] ||
-                      tempQueryFilters[selectedItem.key]!.length === 0
+                      !tempSearchFilters[selectedItem.key] ||
+                      tempSearchFilters[selectedItem.key]!.length === 0
                     }
                     className="text-xs h-8 flex-shrink-0"
                   >
@@ -273,7 +273,7 @@ export function QueryFilterPopup({
                   {filteredOptions.length > 0 ? (
                     <CheckboxGroup
                       options={filteredOptions}
-                      selectedValues={Array.isArray(tempQueryFilters[selectedItem.key]) ? tempQueryFilters[selectedItem.key] : []}
+                      selectedValues={Array.isArray(tempSearchFilters[selectedItem.key]) ? tempSearchFilters[selectedItem.key] : []}
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (
@@ -285,7 +285,7 @@ export function QueryFilterPopup({
               </div>
             ) : (
               <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
-                왼쪽에서 쿼리 필터를 선택해주세요
+                왼쪽에서 검색 필터를 선택해주세요
               </div>
             )}
           </div>
@@ -300,7 +300,7 @@ export function QueryFilterPopup({
           <Button
             variant="outline"
             onClick={handleClearAll}
-            disabled={activeQueryFilterCount === 0}
+            disabled={activeSearchFilterCount === 0}
             className="flex-shrink-0"
           >
             모두 지우기

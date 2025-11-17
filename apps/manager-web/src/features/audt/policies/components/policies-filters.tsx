@@ -1,4 +1,4 @@
-import { QueryFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilters, type FilterConfig } from "@/components/filters";
 import { usePoliciesStore } from "../stores/policies.store";
 import type { Policy } from "../types/policies.types";
 
@@ -101,7 +101,7 @@ export function PoliciesFilters({ data }: PoliciesFiltersProps) {
   };
 
   return (
-    <QueryFilters
+    <SearchFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

@@ -1,4 +1,4 @@
-import { QueryFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilters, type FilterConfig } from "@/components/filters";
 import { useCompliancesStore } from "../stores/compliances.store";
 import type { Compliance } from "../types/compliances.types";
 
@@ -100,7 +100,7 @@ export function CompliancesFilters({ data }: CompliancesFiltersProps) {
   };
 
   return (
-    <QueryFilters
+    <SearchFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

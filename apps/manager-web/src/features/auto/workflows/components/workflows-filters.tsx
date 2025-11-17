@@ -12,7 +12,7 @@
  */
 
 import { useMemo } from "react";
-import { QueryFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilters, type FilterConfig } from "@/components/filters";
 import { useWorkflowsStore } from "../stores";
 import type { Workflows } from "../types";
 
@@ -66,7 +66,7 @@ export function WorkflowsFilters({ data }: WorkflowsFiltersProps) {
   };
 
   return (
-    <QueryFilters
+    <SearchFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}
