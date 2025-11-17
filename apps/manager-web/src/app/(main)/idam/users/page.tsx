@@ -12,7 +12,7 @@
  * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import {
   UsersHeader,
@@ -39,6 +39,17 @@ export default function UsersPage() {
   });
 
   const [queryText, setQueryTextLocal] = useState("");
+  const [debouncedQueryText, setDebouncedQueryText] = useState("");
+
+  // 쿼리 텍스트 debounce (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQueryText(queryText);
+      setSearchText(queryText);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [queryText, setSearchText]);
 
   // GraphQL 쿼리 - Apollo Hooks 사용
   const {
@@ -50,7 +61,7 @@ export default function UsersPage() {
     offset: currentPage * itemsPerPage,
     userType: queryFilters.userType ? queryFilters.userType.join(",") : undefined,
     status: queryFilters.status ? queryFilters.status.join(",") : undefined,
-    search: queryText || undefined,
+    search: debouncedQueryText || undefined,
   });
 
   // GraphQL 뮤테이션 - 수정
@@ -61,7 +72,6 @@ export default function UsersPage() {
 
   const handleQueryTextChange = (text: string) => {
     setQueryTextLocal(text);
-    setSearchText(text);
   };
 
   const handleApplyQuery = () => {
@@ -78,6 +88,7 @@ export default function UsersPage() {
     // 쿼리 텍스트도 초기화
     setSearchText("");
     setQueryTextLocal("");
+    setDebouncedQueryText("");
     // 페이지 번호 초기화 (첫 페이지로)
     setCurrentPage(0);
   };
