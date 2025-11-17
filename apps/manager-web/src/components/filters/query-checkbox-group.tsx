@@ -7,7 +7,7 @@
 
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import type { FilterOption } from "./filter-popup.types";
+import type { FilterOption } from "./query-popup.types";
 
 interface CheckboxGroupProps {
   options: FilterOption[];
