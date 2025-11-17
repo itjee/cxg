@@ -34,7 +34,7 @@ export function ThemeSettings() {
             <Palette className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold">테마 설정</h2>
+            <h2 className="text-xl font-bold">테마 설정</h2>
             <p className="text-sm text-muted-foreground">
               애플리케이션의 색상 테마를 변경하세요
             </p>

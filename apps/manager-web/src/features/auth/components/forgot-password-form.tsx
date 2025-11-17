@@ -52,7 +52,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-white mb-4">
+        <h2 className="text-xl font-bold text-white mb-4">
           이메일을 확인해주세요
         </h2>
 
@@ -124,7 +124,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
           비밀번호 찾기
         </h2>
         <p className="text-neutral-300">

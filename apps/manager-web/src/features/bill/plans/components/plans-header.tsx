@@ -15,7 +15,7 @@ export function PlansHeader() {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">요금제 관리</h1>
+        <h1 className="text-2xl font-bold tracking-tight">요금제 관리</h1>
         <p className="text-gray-500 mt-2">
           서비스 요금제의 가격 정책, 사용량 제한, 포함 기능을 관리하세요
         </p>

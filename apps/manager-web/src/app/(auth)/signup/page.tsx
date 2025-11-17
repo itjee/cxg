@@ -62,7 +62,7 @@ export default function SignUpPage() {
 
           {/* Form Header */}
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
               관리자 계정 신청
             </h2>
             <p className="text-neutral-300">

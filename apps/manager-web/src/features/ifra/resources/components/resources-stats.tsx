@@ -59,7 +59,7 @@ export function ResourcesStats({ data }: ResourcesStatsProps) {
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                   {stat.title}
                 </p>
-                <p className="text-2xl font-bold mt-2">{stat.value}</p>
+                <p className="text-xl font-bold mt-2">{stat.value}</p>
                 {stat.description && (
                   <p className="text-xs text-gray-500 mt-1">
                     {stat.description}

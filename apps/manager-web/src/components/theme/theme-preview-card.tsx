@@ -21,7 +21,7 @@ export function ThemePreviewCard() {
               <Users className="h-4 w-4" />
               사용자
             </div>
-            <div className="text-2xl font-bold">1,234</div>
+            <div className="text-xl font-bold">1,234</div>
             <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
               +12.5%
@@ -32,7 +32,7 @@ export function ThemePreviewCard() {
               <DollarSign className="h-4 w-4" />
               수익
             </div>
-            <div className="text-2xl font-bold">₩5.6M</div>
+            <div className="text-xl font-bold">₩5.6M</div>
             <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
               <TrendingUp className="h-3 w-3" />
               +8.2%
@@ -43,7 +43,7 @@ export function ThemePreviewCard() {
               <Bell className="h-4 w-4" />
               알림
             </div>
-            <div className="text-2xl font-bold">23</div>
+            <div className="text-xl font-bold">23</div>
             <Badge variant="secondary" className="mt-1">신규</Badge>
           </div>
         </div>

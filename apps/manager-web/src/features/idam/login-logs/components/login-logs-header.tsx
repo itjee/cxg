@@ -17,7 +17,7 @@ export function LoginLogsHeader({ onRefresh, onExport }: LoginLogsHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold">로그인 이력</h1>
+        <h1 className="text-2xl font-bold">로그인 이력</h1>
         <p className="text-muted-foreground mt-2">
           사용자 로그인/로그아웃 이력을 조회하고 관리합니다
         </p>

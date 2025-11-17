@@ -57,7 +57,7 @@ export default function LogoutPage() {
               )}
             </div>
           </div>
-          <CardTitle className="text-2xl text-white">
+          <CardTitle className="text-xl text-white">
             {status === "success" ? "로그아웃 완료" : "로그아웃 중..."}
           </CardTitle>
         </CardHeader>

@@ -33,7 +33,7 @@ export function LoginLogsStats({
           <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{total}</div>
+          <div className="text-xl font-bold">{total}</div>
         </CardContent>
       </Card>
 
@@ -43,7 +43,7 @@ export function LoginLogsStats({
           <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{successCount}</div>
+          <div className="text-xl font-bold">{successCount}</div>
           <p className="text-xs text-muted-foreground">
             {total > 0 ? ((successCount / total) * 100).toFixed(1) : 0}%
           </p>
@@ -56,7 +56,7 @@ export function LoginLogsStats({
           <XCircle className="h-4 w-4 text-red-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{failedCount}</div>
+          <div className="text-xl font-bold">{failedCount}</div>
           <p className="text-xs text-muted-foreground">
             {total > 0 ? ((failedCount / total) * 100).toFixed(1) : 0}%
           </p>
@@ -69,7 +69,7 @@ export function LoginLogsStats({
           <Shield className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{mfaUsedCount}</div>
+          <div className="text-xl font-bold">{mfaUsedCount}</div>
           <p className="text-xs text-muted-foreground">
             {total > 0 ? ((mfaUsedCount / total) * 100).toFixed(1) : 0}%
           </p>
@@ -82,7 +82,7 @@ export function LoginLogsStats({
           <Lock className="h-4 w-4 text-orange-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{lockedCount}</div>
+          <div className="text-xl font-bold">{lockedCount}</div>
           <p className="text-xs text-muted-foreground">
             {total > 0 ? ((lockedCount / total) * 100).toFixed(1) : 0}%
           </p>
@@ -95,7 +95,7 @@ export function LoginLogsStats({
           <Users className="h-4 w-4 text-purple-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{uniqueUsers}</div>
+          <div className="text-xl font-bold">{uniqueUsers}</div>
           <p className="text-xs text-muted-foreground">
             고유 사용자
           </p>

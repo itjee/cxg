@@ -5,17 +5,17 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-xs font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-base font-medium transition-all duration-200 disabled:pointer-events-none disabled:opacity-40 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default: "bg-primary/30 text-primary-foreground shadow-sm hover:bg-primary/40 hover:shadow-md backdrop-blur-sm border border-primary/20",
         destructive:
-          "bg-neutral-950 text-destructive shadow-sm hover:bg-destructive/10 hover:shadow-md backdrop-blur-sm border border-destructive/20",
+          "bg-background/50 text-destructive shadow-sm hover:bg-destructive/10 hover:shadow-md backdrop-blur-sm border border-destructive/20",
         outline:
-          "border border-border bg-neutral-950 shadow-sm hover:bg-primary/10 hover:text-foreground hover:border-primary/40 hover:shadow backdrop-blur-sm",
+          "border border-border bg-background/50 shadow-sm hover:bg-primary/10 hover:text-foreground hover:border-primary/40 hover:shadow backdrop-blur-sm",
         secondary:
-          "bg-neutral-950 text-secondary-foreground shadow-sm hover:bg-secondary/10 hover:shadow border border-border",
+          "bg-background/50 text-secondary-foreground shadow-sm hover:bg-secondary/10 hover:shadow border border-border",
         ghost:
           "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",

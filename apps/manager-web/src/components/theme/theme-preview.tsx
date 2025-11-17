@@ -99,11 +99,11 @@ export function ThemePreview() {
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <p className="text-2xl font-bold text-primary">1,234</p>
+                <p className="text-xl font-bold text-primary">1,234</p>
                 <p className="text-xs text-muted-foreground">총 방문자</p>
               </div>
               <div className="flex-1">
-                <p className="text-2xl font-bold">567</p>
+                <p className="text-xl font-bold">567</p>
                 <p className="text-xs text-muted-foreground">신규 사용자</p>
               </div>
             </div>

@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Moon, Sun, Monitor } from "lucide-react";
-import { useTheme } from "./theme-provider";
+import { useTheme } from "@/lib/theme-provider";
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
@@ -15,7 +15,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-9 h-9 rounded-lg bg-header/95 dark:bg-header/95 animate-pulse"></div>
+      <div className="w-8 h-8 rounded-lg bg-header/95 dark:bg-header/95 animate-pulse"></div>
     );
   }
 
@@ -31,7 +31,7 @@ export function ThemeToggle() {
         <button
           key={value}
           onClick={() => setTheme(value)}
-          className={`relative flex items-center justify-center w-9 h-9 rounded-md transition-all duration-200 ${
+          className={`relative flex items-center justify-center w-8 h-8 rounded-md transition-all duration-200 ${
             theme === value
               ? "bg-white/20 dark:bg-white/10 text-header-foreground shadow-sm"
               : "text-header-foreground/70 hover:text-header-foreground"
@@ -55,7 +55,7 @@ export function ThemeToggleSimple() {
 
   if (!mounted) {
     return (
-      <div className="w-9 h-9 rounded-lg bg-header/95 dark:bg-header/95 animate-pulse"></div>
+      <div className="w-8 h-8 rounded-lg bg-header/95 dark:bg-header/95 animate-pulse"></div>
     );
   }
 
@@ -70,10 +70,10 @@ export function ThemeToggleSimple() {
   return (
     <button
       onClick={cycleTheme}
-      className="flex items-center justify-center w-9 h-9 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+      className="flex items-center justify-center w-8 h-8 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
       title={`현재: ${theme === "light" ? "라이트" : theme === "dark" ? "다크" : "시스템"}`}
     >
-      <Icon className="h-5 w-5" />
+      <Icon className="h-4 w-4" />
     </button>
   );
 }

@@ -255,7 +255,7 @@ export function PageHeader({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
         <p className="text-sm text-muted-foreground mt-2">{description}</p>
       </div>
       {actions.length > 0 && (

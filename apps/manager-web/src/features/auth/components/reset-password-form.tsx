@@ -158,7 +158,7 @@ export function ResetPasswordForm() {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-white mb-4">
+        <h2 className="text-xl font-bold text-white mb-4">
           비밀번호가 재설정되었습니다
         </h2>
 
@@ -180,7 +180,7 @@ export function ResetPasswordForm() {
     <div className="bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+        <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
           비밀번호 재설정
         </h2>
         <p className="text-neutral-300">

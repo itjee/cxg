@@ -65,7 +65,7 @@ export function MainHeader({
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <nav className="flex items-center gap-2 text-sm overflow-x-auto">
+          <nav className="flex items-center gap-2 text-xs overflow-x-auto">
             {breadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-2 shrink-0">
                 {index > 0 && (
@@ -101,7 +101,7 @@ export function MainHeader({
             <Input
               type="search"
               placeholder="검색..."
-              className="w-full pl-9 h-9 bg-muted/50"
+              className="w-full pl-9 h-8 bg-muted/50"
             />
           </div>
         </div>
@@ -118,14 +118,14 @@ export function MainHeader({
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
                 </Avatar>
-                <span className="text-sm font-medium">{user?.full_name || user?.username || "User"}</span>
+                <span className="text-lg font-medium">{user?.full_name || user?.username || "User"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user?.full_name || user?.username}</p>
+                  <p className="text-lg font-medium">{user?.full_name || user?.username}</p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>

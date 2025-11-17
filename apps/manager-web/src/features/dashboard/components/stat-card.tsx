@@ -79,7 +79,7 @@ export function StatCard({
         <div className="relative z-10">
           <p className="text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
           <div className="mt-2 flex items-baseline gap-2">
-            <p className="text-2xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
+            <p className="text-xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
             {trend && (
               <span
                 className={cn(

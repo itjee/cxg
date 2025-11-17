@@ -181,7 +181,7 @@ export function UsersForm({
           {/* 사용자명 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="username" className="text-xs">
+              <Label htmlFor="username" className="text-sm">
                 사용자명 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.username} />
@@ -200,7 +200,7 @@ export function UsersForm({
           {/* 이메일 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="email" className="text-xs">
+              <Label htmlFor="email" className="text-sm">
                 이메일 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.email} />
@@ -220,7 +220,7 @@ export function UsersForm({
           {/* 전체 이름 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="fullName" className="text-xs">
+              <Label htmlFor="fullName" className="text-sm">
                 전체 이름 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.fullName} />
@@ -240,7 +240,7 @@ export function UsersForm({
           {!isEditing && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs">
+                <Label htmlFor="password" className="text-sm">
                   비밀번호 <span className="text-red-500">*</span>
                 </Label>
                 <HintIcon hint={fieldHints.password} />
@@ -263,7 +263,7 @@ export function UsersForm({
           {/* 사용자 유형 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="userType" className="text-xs">
+              <Label htmlFor="userType" className="text-sm">
                 사용자 유형 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.userType} />

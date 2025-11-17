@@ -110,7 +110,7 @@ export function TenantGrowthChart() {
                 <div className="text-xs text-muted-foreground mb-1">
                   신규 테넌트
                 </div>
-                <div className="text-2xl font-bold text-primary">
+                <div className="text-xl font-bold text-primary">
                   +{data.tenantGrowth[data.tenantGrowth.length - 1].newTenants}
                 </div>
                 <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">

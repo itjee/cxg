@@ -122,7 +122,7 @@ export function QueryBar({
           variant={activeQueryFilterCount > 0 ? "default" : "outline"}
           size="sm"
           onClick={onQueryFilterClick}
-          className="gap-2 relative whitespace-nowrap rounded-md"
+          className="gap-2 relative whitespace-nowrap rounded-md text-xs"
         >
           <Filter className="h-4 w-4" />
           <span>필터</span>
@@ -143,7 +143,7 @@ export function QueryBar({
             variant="outline"
             size="sm"
             onClick={onClearAllFilters}
-            className="gap-2 whitespace-nowrap rounded-md"
+            className="gap-2 whitespace-nowrap rounded-md text-xs"
             title="필터 초기화"
           >
             <X className="h-4 w-4" />
@@ -161,7 +161,7 @@ export function QueryBar({
         <Button
           variant="outline"
           size="sm"
-          className="h-9 w-9 p-0 rounded-md"
+          className="h-8 w-8 p-0 rounded-md text-xs"
           title="더보기"
         >
           <MoreHorizontal className="h-4 w-4" />

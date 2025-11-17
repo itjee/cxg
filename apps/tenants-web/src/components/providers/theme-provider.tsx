@@ -96,14 +96,14 @@ export function ThemeProvider({
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
+    setTheme: (newTheme: Theme) => {
+      localStorage.setItem(storageKey, newTheme);
+      setTheme(newTheme);
     },
     palette,
-    setPalette: (palette: ColorPalette) => {
-      localStorage.setItem("conexgrow-palette", palette);
-      setPalette(palette);
+    setPalette: (newPalette: ColorPalette) => {
+      localStorage.setItem("conexgrow-palette", newPalette);
+      setPalette(newPalette);
     },
   };
 
