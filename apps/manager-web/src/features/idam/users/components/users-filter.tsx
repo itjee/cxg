@@ -17,6 +17,7 @@ interface UsersFilterProps {
   queryFilters: Record<string, string[] | null>;
   onQueryFiltersChange: (filters: Record<string, string[] | null>) => void;
   onApplyQuery: () => void;
+  onClearAllFilters?: () => void;
 }
 
 /**
@@ -48,6 +49,7 @@ export function UsersFilter({
   queryFilters,
   onQueryFiltersChange,
   onApplyQuery,
+  onClearAllFilters,
 }: UsersFilterProps) {
   return (
     <QueryFilter
@@ -58,6 +60,7 @@ export function UsersFilter({
       onApply={onApplyQuery}
       filterItems={filterItems}
       queryPlaceholder="사용자명, 이메일, 아이디 검색..."
+      onClearAllFilters={onClearAllFilters}
     />
   );
 }

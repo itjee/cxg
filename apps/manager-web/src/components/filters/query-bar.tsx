@@ -22,14 +22,20 @@ import { Badge } from "@/components/ui/badge";
 
 /**
  * 활성화된 쿼리 필터 개수 계산
- * queryFilters 값이 배열 또는 단일값일 수 있으므로 처리
+ * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계)
+ *
+ * 예시:
+ * - status: ["ACTIVE", "INACTIVE"] → 2개
+ * - userType: ["ADMIN"] → 1개
+ * - 총: 3개
  */
 function countActiveQueryFilters(queryFilters: Record<string, any>): number {
-  return Object.values(queryFilters).filter((value) => {
-    if (value === null || value === undefined || value === "") return false;
-    if (Array.isArray(value)) return value.length > 0;
-    return true;
-  }).length;
+  return Object.values(queryFilters).reduce((total, value) => {
+    if (Array.isArray(value) && value.length > 0) {
+      return total + value.length;
+    }
+    return total;
+  }, 0);
 }
 
 /**
@@ -45,6 +51,9 @@ export interface QueryBarProps {
 
   /** 쿼리 필터 버튼 클릭 핸들러 (팝업 오픈) */
   onQueryFilterClick: () => void;
+
+  /** 모든 쿼리 필터 초기화 핸들러 (선택사항) */
+  onClearAllFilters?: () => void;
 
   /** 쿼리 텍스트 입력 필드 플레이스홀더 */
   queryPlaceholder?: string;
@@ -67,6 +76,7 @@ export function QueryBar({
   onQueryTextChange,
   queryFilters,
   onQueryFilterClick,
+  onClearAllFilters,
   queryPlaceholder = "검색...",
   queryInputClassName = "w-80",
   customButtons,
@@ -107,24 +117,37 @@ export function QueryBar({
       </div>
 
       {/* === 쿼리 필터 버튼 === */}
-      <Button
-        variant={activeQueryFilterCount > 0 ? "default" : "outline"}
-        size="sm"
-        onClick={onQueryFilterClick}
-        className="gap-2 relative whitespace-nowrap rounded-md"
-      >
-        <Filter className="h-4 w-4" />
-        <span>필터</span>
-        {/* 활성 쿼리 필터 개수 배지 */}
-        {activeQueryFilterCount > 0 && (
-          <Badge
-            variant="secondary"
-            className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-md"
+      <div className="flex items-center gap-1">
+        <Button
+          variant={activeQueryFilterCount > 0 ? "default" : "outline"}
+          size="sm"
+          onClick={onQueryFilterClick}
+          className="gap-2 relative whitespace-nowrap rounded-md"
+        >
+          <Filter className="h-4 w-4" />
+          <span>필터</span>
+          {/* 활성 쿼리 필터 개수 배지 */}
+          {activeQueryFilterCount > 0 && (
+            <Badge
+              variant="secondary"
+              className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-md"
+            >
+              {activeQueryFilterCount}
+            </Badge>
+          )}
+        </Button>
+
+        {/* 필터 초기화 버튼 (필터가 선택된 경우만 표시) */}
+        {activeQueryFilterCount > 0 && onClearAllFilters && (
+          <button
+            onClick={onClearAllFilters}
+            className="inline-flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            title="필터 초기화"
           >
-            {activeQueryFilterCount}
-          </Badge>
+            ✕
+          </button>
         )}
-      </Button>
+      </div>
 
       {/* === 우측: 커스텀 버튼들 + 기본 더보기 버튼 === */}
       <div className="ml-auto flex items-center gap-2">

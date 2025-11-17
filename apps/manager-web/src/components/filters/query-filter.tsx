@@ -49,6 +49,9 @@ export interface QueryFilterProps {
 
   /** 우측에 배치할 커스텀 버튼들 */
   customButtons?: React.ReactNode;
+
+  /** 모든 쿼리 필터 초기화 핸들러 (선택사항) */
+  onClearAllFilters?: () => void;
 }
 
 /**
@@ -80,6 +83,7 @@ export function QueryFilter({
   queryPlaceholder = "검색...",
   queryInputClassName = "w-80",
   customButtons,
+  onClearAllFilters,
 }: QueryFilterProps) {
   const [queryFilterOpen, setQueryFilterOpen] = useState(false);
 
@@ -91,6 +95,7 @@ export function QueryFilter({
         onQueryTextChange={onQueryTextChange}
         queryFilters={queryFilters}
         onQueryFilterClick={() => setQueryFilterOpen(true)}
+        onClearAllFilters={onClearAllFilters}
         queryPlaceholder={queryPlaceholder}
         queryInputClassName={queryInputClassName}
         customButtons={customButtons}

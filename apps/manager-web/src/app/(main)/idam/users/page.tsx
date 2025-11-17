@@ -68,6 +68,17 @@ export default function UsersPage() {
     // 현재는 queryFilters 상태 업데이트로 useUsers가 자동으로 refetch됨
   };
 
+  const handleClearAllFilters = () => {
+    // 모든 필터 초기화
+    setQueryFilters({
+      status: null,
+      userType: null,
+    });
+    // 쿼리 텍스트도 초기화
+    setSearchText("");
+    setQueryTextLocal("");
+  };
+
   const handleDelete = async (user: any) => {
     if (confirm(`'${user.fullName}' 사용자를 삭제하시겠습니까?`)) {
       try {
@@ -100,6 +111,7 @@ export default function UsersPage() {
         queryFilters={queryFilters}
         onQueryFiltersChange={setQueryFilters}
         onApplyQuery={handleApplyQuery}
+        onClearAllFilters={handleClearAllFilters}
       />
 
       <UsersTable data={users} isLoading={updating} onDelete={handleDelete} />
