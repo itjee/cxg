@@ -3,15 +3,15 @@
  * @description 역할(Role) GraphQL 타입 정의 (camelCase - GraphQL 네이티브)
  *
  * 타입 명명 규칙:
- * - 단일 조회/단일 모델: 단수형 (Role)
- * - 목록 조회/목록 파라미터: 복수형 (Roles, RolesQueryVariables)
+ * - 단일 조회/단일 모델: 단수형 (Role, Session, Permission)
+ * - 목록 조회/목록 파라미터: 복수형 (Roles, Sessions, Permissions)
  * - Create/Update Input: 단수형 (CreateRoleInput, UpdateRoleInput)
  */
 
-// ===== 단일 역할 타입 (단수) =====
+// ===== 단일 역할 타입 =====
 
 /**
- * Manager Role (Identity & Access Management)
+ * Manager Role (ID&Access Management)
  * GraphQL 필드는 camelCase입니다
  *
  * @singular 단일 조회, 단일 엔티티 타입
@@ -26,7 +26,7 @@ export interface Role {
   scope: string; // GLOBAL, TENANT
   isDefault: boolean;
   priority: number;
-  status: string; // ACTIVE, INACTIVE
+  status: "ACTIVE" | "INACTIVE";
   createdAt: string;
   updatedAt?: string;
 }
@@ -70,6 +70,7 @@ export interface RolesQueryVariables {
   limit?: number;
   offset?: number;
   status?: string;
+  search?: string;
 }
 
 /**
@@ -140,4 +141,18 @@ export interface UpdateRoleResponse {
  */
 export interface DeleteRoleResponse {
   deleteRole: { message: string };
+}
+
+// ===== UI 필터 상태 타입 =====
+
+/**
+ * 역할 필터 상태 (UI 필터 팝업에서 사용)
+ *
+ * FilterPopup 컴포넌트에서 사용하는 필터 상태 타입 (멀티 선택)
+ * - 각 필터는 여러 값을 배열로 저장
+ * - null이면 필터가 선택되지 않은 상태
+ */
+export interface RolesFilterState {
+  status: string[] | null;      // ["ACTIVE", "INACTIVE"] 등 여러 상태 선택 가능
+  category: string[] | null;    // ["ADMIN", "USER"] 등 여러 카테고리 선택 가능
 }

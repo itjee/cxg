@@ -19,5 +19,4 @@ export {
 export {
   CREATE_ROLE,
   UPDATE_ROLE,
-  DELETE_ROLE,
 } from "./mutations";

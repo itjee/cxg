@@ -16,6 +16,7 @@ interface RolesStore {
   currentPage: number;
   itemsPerPage: number;
   searchText: string;
+  selectedStatus: string | null;
   formOpen: boolean;
   selectedId: string | null;
   sorting: Array<{ id: string; desc: boolean }>;
@@ -23,7 +24,9 @@ interface RolesStore {
   // ===== 액션 =====
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
-  setSearchText: (filter: Updater<string>) => void;
+  setSearchText: (text: Updater<string>) => void;
+  setSelectedStatus: (status: string | null) => void;
+  setSelectedId: (id: string | null) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
@@ -35,6 +38,7 @@ const initialState = {
   currentPage: 0,
   itemsPerPage: 20,
   searchText: "",
+  selectedStatus: null,
   formOpen: false,
   selectedId: null,
   sorting: [],
@@ -45,11 +49,17 @@ export const useRolesStore = create<RolesStore>((set) => ({
 
   setCurrentPage: (page) => set({ currentPage: page }),
   setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
-  setSearchText: (filter) =>
+  setSearchText: (text) =>
     set((state) => ({
-      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
+      searchText: typeof text === 'function' ? text(state.searchText) : text,
       currentPage: 0,
     })),
+  setSelectedStatus: (status) =>
+    set({
+      selectedStatus: status,
+      currentPage: 0,
+    }),
+  setSelectedId: (id) => set({ selectedId: id }),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
   closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>
@@ -59,6 +69,7 @@ export const useRolesStore = create<RolesStore>((set) => ({
   resetFilters: () =>
     set({
       searchText: "",
+      selectedStatus: null,
       sorting: [],
       currentPage: 0,
     }),

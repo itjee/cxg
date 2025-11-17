@@ -14,8 +14,8 @@ import type { RolesQueryVariables, RoleQueryVariables } from "../types/roles.typ
  * 역할 목록 조회 (복수)
  */
 export const GET_ROLES = gql`
-  query GetRoles($limit: Int, $offset: Int, $status: String) {
-    roles(limit: $limit, offset: $offset, status: $status) {
+  query GetRoles($limit: Int, $offset: Int, $status: String, $search: String) {
+    roles(limit: $limit, offset: $offset, status: $status, search: $search) {
       id
       code
       name

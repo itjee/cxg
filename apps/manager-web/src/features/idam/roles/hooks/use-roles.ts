@@ -1,8 +1,12 @@
 /**
- * 역할 GraphQL Hooks
+ * @file use-roles.ts
+ * @description 역할 GraphQL Hooks
  *
  * Apollo Client를 사용한 GraphQL Hooks
- * Feature-driven 아키텍처를 따릅니다.
+ * 타입 명명 규칙:
+ * - 단일 조회 Hook: useRole(singular)
+ * - 목록 조회 Hook: useRoles(plural)
+ * - 생성/수정 Hook: useCreateRole, useUpdateRole (singular)
  */
 
 import { useQuery, useMutation } from "@apollo/client";
@@ -11,7 +15,6 @@ import {
   GET_ROLE,
   CREATE_ROLE,
   UPDATE_ROLE,
-  DELETE_ROLE,
 } from "../graphql";
 import type {
   Role,
@@ -19,17 +22,24 @@ import type {
   RoleQueryVariables,
   CreateRoleVariables,
   UpdateRoleVariables,
-  DeleteRoleVariables,
 } from "../types/roles.types";
 
-// ========== useQuery Hooks ==========
+// ========== useQuery Hooks (조회) ==========
 
 /**
  * 역할 목록 조회 (복수)
  *
- * @param variables 목록 조회 파라미터 (RolesQueryVariables)
+ * @param variables - 목록 조회 파라미터 (limit, offset, status, search)
+ * @returns useQuery 결과 (data.roles 배열)
+ *
  * @example
- * const { data, loading, error, refetch } = useRoles({ limit: 20, offset: 0 });
+ * const { data, loading, error, refetch } = useRoles({
+ *   limit: 20,
+ *   offset: 0,
+ *   search: "admin",     // 백엔드에서 검색 수행
+ *   status: "ACTIVE"     // 상태로 필터링
+ * });
+ * // data.roles는 Role[] 배열
  */
 export function useRoles(variables?: RolesQueryVariables) {
   return useQuery<
@@ -48,30 +58,35 @@ export function useRoles(variables?: RolesQueryVariables) {
 /**
  * 역할 상세 조회 (단수)
  *
- * @param id 역할 ID
+ * @param id - 조회할 역할 ID
+ * @returns useQuery 결과 (data.role 단일 객체)
+ *
  * @example
  * const { data, loading, error } = useRole("role-id");
+ * // data.role는 Role 단일 객체
  */
 export function useRole(id: string) {
   return useQuery<{ role: Role }, RoleQueryVariables>(
     GET_ROLE,
     {
       variables: { id },
-      skip: !id, // id가 없으면 쿼리 실행 안 함
+      skip: !id,
     }
   );
 }
 
-// ========== useMutation Hooks ==========
+// ========== useMutation Hooks (변경) ==========
 
 /**
- * 역할 생성
+ * 역할 생성 (단수)
+ *
+ * @returns useMutation 튜플 [mutation 함수, result 객체]
  *
  * @example
- * const [createRole, { loading, error }] = useCreateRole();
+ * const [createRole, { loading }] = useCreateRole();
  * await createRole({
  *   variables: {
- *     input: { name, description, status, ... }
+ *     input: { code, name, description, category, level, scope, ... }
  *   }
  * });
  */
@@ -90,10 +105,12 @@ export function useCreateRole() {
 }
 
 /**
- * 역할 수정
+ * 역할 수정 (단수)
+ *
+ * @returns useMutation 튜플 [mutation 함수, result 객체]
  *
  * @example
- * const [updateRole, { loading, error }] = useUpdateRole();
+ * const [updateRole, { loading }] = useUpdateRole();
  * await updateRole({
  *   variables: {
  *     id: "role-id",
@@ -106,29 +123,6 @@ export function useUpdateRole() {
     { updateRole: Role },
     UpdateRoleVariables
   >(UPDATE_ROLE, {
-    refetchQueries: [
-      {
-        query: GET_ROLES,
-        variables: { limit: 20, offset: 0 },
-      },
-    ],
-  });
-}
-
-/**
- * 역할 삭제
- *
- * @example
- * const [deleteRole, { loading, error }] = useDeleteRole();
- * await deleteRole({
- *   variables: { id: "role-id" }
- * });
- */
-export function useDeleteRole() {
-  return useMutation<
-    { deleteRole: { message: string } },
-    DeleteRoleVariables
-  >(DELETE_ROLE, {
     refetchQueries: [
       {
         query: GET_ROLES,
