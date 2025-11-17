@@ -69,10 +69,26 @@ export function QueryFilterPopup({
   // 필터값 검색어
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  const activeQueryFilterCount = countActiveQueryFilters(queryFilters);
+  // 팝업 내에서의 임시 필터 상태 (적용 전까지 임시로 보관)
+  const [tempQueryFilters, setTempQueryFilters] = useState<Record<string, string[] | null>>(queryFilters);
+
+  const activeQueryFilterCount = countActiveQueryFilters(tempQueryFilters);
 
   // 현재 선택된 쿼리 필터 항목 객체
   const selectedItem = items.find((item) => item.key === selectedItemKey);
+
+  // 팝업이 열릴 때 tempQueryFilters 초기화
+  const handleOpenChange = useCallback((newOpen: boolean) => {
+    if (newOpen) {
+      // 팝업 열 때: 부모의 queryFilters를 임시 상태로 복사
+      setTempQueryFilters(queryFilters);
+      setSearchQuery("");
+    } else {
+      // 팝업 닫을 때: 취소 시 임시 상태 버림
+      setTempQueryFilters(queryFilters);
+    }
+    onOpenChange(newOpen);
+  }, [queryFilters, onOpenChange]);
 
   // 검색어에 따라 필터링된 옵션들
   const filteredOptions = useMemo(() => {
@@ -86,22 +102,22 @@ export function QueryFilterPopup({
   }, [selectedItem, searchQuery]);
 
   /**
-   * 선택된 쿼리 필터 항목의 체크박스 값 변경
+   * 선택된 쿼리 필터 항목의 체크박스 값 변경 (임시 상태만 업데이트)
    */
   const handleCheckboxChange = useCallback(
     (values: string[]) => {
       if (selectedItemKey) {
-        onQueryFiltersChange({
-          ...queryFilters,
+        setTempQueryFilters({
+          ...tempQueryFilters,
           [selectedItemKey]: values.length > 0 ? values : null,
         });
       }
     },
-    [selectedItemKey, queryFilters, onQueryFiltersChange]
+    [selectedItemKey, tempQueryFilters]
   );
 
   /**
-   * 모든 쿼리 필터 초기화
+   * 모든 쿼리 필터 초기화 (임시 상태)
    */
   const handleClearAll = useCallback(() => {
     const resetFilters = items.reduce(
@@ -111,28 +127,32 @@ export function QueryFilterPopup({
       },
       {} as Record<string, string[] | null>
     );
-    onQueryFiltersChange(resetFilters);
-  }, [items, onQueryFiltersChange]);
+    setTempQueryFilters(resetFilters);
+  }, [items]);
 
   /**
-   * 현재 선택된 쿼리 필터만 초기화
+   * 현재 선택된 쿼리 필터만 초기화 (임시 상태)
    */
   const handleClearCurrent = useCallback(() => {
     if (selectedItemKey) {
-      onQueryFiltersChange({
-        ...queryFilters,
+      setTempQueryFilters({
+        ...tempQueryFilters,
         [selectedItemKey]: null,
       });
     }
-  }, [selectedItemKey, queryFilters, onQueryFiltersChange]);
+  }, [selectedItemKey, tempQueryFilters]);
 
   /**
-   * 적용 후 팝업 닫기
+   * 적용: 임시 필터를 부모에 반영하고 팝업 닫기
    */
   const handleApply = useCallback(() => {
+    // 임시 필터를 부모 상태로 반영
+    onQueryFiltersChange(tempQueryFilters);
+    // 콜백 실행
     onApply();
+    // 팝업 닫기
     onOpenChange(false);
-  }, [onApply, onOpenChange]);
+  }, [tempQueryFilters, onQueryFiltersChange, onApply, onOpenChange]);
 
   /**
    * 필터 항목 선택 (검색어 초기화)
@@ -143,7 +163,7 @@ export function QueryFilterPopup({
   }, []);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[680px] flex flex-col p-6">
         {/* 헤더 */}
         <DialogHeader className="pb-4">
@@ -228,8 +248,8 @@ export function QueryFilterPopup({
                     size="sm"
                     onClick={handleClearCurrent}
                     disabled={
-                      !queryFilters[selectedItem.key] ||
-                      queryFilters[selectedItem.key]!.length === 0
+                      !tempQueryFilters[selectedItem.key] ||
+                      tempQueryFilters[selectedItem.key]!.length === 0
                     }
                     className="text-xs h-8 flex-shrink-0"
                   >
@@ -242,7 +262,7 @@ export function QueryFilterPopup({
                   {filteredOptions.length > 0 ? (
                     <CheckboxGroup
                       options={filteredOptions}
-                      selectedValues={Array.isArray(queryFilters[selectedItem.key]) ? queryFilters[selectedItem.key] : []}
+                      selectedValues={Array.isArray(tempQueryFilters[selectedItem.key]) ? tempQueryFilters[selectedItem.key] : []}
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (

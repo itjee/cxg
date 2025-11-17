@@ -64,8 +64,8 @@ export default function UsersPage() {
   };
 
   const handleApplyQuery = () => {
-    // QueryFilter에서 직접 쿼리 필터를 업데이트하므로 여기서는 필요없음
-    // refetch는 useUsers의 의존성에서 자동으로 실행됨
+    // 필터 적용 시 필요한 추가 작업이 있으면 여기에 작성
+    // 현재는 queryFilters 상태 업데이트로 useUsers가 자동으로 refetch됨
   };
 
   const handleDelete = async (user: any) => {
