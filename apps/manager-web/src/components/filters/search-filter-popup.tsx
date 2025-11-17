@@ -273,7 +273,7 @@ export function SearchFilterPopup({
                   {filteredOptions.length > 0 ? (
                     <CheckboxGroup
                       options={filteredOptions}
-                      selectedValues={Array.isArray(tempSearchFilters[selectedItem.key]) ? tempSearchFilters[selectedItem.key] : []}
+                      selectedValues={tempSearchFilters[selectedItem.key] || []}
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (
