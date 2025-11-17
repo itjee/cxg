@@ -15,7 +15,7 @@
  */
 
 import { useCallback, ReactNode, useMemo } from "react";
-import { Search, Filter, MoreHorizontal } from "lucide-react";
+import { Search, Filter, MoreHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -139,13 +139,16 @@ export function QueryBar({
 
         {/* 필터 초기화 버튼 (필터가 선택된 경우만 표시) */}
         {activeQueryFilterCount > 0 && onClearAllFilters && (
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             onClick={onClearAllFilters}
-            className="inline-flex items-center justify-center h-9 w-9 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="gap-2 whitespace-nowrap rounded-md"
             title="필터 초기화"
           >
-            ✕
-          </button>
+            <X className="h-4 w-4" />
+            <span>필터 지우기</span>
+          </Button>
         )}
       </div>
 

@@ -77,6 +77,8 @@ export default function UsersPage() {
     // 쿼리 텍스트도 초기화
     setSearchText("");
     setQueryTextLocal("");
+    // 페이지 번호 초기화 (첫 페이지로)
+    setCurrentPage(0);
   };
 
   const handleDelete = async (user: any) => {
