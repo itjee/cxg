@@ -26,6 +26,7 @@ interface UsersStore {
   setItemsPerPage: (size: number) => void;
   setSearchText: (text: Updater<string>) => void;
   setSelectedStatus: (status: string | null) => void;
+  setSelectedId: (id: string | null) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
@@ -58,6 +59,7 @@ export const useUsersStore = create<UsersStore>((set) => ({
       selectedStatus: status,
       currentPage: 0,
     }),
+  setSelectedId: (id) => set({ selectedId: id }),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
   closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>

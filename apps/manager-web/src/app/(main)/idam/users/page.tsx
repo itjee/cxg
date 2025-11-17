@@ -24,11 +24,12 @@ import {
   useUpdateUser,
   useUsersStore,
   type UsersFilterState,
+  type User,
 } from "@/features/idam/users";
 
 export default function UsersPage() {
   // Store에서 UI 상태 가져오기
-  const { currentPage, itemsPerPage, setSearchText, setSelectedStatus } =
+  const { currentPage, itemsPerPage, setSearchText, setSelectedStatus, setCurrentPage, openForm, setSelectedId } =
     useUsersStore();
 
   // 쿼리 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
@@ -81,6 +82,13 @@ export default function UsersPage() {
     setCurrentPage(0);
   };
 
+  const handleEdit = (user: User) => {
+    // 선택된 사용자 ID를 store에 저장
+    setSelectedId(user.id);
+    // 수정 폼 오픈
+    openForm();
+  };
+
   const handleDelete = async (user: any) => {
     if (confirm(`'${user.fullName}' 사용자를 삭제하시겠습니까?`)) {
       try {
@@ -116,7 +124,7 @@ export default function UsersPage() {
         onClearAllFilters={handleClearAllFilters}
       />
 
-      <UsersTable data={users} isLoading={updating} onDelete={handleDelete} />
+      <UsersTable data={users} isLoading={updating} onEdit={handleEdit} onDelete={handleDelete} />
       <UsersEdit />
     </div>
   );
