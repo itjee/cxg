@@ -18,6 +18,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -147,9 +148,14 @@ export function QueryFilterPopup({
         {/* 헤더 */}
         <DialogHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-lg">쿼리 필터</DialogTitle>
+            <div className="flex-1">
+              <DialogTitle className="text-lg">쿼리 필터</DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
+                필터 항목을 선택하고 값을 검색하여 멀티 선택할 수 있습니다.
+              </DialogDescription>
+            </div>
             {activeQueryFilterCount > 0 && (
-              <Badge variant="secondary" className="rounded-md px-2 py-1">
+              <Badge variant="secondary" className="rounded-md px-2 py-1 flex-shrink-0">
                 {activeQueryFilterCount}개 선택됨
               </Badge>
             )}
