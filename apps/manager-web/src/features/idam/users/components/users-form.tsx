@@ -118,8 +118,8 @@ export function UsersForm({
 
         <div className="grid grid-cols-2 gap-4">
           {/* 사용자명 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="username" className="text-[13px]">
+          <div className="space-y-2">
+            <Label htmlFor="username" className="text-xs">
               사용자명 <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -128,16 +128,14 @@ export function UsersForm({
               placeholder="사용자명을 입력하세요 (3자 이상)"
               disabled={isLoading || isEditing}
             />
-            {errors.username ? (
+            {errors.username && (
               <p className="text-xs text-red-500">{errors.username.message}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">3자 이상의 고유한 사용자명을 입력하세요</p>
             )}
           </div>
 
           {/* 이메일 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-[13px]">
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-xs">
               이메일 <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -147,16 +145,14 @@ export function UsersForm({
               placeholder="이메일을 입력하세요"
               disabled={isLoading}
             />
-            {errors.email ? (
+            {errors.email && (
               <p className="text-xs text-red-500">{errors.email.message}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">유효한 이메일 주소를 입력하세요</p>
             )}
           </div>
 
           {/* 전체 이름 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="fullName" className="text-[13px]">
+          <div className="space-y-2">
+            <Label htmlFor="fullName" className="text-xs">
               전체 이름 <span className="text-red-500">*</span>
             </Label>
             <Input
@@ -165,17 +161,15 @@ export function UsersForm({
               placeholder="전체 이름을 입력하세요"
               disabled={isLoading}
             />
-            {errors.fullName ? (
+            {errors.fullName && (
               <p className="text-xs text-red-500">{errors.fullName.message}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">사용자의 실제 이름을 입력하세요</p>
             )}
           </div>
 
           {/* 비밀번호 (생성 모드에서만 필수) */}
           {!isEditing && (
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-[13px]">
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-xs">
                 비밀번호 <span className="text-red-500">*</span>
               </Label>
               <Input
@@ -185,19 +179,17 @@ export function UsersForm({
                 placeholder="비밀번호를 입력하세요 (8자 이상)"
                 disabled={isLoading}
               />
-              {errors.password ? (
+              {errors.password && (
                 <p className="text-xs text-red-500">
                   {errors.password.message}
                 </p>
-              ) : (
-                <p className="text-xs text-muted-foreground">보안을 위해 8자 이상의 복잡한 비밀번호를 설정하세요</p>
               )}
             </div>
           )}
 
           {/* 사용자 유형 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="userType" className="text-[13px]">
+          <div className="space-y-2">
+            <Label htmlFor="userType" className="text-xs">
               사용자 유형 <span className="text-red-500">*</span>
             </Label>
             <Controller
@@ -216,53 +208,48 @@ export function UsersForm({
                 </Select>
               )}
             />
-            {errors.userType ? (
+            {errors.userType && (
               <p className="text-xs text-red-500">{errors.userType.message}</p>
-            ) : (
-              <p className="text-xs text-muted-foreground">사용자의 역할에 따라 유형을 선택하세요</p>
             )}
           </div>
 
           {/* 전화 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="phone" className="text-[13px]">전화</Label>
+          <div className="space-y-2">
+            <Label htmlFor="phone" className="text-xs">전화</Label>
             <Input
               id="phone"
               {...register("phone")}
               placeholder="전화번호를 입력하세요"
               disabled={isLoading}
             />
-            <p className="text-xs text-muted-foreground">연락 가능한 전화번호를 입력하세요</p>
           </div>
 
           {/* 부서 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="department" className="text-[13px]">부서</Label>
+          <div className="space-y-2">
+            <Label htmlFor="department" className="text-xs">부서</Label>
             <Input
               id="department"
               {...register("department")}
               placeholder="부서를 입력하세요"
               disabled={isLoading}
             />
-            <p className="text-xs text-muted-foreground">소속 부서명을 입력하세요</p>
           </div>
 
           {/* 직책 */}
-          <div className="space-y-1.5">
-            <Label htmlFor="position" className="text-[13px]">직책</Label>
+          <div className="space-y-2">
+            <Label htmlFor="position" className="text-xs">직책</Label>
             <Input
               id="position"
               {...register("position")}
               placeholder="직책을 입력하세요"
               disabled={isLoading}
             />
-            <p className="text-xs text-muted-foreground">사용자의 직책/직급을 입력하세요</p>
           </div>
 
           {/* 상태 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-[13px]">사용자 상태</Label>
+              <Label className="text-xs">사용자 상태</Label>
               <p className="text-sm text-muted-foreground">
                 {status === "ACTIVE"
                   ? "활성 상태"
