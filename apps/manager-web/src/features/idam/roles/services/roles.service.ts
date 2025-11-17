@@ -11,14 +11,14 @@ import {
   GET_ROLE,
   CREATE_ROLE,
   UPDATE_ROLE,
-  DELETE_ROLE,
-  type GetRolesVariables,
-  type GetRoleVariables,
-  type CreateRoleVariables,
-  type UpdateRoleVariables,
-  type DeleteRoleVariables,
 } from "../graphql";
-import type { Role } from "../types";
+import type {
+  Role,
+  RolesQueryVariables,
+  RoleQueryVariables,
+  CreateRoleVariables,
+  UpdateRoleVariables,
+} from "../types";
 
 /**
  * GraphQL 응답 타입
@@ -39,12 +39,6 @@ interface UpdateRoleResponse {
   updateRole: Role;
 }
 
-interface DeleteRoleResponse {
-  deleteRole: {
-    message: string;
-  };
-}
-
 /**
  * 역할 GraphQL 서비스
  *
@@ -56,17 +50,18 @@ export const rolesService = {
   /**
    * 역할 목록 조회
    *
-   * @param params - 쿼리 변수 (limit, offset, status 등)
+   * @param params - 쿼리 변수 (limit, offset, status, search 등)
    * @returns 역할 목록 응답
    */
   async listRoles(
-    params?: GetRolesVariables
+    params?: RolesQueryVariables
   ): Promise<{ items: Role[]; total: number }> {
     try {
-      const variables: GetRolesVariables = {
+      const variables: RolesQueryVariables = {
         limit: params?.limit || 20,
         offset: params?.offset || 0,
         status: params?.status,
+        search: params?.search,
       };
 
       const { data } = await apolloClient.query<GetRolesResponse>({
@@ -99,7 +94,7 @@ export const rolesService = {
    */
   async getRole(id: string): Promise<Role> {
     try {
-      const variables: GetRoleVariables = { id };
+      const variables: RoleQueryVariables = { id };
 
       const { data } = await apolloClient.query<GetRoleResponse>({
         query: GET_ROLE,
@@ -200,37 +195,4 @@ export const rolesService = {
     }
   },
 
-  /**
-   * 역할 삭제
-   *
-   * @param id - 역할 ID
-   * @returns 삭제 결과 메시지
-   */
-  async deleteRole(id: string): Promise<void> {
-    try {
-      const variables: DeleteRoleVariables = { id };
-
-      const { data } = await apolloClient.mutate<DeleteRoleResponse>({
-        mutation: DELETE_ROLE,
-        variables,
-        refetchQueries: [
-          {
-            query: GET_ROLES,
-            variables: { limit: 20, offset: 0 },
-          },
-        ],
-      });
-
-      if (!data?.deleteRole) {
-        throw new Error("역할 삭제에 실패했습니다");
-      }
-    } catch (error) {
-      console.error(`역할 삭제 오류 (${id}):`, error);
-      throw new Error(
-        `역할 삭제 실패: ${
-          error instanceof Error ? error.message : "알 수 없는 오류"
-        }`
-      );
-    }
-  },
 };
