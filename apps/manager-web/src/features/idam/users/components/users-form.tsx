@@ -166,7 +166,7 @@ export function UsersForm({
         <div className="grid grid-cols-2 gap-4">
           {/* 사용자명 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="username" className="text-xs">
                 사용자명 <span className="text-red-500">*</span>
               </Label>
@@ -185,7 +185,7 @@ export function UsersForm({
 
           {/* 이메일 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="email" className="text-xs">
                 이메일 <span className="text-red-500">*</span>
               </Label>
@@ -205,7 +205,7 @@ export function UsersForm({
 
           {/* 전체 이름 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="fullName" className="text-xs">
                 전체 이름 <span className="text-red-500">*</span>
               </Label>
@@ -225,7 +225,7 @@ export function UsersForm({
           {/* 비밀번호 (생성 모드에서만 필수) */}
           {!isEditing && (
             <div className="space-y-2">
-              <div className="flex items-center">
+              <div className="flex items-center justify-between">
                 <Label htmlFor="password" className="text-xs">
                   비밀번호 <span className="text-red-500">*</span>
                 </Label>
@@ -248,7 +248,7 @@ export function UsersForm({
 
           {/* 사용자 유형 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="userType" className="text-xs">
                 사용자 유형 <span className="text-red-500">*</span>
               </Label>
@@ -277,7 +277,7 @@ export function UsersForm({
 
           {/* 전화 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="phone" className="text-xs">전화</Label>
               <HintIcon hint={fieldHints.phone} />
             </div>
@@ -291,7 +291,7 @@ export function UsersForm({
 
           {/* 부서 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="department" className="text-xs">부서</Label>
               <HintIcon hint={fieldHints.department} />
             </div>
@@ -305,7 +305,7 @@ export function UsersForm({
 
           {/* 직책 */}
           <div className="space-y-2">
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <Label htmlFor="position" className="text-xs">직책</Label>
               <HintIcon hint={fieldHints.position} />
             </div>
