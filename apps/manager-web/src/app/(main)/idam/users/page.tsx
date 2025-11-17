@@ -32,13 +32,10 @@ export default function UsersPage() {
     useUsersStore();
 
   // 쿼리 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
-  const [queryFilters, setQueryFilters] = useState<UsersFilterState>({
+  const [queryFilters, setQueryFilters] = useState<Record<string, string[] | null>>({
     status: null,
     userType: null,
   });
-
-  // 임시 쿼리 필터 상태 (팝업 내 수정용)
-  const [localQueryFilters, setLocalQueryFilters] = useState<UsersFilterState>(queryFilters);
 
   const [queryText, setQueryTextLocal] = useState("");
 
@@ -67,7 +64,8 @@ export default function UsersPage() {
   };
 
   const handleApplyQuery = () => {
-    setQueryFilters(localQueryFilters);
+    // QueryFilter에서 직접 쿼리 필터를 업데이트하므로 여기서는 필요없음
+    // refetch는 useUsers의 의존성에서 자동으로 실행됨
   };
 
   const handleDelete = async (user: any) => {
@@ -100,7 +98,7 @@ export default function UsersPage() {
         queryText={queryText}
         onQueryTextChange={handleQueryTextChange}
         queryFilters={queryFilters}
-        onQueryFiltersChange={setLocalQueryFilters}
+        onQueryFiltersChange={setQueryFilters}
         onApplyQuery={handleApplyQuery}
       />
 
