@@ -30,6 +30,7 @@ export interface User {
   lastLoginAt?: string;
   lastLoginIp?: string;
   failedLoginAttempts: number;
+  lockedUntil?: string; // 계정 잠금 해제 예정 시간
   forcePasswordChange: boolean;
   timezone: string;
   locale: string;

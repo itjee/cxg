@@ -39,6 +39,7 @@ def manager_user_to_graphql(user: UserModel) -> "ManagerUser":
         last_login_at=user.last_login_at,
         last_login_ip=str(user.last_login_ip) if user.last_login_ip else None,
         failed_login_attempts=user.failed_login_attempts,
+        locked_until=user.locked_until,
         force_password_change=user.force_password_change,
         timezone=user.timezone or "UTC",
         locale=user.locale or "ko-KR",

@@ -34,6 +34,7 @@ export const GET_USERS = gql`
       lastLoginAt
       lastLoginIp
       failedLoginAttempts
+      lockedUntil
       forcePasswordChange
       timezone
       locale
@@ -64,6 +65,7 @@ export const GET_USER = gql`
       lastLoginAt
       lastLoginIp
       failedLoginAttempts
+      lockedUntil
       forcePasswordChange
       timezone
       locale

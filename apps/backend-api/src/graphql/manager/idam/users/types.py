@@ -55,6 +55,9 @@ class ManagerUser(Node):
     )
     last_login_ip: str | None = strawberry.field(default=None, description="마지막 로그인 IP 주소")
     failed_login_attempts: int = strawberry.field(description="연속 로그인 실패 횟수")
+    locked_until: datetime | None = strawberry.field(
+        default=None, description="계정 잠금 해제 예정 일시"
+    )
     force_password_change: bool = strawberry.field(description="비밀번호 변경 강제 여부")
 
     # 메타데이터
