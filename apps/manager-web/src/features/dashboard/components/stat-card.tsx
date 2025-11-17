@@ -52,7 +52,7 @@ export function StatCard({
   return (
     <Card className={cn(
       colorClasses[color],
-      "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-24",
+      "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-28",
       className
     )}>
       {/* Background gradient */}
