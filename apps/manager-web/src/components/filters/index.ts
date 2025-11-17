@@ -37,6 +37,8 @@ export type {
 } from "./search-filter";
 export type {
   SearchFilterPopupProps,
+} from "./search-filter-popup";
+export type {
   FilterItemConfig as FilterItemConfigPopup,
   FilterOption as FilterOptionPopup,
 } from "./search-popup.types";
