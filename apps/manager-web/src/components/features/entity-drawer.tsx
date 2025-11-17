@@ -49,10 +49,10 @@ export function EntityDrawer({
 }: EntityDrawerProps) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent 
-        side="right" 
+      <SheetContent
+        side="right"
         className={cn(
-          'overflow-y-auto',
+          'overflow-y-auto p-6',
           {
             'max-w-md': width === 'sm',
             'max-w-2xl': width === 'md',
