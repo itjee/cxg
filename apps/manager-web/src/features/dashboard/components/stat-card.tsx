@@ -52,7 +52,7 @@ export function StatCard({
   return (
     <Card className={cn(
       colorClasses[color],
-      "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-32",
+      "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-24",
       className
     )}>
       {/* Background gradient */}
@@ -75,27 +75,30 @@ export function StatCard({
         </div>
       )}
 
-      <CardContent className="p-6 relative h-full flex flex-col justify-center">
-        <div className="relative z-10">
-          <p className="text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
-          <div className="mt-2 flex items-baseline gap-2">
-            <p className="text-xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
-            {trend && (
-              <span
-                className={cn(
-                  "text-xs font-medium",
-                  trend.isPositive
-                    ? "text-emerald-600 dark:text-emerald-500"
-                    : "text-destructive"
-                )}
-              >
-                {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
-                {trend.label && ` ${trend.label}`}
-              </span>
-            )}
-          </div>
+      <CardContent className="p-4 relative h-full flex flex-col justify-between">
+        {/* Top: Title */}
+        <p className="text-xs font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
+
+        {/* Middle: Main value */}
+        <p className="text-xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
+
+        {/* Bottom: Trend and description */}
+        <div className="space-y-1">
+          {trend && (
+            <span
+              className={cn(
+                "text-xs font-medium block",
+                trend.isPositive
+                  ? "text-emerald-600 dark:text-emerald-500"
+                  : "text-destructive"
+              )}
+            >
+              {trend.isPositive ? "↑" : "↓"} {Math.abs(trend.value)}%
+              {trend.label && ` ${trend.label}`}
+            </span>
+          )}
           {description && (
-            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+            <p className="text-xs text-muted-foreground">{description}</p>
           )}
         </div>
       </CardContent>
