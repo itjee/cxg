@@ -120,7 +120,7 @@ export function UsersForm({
       email: initialData?.email || "",
       fullName: initialData?.fullName || "",
       password: "",
-      userType: (initialData as any)?.userType || "USER",
+      userType: initialData?.userType || "USER",
       phone: initialData?.phone || "",
       department: initialData?.department || "",
       position: initialData?.position || "",
@@ -134,12 +134,13 @@ export function UsersForm({
 
   useEffect(() => {
     if (initialData) {
+      // 수정 모드: 기존 데이터로 form 업데이트
       reset({
         username: initialData.username || "",
         email: initialData.email || "",
         fullName: initialData.fullName || "",
         password: "",
-        userType: (initialData as any)?.userType || "USER",
+        userType: initialData.userType || "USER",
         phone: initialData?.phone || "",
         department: initialData?.department || "",
         position: initialData?.position || "",
@@ -148,6 +149,19 @@ export function UsersForm({
         )
           ? initialData?.status
           : "ACTIVE") as "ACTIVE" | "INACTIVE" | "LOCKED",
+      });
+    } else {
+      // 생성 모드: form 초기화
+      reset({
+        username: "",
+        email: "",
+        fullName: "",
+        password: "",
+        userType: "USER",
+        phone: "",
+        department: "",
+        position: "",
+        status: "ACTIVE" as "ACTIVE" | "INACTIVE" | "LOCKED",
       });
     }
   }, [initialData, reset]);

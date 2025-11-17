@@ -84,13 +84,11 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
       body: JSON.stringify({
         query: `
           mutation RefreshToken($input: RefreshTokenInput!) {
-            auth {
-              refreshToken(input: $input) {
-                accessToken
-                refreshToken
-                tokenType
-                expiresIn
-              }
+            refreshToken(input: $input) {
+              accessToken
+              refreshToken
+              tokenType
+              expiresIn
             }
           }
         `,
@@ -107,7 +105,7 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
       return null;
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = data.data.auth.refreshToken;
+    const { accessToken, refreshToken: newRefreshToken } = data.data.refreshToken;
 
     // 새 토큰 저장 (localStorage + Cookie)
     localStorage.setItem('access_token', accessToken);
