@@ -116,7 +116,7 @@ export function UsersForm({
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
-        <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-4">
           {/* 사용자명 */}
           <div className="space-y-2">
             <Label htmlFor="username">
