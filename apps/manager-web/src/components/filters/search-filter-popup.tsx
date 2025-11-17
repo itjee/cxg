@@ -35,25 +35,35 @@ import type { FilterItemConfig } from "./search-popup.types";
 export interface SearchFilterPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  searchFilters: Record<string, string[] | null>;
-  onSearchFiltersChange: (filters: Record<string, string[] | null>) => void;
+  searchFilters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>;
+  onSearchFiltersChange: (filters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>) => void;
   onApply: () => void;
   items: FilterItemConfig[];
 }
 
 /**
  * 활성 검색 필터 개수 계산
- * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계)
+ * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계 + daterange 1개)
  *
  * 예시:
  * - status: ["ACTIVE", "INACTIVE"] → 2개
  * - userType: ["ADMIN"] → 1개
- * - 총: 3개
+ * - createdAt: { type: "range", value: { from: "2025-11-18" } } → 1개
+ * - 총: 4개
  */
-function countActiveSearchFilters(searchFilters: Record<string, string[] | null>): number {
+function countActiveSearchFilters(
+  searchFilters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+): number {
   return Object.values(searchFilters).reduce((total, value) => {
     if (Array.isArray(value) && value.length > 0) {
       return total + value.length;
+    }
+    if (value && typeof value === "object" && "type" in value && "value" in value) {
+      // daterange 필터가 from 또는 to 값을 가지면 1로 카운트
+      const range = (value as { type: string; value: { from?: string; to?: string } }).value;
+      if (range.from || range.to) {
+        return total + 1;
+      }
     }
     return total;
   }, 0);
@@ -81,7 +91,9 @@ export function SearchFilterPopup({
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // 팝업 내에서의 임시 필터 상태 (적용 전까지 임시로 보관)
-  const [tempSearchFilters, setTempSearchFilters] = useState<Record<string, string[] | null>>(searchFilters);
+  const [tempSearchFilters, setTempSearchFilters] = useState<
+    Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+  >(searchFilters);
 
   const activeSearchFilterCount = countActiveSearchFilters(tempSearchFilters);
 
@@ -175,9 +187,9 @@ export function SearchFilterPopup({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-4xl max-h-[680px] flex flex-col p-6">
+      <DialogContent className="sm:max-w-4xl h-[500px] flex flex-col p-6">
         {/* 헤더 */}
-        <DialogHeader className="pb-4">
+        <DialogHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <DialogTitle className="text-lg">검색 필터</DialogTitle>
@@ -194,14 +206,34 @@ export function SearchFilterPopup({
         </DialogHeader>
 
         {/* 본문: 좌우 분할 */}
-        <div className="flex flex-1 gap-6 min-h-0">
+        <div className="flex flex-1 gap-6 min-h-0 overflow-hidden">
           {/* 좌측: 검색 필터 항목 목록 */}
-          <div className="w-48 border-r flex flex-col">
+          <div className="w-48 border-r flex flex-col min-h-0">
             <div className="space-y-0.5 overflow-y-auto pr-2">
               {items.map((item) => {
                 const isSelected = selectedItemKey === item.key;
-                const hasValue =
-                  tempSearchFilters[item.key] && tempSearchFilters[item.key]!.length > 0;
+                let hasValue = false;
+                let valueCount = 0;
+
+                const filterValue = tempSearchFilters[item.key];
+                if (item.type === "daterange") {
+                  // daterange 필터의 경우
+                  if (
+                    filterValue &&
+                    typeof filterValue === "object" &&
+                    "value" in filterValue
+                  ) {
+                    const range = (
+                      filterValue as { type: string; value: { from?: string; to?: string } }
+                    ).value;
+                    hasValue = !!(range.from || range.to);
+                    valueCount = (range.from ? 1 : 0) + (range.to ? 1 : 0);
+                  }
+                } else {
+                  // 체크박스 필터의 경우
+                  hasValue = Array.isArray(filterValue) && filterValue.length > 0;
+                  valueCount = Array.isArray(filterValue) ? filterValue.length : 0;
+                }
 
                 return (
                   <button
@@ -220,7 +252,7 @@ export function SearchFilterPopup({
                           variant={isSelected ? "default" : "secondary"}
                           className="h-5 w-5 ml-2 flex items-center justify-center p-0 text-xs rounded-full flex-shrink-0"
                         >
-                          {tempSearchFilters[item.key]!.length}
+                          {valueCount > 0 ? valueCount : "✓"}
                         </Badge>
                       )}
                     </span>
@@ -231,11 +263,11 @@ export function SearchFilterPopup({
           </div>
 
           {/* 우측: 선택된 검색 필터의 옵션 */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 flex flex-col min-h-0">
             {selectedItem ? (
-              <div className="space-y-4 h-full flex flex-col">
+              <div className="space-y-4 h-full flex flex-col min-h-0">
                 {/* 검색 바 */}
-                <div className="flex items-center gap-2 pb-2 border-b">
+                <div className="flex items-center gap-2 pb-2 border-b flex-shrink-0">
                   <div className="flex-1 relative">
                     <Input
                       type="text"
@@ -269,11 +301,95 @@ export function SearchFilterPopup({
                 </div>
 
                 {/* 필터 옵션 목록 */}
-                <div className="flex-1 overflow-y-auto">
-                  {filteredOptions.length > 0 ? (
+                <div className="flex-1 overflow-y-auto min-h-0">
+                  {selectedItem.type === "daterange" ? (
+                    // 날짜 범위 필터
+                    <div className="space-y-4 p-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">시작 날짜 (From)</label>
+                        <Input
+                          type="date"
+                          value={
+                            tempSearchFilters[selectedItem.key] &&
+                            typeof tempSearchFilters[selectedItem.key] === "object" &&
+                            "value" in tempSearchFilters[selectedItem.key]
+                              ? (tempSearchFilters[selectedItem.key] as {
+                                  type: string;
+                                  value: { from?: string; to?: string };
+                                }).value.from || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const from = e.target.value;
+                            const currentValue =
+                              tempSearchFilters[selectedItem.key] &&
+                              typeof tempSearchFilters[selectedItem.key] === "object" &&
+                              "value" in tempSearchFilters[selectedItem.key]
+                                ? (tempSearchFilters[selectedItem.key] as {
+                                    type: string;
+                                    value: { from?: string; to?: string };
+                                  }).value
+                                : {};
+
+                            setTempSearchFilters({
+                              ...tempSearchFilters,
+                              [selectedItem.key]: {
+                                type: "range",
+                                value: { ...currentValue, from: from || undefined },
+                              },
+                            });
+                          }}
+                          className="text-sm"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">종료 날짜 (To)</label>
+                        <Input
+                          type="date"
+                          value={
+                            tempSearchFilters[selectedItem.key] &&
+                            typeof tempSearchFilters[selectedItem.key] === "object" &&
+                            "value" in tempSearchFilters[selectedItem.key]
+                              ? (tempSearchFilters[selectedItem.key] as {
+                                  type: string;
+                                  value: { from?: string; to?: string };
+                                }).value.to || ""
+                              : ""
+                          }
+                          onChange={(e) => {
+                            const to = e.target.value;
+                            const currentValue =
+                              tempSearchFilters[selectedItem.key] &&
+                              typeof tempSearchFilters[selectedItem.key] === "object" &&
+                              "value" in tempSearchFilters[selectedItem.key]
+                                ? (tempSearchFilters[selectedItem.key] as {
+                                    type: string;
+                                    value: { from?: string; to?: string };
+                                  }).value
+                                : {};
+
+                            setTempSearchFilters({
+                              ...tempSearchFilters,
+                              [selectedItem.key]: {
+                                type: "range",
+                                value: { ...currentValue, to: to || undefined },
+                              },
+                            });
+                          }}
+                          className="text-sm"
+                        />
+                      </div>
+                    </div>
+                  ) : filteredOptions.length > 0 ? (
+                    // 체크박스 필터
                     <CheckboxGroup
                       options={filteredOptions}
-                      selectedValues={tempSearchFilters[selectedItem.key] || []}
+                      selectedValues={
+                        Array.isArray(tempSearchFilters[selectedItem.key])
+                          ? (tempSearchFilters[selectedItem.key] as string[])
+                          : []
+                      }
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (

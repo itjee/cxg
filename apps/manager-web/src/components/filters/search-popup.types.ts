@@ -15,19 +15,28 @@ export interface FilterOption {
 
 /**
  * 필터 항목 설정
+ *
+ * 필터 타입:
+ * - "checkbox" (기본값): 다중 선택 체크박스
+ * - "daterange": 날짜 범위 선택 (from ~ to)
  */
 export interface FilterItemConfig {
   key: string;
   label: string;
+  type?: "checkbox" | "daterange";
   options: FilterOption[];
 }
 
 /**
- * 필터 상태 (멀티 선택)
- * key: 필터 항목의 key
- * value: 선택된 값들의 배열 (null이면 선택 안 함)
+ * 필터 상태
+ * - string[]: 체크박스 필터 (다중 선택)
+ * - { type: "range"; value: { from?: string; to?: string } }: 날짜 범위 필터
+ * - null: 필터가 선택되지 않은 상태
  */
-export type FilterState = Record<string, string[] | null>;
+export type FilterState = Record<
+  string,
+  string[] | null | { type: string; value: { from?: string; to?: string } }
+>;
 
 /**
  * 필터 팝업 Props

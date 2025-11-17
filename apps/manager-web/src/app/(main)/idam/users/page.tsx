@@ -33,11 +33,14 @@ export default function UsersPage() {
     useUsersStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
-  const [searchFilters, setSearchFilters] = useState<Record<string, string[] | null>>({
+  const [searchFilters, setSearchFilters] = useState<
+    Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+  >({
     status: null,
     userType: null,
     mfaEnabled: null,
     forcePasswordChange: null,
+    createdAt: null,
   });
 
   const [searchText, setSearchTextLocal] = useState("");
@@ -84,6 +87,29 @@ export default function UsersPage() {
     return undefined;
   };
 
+  // 생성일시 필터에서 from/to 날짜 추출
+  const getCreatedDateRange = (): {
+    createdAfter?: string;
+    createdBefore?: string;
+  } => {
+    const createdAtFilter = searchFilters.createdAt;
+    if (
+      !createdAtFilter ||
+      typeof createdAtFilter !== "object" ||
+      !("value" in createdAtFilter)
+    ) {
+      return {};
+    }
+
+    const { from, to } = (createdAtFilter as { type: string; value: { from?: string; to?: string } }).value;
+    return {
+      createdAfter: from,
+      createdBefore: to,
+    };
+  };
+
+  const dateRange = getCreatedDateRange();
+
   // GraphQL 쿼리 - Apollo Hooks 사용
   const {
     data: usersResponse,
@@ -97,6 +123,8 @@ export default function UsersPage() {
     search: debouncedSearchText || undefined,
     mfaEnabled: getMfaEnabled(),
     forcePasswordChange: getForcePasswordChange(),
+    createdAfter: dateRange.createdAfter,
+    createdBefore: dateRange.createdBefore,
   });
 
   // GraphQL 뮤테이션 - 수정
@@ -121,6 +149,7 @@ export default function UsersPage() {
       userType: null,
       mfaEnabled: null,
       forcePasswordChange: null,
+      createdAt: null,
     });
     // 검색 텍스트도 초기화
     setSearchText("");

@@ -15,8 +15,10 @@ import type { FilterItemConfig } from "@/components/filters";
 interface UsersFilterProps {
   searchText: string;
   onSearchTextChange: (text: string) => void;
-  searchFilters: Record<string, string[] | null>;
-  onSearchFiltersChange: (filters: Record<string, string[] | null>) => void;
+  searchFilters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>;
+  onSearchFiltersChange: (
+    filters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+  ) => void;
   onApplySearch: () => void;
   onClearAllSearchFilters?: () => void;
 }
@@ -31,6 +33,7 @@ const filterItems: FilterItemConfig[] = [
   {
     key: "status",
     label: "계정상태",
+    type: "checkbox",
     options: [
       { value: "ACTIVE", label: "활성" },
       { value: "INACTIVE", label: "비활성" },
@@ -41,6 +44,7 @@ const filterItems: FilterItemConfig[] = [
   {
     key: "userType",
     label: "사용자 유형",
+    type: "checkbox",
     options: [
       { value: "MASTER", label: "최고관리자" },
       { value: "TENANT", label: "테넌트관리자" },
@@ -52,6 +56,7 @@ const filterItems: FilterItemConfig[] = [
   {
     key: "mfaEnabled",
     label: "MFA 상태",
+    type: "checkbox",
     options: [
       { value: "true", label: "MFA 활성화됨" },
       { value: "false", label: "MFA 비활성화됨" },
@@ -60,10 +65,17 @@ const filterItems: FilterItemConfig[] = [
   {
     key: "forcePasswordChange",
     label: "비밀번호",
+    type: "checkbox",
     options: [
       { value: "true", label: "변경 필요" },
       { value: "false", label: "정상" },
     ],
+  },
+  {
+    key: "createdAt",
+    label: "생성일시",
+    type: "daterange",
+    options: [], // daterange는 옵션 불필요
   },
 ];
 
