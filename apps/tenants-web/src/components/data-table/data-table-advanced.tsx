@@ -227,7 +227,7 @@ export function DataTableAdvanced<TData, TValue>({
               <TableRow key={headerGroup.id} className="hover:bg-transparent">
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="text-muted-foreground text-xs uppercase tracking-wider h-12">
+                    <TableHead key={header.id} className="text-muted-foreground text-xs uppercase tracking-wider h-10 px-6 py-2">
                       {header.isPlaceholder
                         ? null
                         : flexRender(header.column.columnDef.header, header.getContext())}
