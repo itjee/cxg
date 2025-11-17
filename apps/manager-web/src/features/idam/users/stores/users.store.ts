@@ -5,27 +5,27 @@
  * 서버 상태(데이터)는 Apollo Client가 관리합니다.
  *
  * @example
- * const { selectedStatus, currentPage, setSelectedStatus } = useUsersStore();
+ * const { currentPage, itemsPerPage, formOpen } = useUsersStore();
  */
 
-import { create } from 'zustand';
-import type { Updater } from '@tanstack/react-table';
+import { create } from "zustand";
+import type { Updater } from "@tanstack/react-table";
 
 interface UsersStore {
   // ===== UI 상태 =====
-  selectedStatus: 'ACTIVE' | 'INACTIVE' | '';
   currentPage: number;
   itemsPerPage: number;
-  globalFilter: string;
+  searchText: string;
+  selectedStatus: string | null;
   formOpen: boolean;
   selectedId: string | null;
   sorting: Array<{ id: string; desc: boolean }>;
 
   // ===== 액션 =====
-  setSelectedStatus: (status: 'ACTIVE' | 'INACTIVE' | '') => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (text: Updater<string>) => void;
+  setSelectedStatus: (status: string | null) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
@@ -34,10 +34,10 @@ interface UsersStore {
 }
 
 const initialState = {
-  selectedStatus: '' as 'ACTIVE' | 'INACTIVE' | '',
   currentPage: 0,
   itemsPerPage: 20,
-  globalFilter: '',
+  searchText: "",
+  selectedStatus: null,
   formOpen: false,
   selectedId: null,
   sorting: [],
@@ -46,14 +46,18 @@ const initialState = {
 export const useUsersStore = create<UsersStore>((set) => ({
   ...initialState,
 
-  setSelectedStatus: (status) => set({ selectedStatus: status, currentPage: 0 }),
   setCurrentPage: (page) => set({ currentPage: page }),
   setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
-  setGlobalFilter: (filter) =>
+  setSearchText: (text) =>
     set((state) => ({
-      globalFilter: typeof filter === 'function' ? filter(state.globalFilter) : filter,
+      searchText: typeof text === 'function' ? text(state.searchText) : text,
       currentPage: 0,
     })),
+  setSelectedStatus: (status) =>
+    set({
+      selectedStatus: status,
+      currentPage: 0,
+    }),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
   closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>
@@ -62,8 +66,8 @@ export const useUsersStore = create<UsersStore>((set) => ({
     })),
   resetFilters: () =>
     set({
-      globalFilter: '',
-      selectedStatus: '',
+      searchText: "",
+      selectedStatus: null,
       sorting: [],
       currentPage: 0,
     }),

@@ -15,8 +15,8 @@ interface TasksFiltersProps {
 
 export function TasksFilters({ data }: TasksFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedTaskType,
     setSelectedTaskType,
     selectedEnabled,
@@ -28,7 +28,7 @@ export function TasksFilters({ data }: TasksFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "작업명, 설명...",
       type: "search",
@@ -75,7 +75,7 @@ export function TasksFilters({ data }: TasksFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedTaskType,
     selectedEnabled,
     selectedLastRunStatus,
@@ -83,7 +83,7 @@ export function TasksFilters({ data }: TasksFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedTaskType: setSelectedTaskType,
       selectedEnabled: setSelectedEnabled,
       selectedLastRunStatus: setSelectedLastRunStatus,

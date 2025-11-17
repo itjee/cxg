@@ -10,21 +10,17 @@
  */
 
 import { apolloClient } from "@/lib/apollo-client";
-import {
-  GET_USERS,
-  GET_USER,
-  CREATE_USER,
-  UPDATE_USER,
-  type UsersQueryVariables,
-  type CreateUserVariables,
-  type UpdateUserVariables,
-} from "../graphql";
+import { GET_USERS, GET_USER, CREATE_USER, UPDATE_USER } from "../graphql";
+
 import type {
   User,
   GetUsersResponse,
   GetUserResponse,
   CreateUserResponse,
   UpdateUserResponse,
+  UsersQueryVariables,
+  CreateUserVariables,
+  UpdateUserVariables,
 } from "../types/users.types";
 
 /**

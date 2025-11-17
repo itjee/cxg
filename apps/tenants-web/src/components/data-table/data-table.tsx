@@ -130,7 +130,7 @@ export function DataTable<TData, TValue>({
                   className="hover:bg-accent/50 transition-colors"
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className="px-6 py-4 h-16 font-light">
+                    <TableCell key={cell.id} className="px-6 py-1.5 h-8 text-xs font-light">
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}

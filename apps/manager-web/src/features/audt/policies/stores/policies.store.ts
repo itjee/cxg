@@ -2,24 +2,24 @@ import { create } from "zustand";
 import type { Updater } from "@tanstack/react-table";
 
 interface PoliciesStoreState {
-  globalFilter: string;
+  searchText: string;
   selectedPolicyType: string;
   selectedPolicyCategory: string;
   selectedStatus: string;
   selectedEnforcementLevel: string;
   startDate: string;
   endDate: string;
-  
+
   sorting: Array<{ id: string; desc: boolean }>;
-  
+
   currentPage: number;
   itemsPerPage: number;
-  
+
   formOpen: boolean;
   editingId: string | null;
   detailId: string | null;
 
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedPolicyType: (type: string) => void;
   setSelectedPolicyCategory: (category: string) => void;
   setSelectedStatus: (status: string) => void;
@@ -37,7 +37,7 @@ interface PoliciesStoreState {
 }
 
 export const usePoliciesStore = create<PoliciesStoreState>((set) => ({
-  globalFilter: "",
+  searchText: "",
   selectedPolicyType: "",
   selectedPolicyCategory: "",
   selectedStatus: "",
@@ -51,10 +51,10 @@ export const usePoliciesStore = create<PoliciesStoreState>((set) => ({
   editingId: null,
   detailId: null,
 
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter:
-        typeof filter === "function" ? filter(state.globalFilter) : filter,
+      searchText:
+        typeof filter === "function" ? filter(state.searchText) : filter,
     })),
   setSelectedPolicyType: (type) => set({ selectedPolicyType: type }),
   setSelectedPolicyCategory: (category) => set({ selectedPolicyCategory: category }),
@@ -64,7 +64,7 @@ export const usePoliciesStore = create<PoliciesStoreState>((set) => ({
   setEndDate: (date) => set({ endDate: date }),
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedPolicyType: "",
       selectedPolicyCategory: "",
       selectedStatus: "",

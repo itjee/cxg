@@ -1,6 +1,6 @@
 "use client";
 
-import { PageLayout } from "@/components/layouts/page-layout";
+import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell } from "lucide-react";
@@ -16,7 +16,7 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <PageLayout
+    <Page
       title="알림 관리"
       description="시스템 알림을 관리합니다"
     >
@@ -31,6 +31,6 @@ export default function NotificationsPage() {
           </div>
         </CardContent>
       </Card>
-    </PageLayout>
+    </Page>
   );
 }

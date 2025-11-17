@@ -8,8 +8,8 @@ interface CompliancesFiltersProps {
 
 export function CompliancesFilters({ data }: CompliancesFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedReportType,
     setSelectedReportType,
     selectedComplianceStatus,
@@ -23,7 +23,7 @@ export function CompliancesFilters({ data }: CompliancesFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "보고서명으로 검색...",
       type: "search",
@@ -81,7 +81,7 @@ export function CompliancesFilters({ data }: CompliancesFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedReportType,
     selectedComplianceStatus,
     selectedStatus,
@@ -90,7 +90,7 @@ export function CompliancesFilters({ data }: CompliancesFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedReportType: setSelectedReportType,
       selectedComplianceStatus: setSelectedComplianceStatus,
       selectedStatus: setSelectedStatus,

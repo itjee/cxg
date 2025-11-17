@@ -3,13 +3,11 @@
 import * as React from "react";
 import {
   ColumnDef,
-  ColumnFiltersState,
   OnChangeFn,
   SortingState,
   VisibilityState,
   flexRender,
   getCoreRowModel,
-  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
@@ -47,16 +45,6 @@ export interface DataTableProps<TData, TValue> {
    * 정렬 변경 콜백 (TanStack 형식)
    */
   onSortingChange?: OnChangeFn<SortingState>;
-
-  /**
-   * 전역 필터 (검색)
-   */
-  globalFilter?: string;
-
-  /**
-   * 전역 필터 변경 콜백
-   */
-  onGlobalFilterChange?: OnChangeFn<string>;
 
   /**
    * 컬럼 표시 여부
@@ -99,8 +87,6 @@ export function DataTable<TData, TValue>({
   data,
   sorting = [],
   onSortingChange,
-  globalFilter = "",
-  onGlobalFilterChange,
   columnVisibility = {},
   onColumnVisibilityChange,
   emptyMessage = "데이터가 없습니다.",
@@ -109,40 +95,52 @@ export function DataTable<TData, TValue>({
   pageSize = 10,
   isLoading = false,
 }: DataTableProps<TData, TValue>) {
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
   const [rowSelection, setRowSelection] = React.useState({});
   const [localPageSize, setLocalPageSize] = React.useState(pageSize);
+  const [pageIndex, setPageIndex] = React.useState(0);
+
+  // useCallback을 사용하여 콜백 함수가 매번 새로 생성되지 않도록 함
+  const handleSortingChange = React.useCallback(
+    (newSorting: any) => {
+      if (onSortingChange) {
+        onSortingChange(newSorting);
+      }
+    },
+    [onSortingChange]
+  );
+
+  const handleColumnVisibilityChange = React.useCallback(
+    (newVisibility: any) => {
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange(newVisibility);
+      }
+    },
+    [onColumnVisibilityChange]
+  );
 
   const table = useReactTable({
     data,
     columns,
     state: {
       sorting,
-      globalFilter,
       columnVisibility,
-      columnFilters,
       rowSelection,
       pagination: {
-        pageIndex: 0,
+        pageIndex,
         pageSize: localPageSize,
       },
     },
-    onSortingChange,
-    onGlobalFilterChange,
-    onColumnVisibilityChange,
-    onColumnFiltersChange: setColumnFilters,
+    onSortingChange: handleSortingChange,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
     onRowSelectionChange: setRowSelection,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: showPagination ? getPaginationRowModel() : undefined,
   });
 
   return (
     <div className="space-y-4">
-      {/* Table */}
+      {/* 데이터 테이블 영역 */}
       <div
         className={`rounded-lg border border-border overflow-hidden bg-card shadow-sm ${className}`}
       >
@@ -190,7 +188,7 @@ export function DataTable<TData, TValue>({
                     {row.getVisibleCells().map((cell) => (
                       <TableCell
                         key={cell.id}
-                        className="px-6 py-4 h-16 font-light"
+                        className="px-6 py-1.5 h-8 text-xs font-light"
                       >
                         {flexRender(
                           cell.column.columnDef.cell,
@@ -218,16 +216,16 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      {/* Pagination */}
+      {/* 페이지네이션 영역 */}
       {showPagination && (
         <Pagination
-          totalItems={table.getFilteredRowModel().rows.length}
-          currentPage={table.getState().pagination.pageIndex}
-          onPageChange={(page) => table.setPageIndex(page)}
+          totalItems={table.getRowModel().rows.length}
+          currentPage={pageIndex}
+          onPageChange={(page) => setPageIndex(page)}
           itemsPerPage={localPageSize}
           onItemsPerPageChange={(size) => {
             setLocalPageSize(size);
-            table.setPageSize(size);
+            setPageIndex(0);
           }}
           showInfo={true}
         />
@@ -237,28 +235,37 @@ export function DataTable<TData, TValue>({
 }
 
 /**
- * 정렬 가능한 컬럼 헤더 컴포넌트
+ * 정렬 기능이 있는 컬럼 헤더 컴포넌트
  */
+export interface DataTableColumnHeaderProps {
+  column: any;
+  title: string;
+  canSort?: boolean;
+}
+
 export function DataTableColumnHeader({
   column,
   title,
-}: {
-  column: any;
-  title: string;
-}) {
-  if (!column.getCanSort()) {
-    return <div>{title}</div>;
-  }
+  canSort = true,
+}: DataTableColumnHeaderProps) {
+  const isSorted = column.getIsSorted();
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-3 h-8 data-[state=open]:bg-accent"
-      onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-    >
-      <span>{title}</span>
-      <ArrowUpDown className="ml-2 h-4 w-4" />
-    </Button>
+    <div className="flex items-center gap-2">
+      {/* 정렬 버튼 */}
+      {canSort && column.getCanSort() ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 -ml-3 font-medium"
+          onClick={() => column.toggleSorting(isSorted === "asc")}
+        >
+          <span>{title}</span>
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      ) : (
+        <span className="text-sm font-medium">{title}</span>
+      )}
+    </div>
   );
 }

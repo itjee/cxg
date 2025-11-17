@@ -22,8 +22,8 @@ interface ExecutionsFiltersProps {
 
 export function ExecutionsFilters({ data }: ExecutionsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     selectedTriggerSource,
@@ -33,7 +33,7 @@ export function ExecutionsFilters({ data }: ExecutionsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "실행 ID, 단계명...",
       type: "search",
@@ -69,14 +69,14 @@ export function ExecutionsFilters({ data }: ExecutionsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedTriggerSource,
   };
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: setSelectedStatus,
       selectedTriggerSource: setSelectedTriggerSource,
     };

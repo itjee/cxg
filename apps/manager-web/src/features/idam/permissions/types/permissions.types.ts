@@ -63,9 +63,9 @@ export interface CreatePermissionInput {
  * 권한 수정 입력
  */
 export interface UpdatePermissionInput {
-  name?: string;
+  name: string;
   description?: string;
-  status?: string;
+  status: string;
 }
 
 // ===== 목록 조회 파라미터 (복수) =====

@@ -9,8 +9,8 @@ interface AuditLogsFiltersProps {
 
 export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedEventType,
     setSelectedEventType,
     selectedEventCategory,
@@ -24,7 +24,7 @@ export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "설명, IP 주소로 검색...",
       type: "search",
@@ -82,7 +82,7 @@ export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedEventType,
     selectedEventCategory,
     selectedResult,
@@ -91,7 +91,7 @@ export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedEventType: setSelectedEventType,
       selectedEventCategory: setSelectedEventCategory,
       selectedResult: setSelectedResult,

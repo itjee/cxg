@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Updater } from "@tanstack/react-table";
 
 interface AuditLogsStoreState {
-  globalFilter: string;
+  searchText: string;
   selectedEventType: string;
   selectedEventCategory: string;
   selectedResult: string;
@@ -11,15 +11,15 @@ interface AuditLogsStoreState {
   selectedUser: string;
   startDate: string;
   endDate: string;
-  
+
   sorting: Array<{ id: string; desc: boolean }>;
-  
+
   currentPage: number;
   itemsPerPage: number;
-  
+
   detailId: string | null;
 
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedEventType: (type: string) => void;
   setSelectedEventCategory: (category: string) => void;
   setSelectedResult: (result: string) => void;
@@ -37,7 +37,7 @@ interface AuditLogsStoreState {
 }
 
 export const useAuditLogsStore = create<AuditLogsStoreState>((set) => ({
-  globalFilter: "",
+  searchText: "",
   selectedEventType: "",
   selectedEventCategory: "",
   selectedResult: "",
@@ -51,10 +51,10 @@ export const useAuditLogsStore = create<AuditLogsStoreState>((set) => ({
   itemsPerPage: 20,
   detailId: null,
 
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter:
-        typeof filter === "function" ? filter(state.globalFilter) : filter,
+      searchText:
+        typeof filter === "function" ? filter(state.searchText) : filter,
     })),
   setSelectedEventType: (type) => set({ selectedEventType: type }),
   setSelectedEventCategory: (category) => set({ selectedEventCategory: category }),
@@ -66,7 +66,7 @@ export const useAuditLogsStore = create<AuditLogsStoreState>((set) => ({
   setEndDate: (date) => set({ endDate: date }),
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedEventType: "",
       selectedEventCategory: "",
       selectedResult: "",

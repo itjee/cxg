@@ -15,7 +15,7 @@ interface ExecutionsStoreState {
   editingId: string | null;
 
   // 필터 상태
-  globalFilter: string;
+  searchText: string;
   selectedStatus: string;
   selectedTriggerSource: string;
 
@@ -29,7 +29,7 @@ interface ExecutionsStoreState {
   // 액션
   openForm: (editingId?: string | null) => void;
   closeForm: () => void;
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedStatus: (status: string) => void;
   setSelectedTriggerSource: (source: string) => void;
   resetFilters: () => void;
@@ -41,7 +41,7 @@ interface ExecutionsStoreState {
 export const useExecutionsStore = create<ExecutionsStoreState>((set) => ({
   formOpen: false,
   editingId: null,
-  globalFilter: "",
+  searchText: "",
   selectedStatus: "",
   selectedTriggerSource: "",
   sorting: [{ id: "started_at", desc: true }], // 기본: 최신 실행 순
@@ -50,16 +50,16 @@ export const useExecutionsStore = create<ExecutionsStoreState>((set) => ({
 
   openForm: (editingId = null) => set({ formOpen: true, editingId }),
   closeForm: () => set({ formOpen: false, editingId: null }),
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter:
-        typeof filter === "function" ? filter(state.globalFilter) : filter,
+      searchText:
+        typeof filter === "function" ? filter(state.searchText) : filter,
     })),
   setSelectedStatus: (status) => set({ selectedStatus: status }),
   setSelectedTriggerSource: (source) => set({ selectedTriggerSource: source }),
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedStatus: "",
       selectedTriggerSource: "",
       sorting: [{ id: "started_at", desc: true }],

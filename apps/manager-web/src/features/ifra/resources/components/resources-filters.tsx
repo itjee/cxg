@@ -19,8 +19,8 @@ interface ResourcesFiltersProps {
 
 export function ResourcesFilters({ data }: ResourcesFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedResource,
     setSelectedResource,
     selectedStatus,
@@ -39,8 +39,8 @@ export function ResourcesFilters({ data }: ResourcesFiltersProps) {
       <div className="flex gap-4">
         <Input
           placeholder="리소스명, 리소스ID 검색..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
           className="flex-1"
         />
 

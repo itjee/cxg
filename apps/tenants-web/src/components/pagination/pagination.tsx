@@ -130,7 +130,7 @@ export function Pagination({
     <div className={`flex items-center justify-between ${className}`}>
       {/* 정보 섹션 */}
       {showInfo && (
-        <div className="flex-1 text-sm text-muted-foreground">
+        <div className="flex-1 text-xs text-muted-foreground">
           전체{' '}
           <span className="font-medium text-foreground">
             {totalItems}
@@ -144,12 +144,12 @@ export function Pagination({
         {/* Page Size Selector */}
         {onItemsPerPageChange && (
           <div className="flex items-center gap-2">
-            <p className="text-sm text-muted-foreground">페이지당 행 수</p>
+            <p className="text-xs text-muted-foreground">페이지당 행 수</p>
             <Select
               value={itemsPerPage.toString()}
               onValueChange={handleItemsPerPageChange}
             >
-              <SelectTrigger className="h-9 w-[70px] border border-input bg-background hover:bg-accent/50 transition-colors">
+              <SelectTrigger className="h-8 w-[70px] border border-input bg-background hover:bg-accent/50 transition-colors">
                 <SelectValue placeholder={itemsPerPage} />
               </SelectTrigger>
               <SelectContent side="top">
@@ -168,7 +168,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-8 w-8"
             onClick={() => handlePageChange(0)}
             disabled={!canPreviousPage}
             title="첫 페이지로"
@@ -181,7 +181,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-8 w-8"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={!canPreviousPage}
             title="이전 페이지"
@@ -196,16 +196,16 @@ export function Pagination({
             pageNum === '...' ? (
               <div
                 key={`ellipsis-${idx}`}
-                className="h-9 w-9 flex items-center justify-center border-y border-r border-input bg-background"
+                className="h-8 w-8 flex items-center justify-center border-y border-r border-input bg-background"
               >
-                <span className="text-muted-foreground text-sm">⋯</span>
+                <span className="text-muted-foreground text-xs">⋯</span>
               </div>
             ) : (
               <Button
                 key={pageNum}
                 variant={currentPage === pageNum ? 'default' : 'outline'}
                 size="icon"
-                className="h-9 w-9 text-sm font-medium"
+                className="h-8 w-8 text-xs font-medium"
                 onClick={() => handlePageChange(pageNum as number)}
               >
                 {(pageNum as number) + 1}
@@ -216,7 +216,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-8 w-8"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={!canNextPage}
             title="다음 페이지"
@@ -229,7 +229,7 @@ export function Pagination({
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-8 w-8"
             onClick={() => handlePageChange(totalPages - 1)}
             disabled={!canNextPage}
             title="마지막 페이지로"

@@ -12,7 +12,7 @@ interface TasksStoreState {
   editingId: string | null | undefined;
 
   // 필터 상태
-  globalFilter: string;
+  searchText: string;
   selectedTaskType: string;
   selectedEnabled: string;
   selectedLastRunStatus: string;
@@ -27,7 +27,7 @@ interface TasksStoreState {
   // 액션
   openForm: (editingId?: string | null) => void;
   closeForm: () => void;
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedTaskType: (type: string) => void;
   setSelectedEnabled: (enabled: string) => void;
   setSelectedLastRunStatus: (status: string) => void;
@@ -40,7 +40,7 @@ interface TasksStoreState {
 export const useTasksStore = create<TasksStoreState>((set) => ({
   formOpen: false,
   editingId: undefined,
-  globalFilter: "",
+  searchText: "",
   selectedTaskType: "",
   selectedEnabled: "",
   selectedLastRunStatus: "",
@@ -50,17 +50,17 @@ export const useTasksStore = create<TasksStoreState>((set) => ({
 
   openForm: (editingId = null) => set({ formOpen: true, editingId }),
   closeForm: () => set({ formOpen: false, editingId: undefined }),
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter:
-        typeof filter === "function" ? filter(state.globalFilter) : filter,
+      searchText:
+        typeof filter === "function" ? filter(state.searchText) : filter,
     })),
   setSelectedTaskType: (type) => set({ selectedTaskType: type }),
   setSelectedEnabled: (enabled) => set({ selectedEnabled: enabled }),
   setSelectedLastRunStatus: (status) => set({ selectedLastRunStatus: status }),
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedTaskType: "",
       selectedEnabled: "",
       selectedLastRunStatus: "",

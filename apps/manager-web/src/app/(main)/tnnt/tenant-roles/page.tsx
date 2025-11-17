@@ -19,7 +19,7 @@ import {
 
 export default function TenantRolesPage() {
   const {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedTenantId,
     showSystemRoles,
@@ -37,7 +37,7 @@ export default function TenantRolesPage() {
   } = useTenantRoles({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     status: selectedStatus || undefined,
     tenant_id: selectedTenantId || undefined,
     is_system_role: showSystemRoles ? undefined : false,

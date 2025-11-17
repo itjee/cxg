@@ -11,14 +11,14 @@
 
 import { Plus, RefreshCw } from "lucide-react";
 import { PageHeader } from "@/components/layouts/page-header";
-import { useApiKeyStore } from "../stores/api_keys.store";
+import { useApiKeysStore } from "../stores/api-keys.store";
 
 interface ApiKeysHeaderProps {
   onRefresh?: () => void;
 }
 
 export function ApiKeysHeader({ onRefresh }: ApiKeysHeaderProps) {
-  const { openForm } = useApiKeyStore();
+  const { openForm } = useApiKeysStore();
 
   const actions = [
     ...(onRefresh

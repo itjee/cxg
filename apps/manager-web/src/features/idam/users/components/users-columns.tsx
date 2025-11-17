@@ -72,6 +72,9 @@ export const getUsersColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 사용자명
   {
@@ -82,6 +85,9 @@ export const getUsersColumns = ({
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("fullName")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 이메일
   {
@@ -94,6 +100,9 @@ export const getUsersColumns = ({
         {row.getValue("email") || "-"}
       </div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 상태
   {
@@ -108,6 +117,9 @@ export const getUsersColumns = ({
           {formatStatus(status)}
         </Badge>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 액션
@@ -135,5 +147,8 @@ export const getUsersColumns = ({
       </div>
     ),
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
 ];

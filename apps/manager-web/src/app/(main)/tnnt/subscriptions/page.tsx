@@ -29,7 +29,7 @@ import type { Subscription } from '@/features/tnnt/subscriptions/types/subscript
 
 export default function SubscriptionsPage() {
   const {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedBillingCycle,
     currentPage,
@@ -46,7 +46,7 @@ export default function SubscriptionsPage() {
   } = useSubscriptions({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     status: selectedStatus || undefined,
     billing_cycle: selectedBillingCycle || undefined,
   });

@@ -4,7 +4,7 @@
  *
  * API 키 생성/수정/삭제 뮤테이션 정의
  *
- * 타입 정의는 ../types/api_keys.types.ts에서 관리됨
+ * 타입 정의는 ../types/api-keys.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
@@ -14,7 +14,7 @@ import type {
   CreateApiKeyVariables,
   UpdateApiKeyVariables,
   DeleteApiKeyVariables,
-} from "../types/api_keys.types";
+} from "../types/api-keys.types";
 
 /**
  * API 키 생성 (단수)

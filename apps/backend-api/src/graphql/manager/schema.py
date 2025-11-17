@@ -63,8 +63,9 @@ class ManagerQuery:
         offset: int = 0,
         user_type: str | None = None,
         status: str | None = None,
+        search: str | None = None,
     ) -> "list[ManagerUser]":
-        return await ManagerUserQueries.users(self, info, limit, offset, user_type, status)
+        return await ManagerUserQueries.users(self, info, limit, offset, user_type, status, search)
 
     # IDAM - Roles
     @strawberry.field(description="역할 조회 (ID)")

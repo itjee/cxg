@@ -25,8 +25,8 @@ interface WorkflowsFiltersProps {
  */
 export function WorkflowsFilters({ data }: WorkflowsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     resetFilters,
@@ -34,7 +34,7 @@ export function WorkflowsFilters({ data }: WorkflowsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "워크플로우명, 설명...",
       type: "search",
@@ -53,13 +53,13 @@ export function WorkflowsFilters({ data }: WorkflowsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
   };
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: setSelectedStatus,
     };
     handlers[key]?.(value);

@@ -26,7 +26,7 @@ import type {
   CreateApiKeyVariables,
   UpdateApiKeyVariables,
   DeleteApiKeyVariables,
-} from "../types/api_keys.types";
+} from "../types/api-keys.types";
 
 // ========== useQuery Hooks ==========
 

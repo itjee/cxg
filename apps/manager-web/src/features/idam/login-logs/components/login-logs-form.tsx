@@ -1,46 +1,48 @@
-'use client';
+"use client";
 
 /**
  * @file login-logs-form.tsx
- * @description 로그인 이력 생성 폼 컴포넌트
- * 
+ * @description 로그인 이력 생성 폼 컴포넌트 (Presentational)
+ *
+ * React Hook Form과 Zod를 사용한 폼 유효성 검증
  * 로그인 이력은 일반적으로 시스템에서 자동 생성되므로
  * 이 폼은 주로 테스트나 수동 관리 목적으로 사용됩니다.
  */
 
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import type { LoginLog, CreateLoginLogRequest } from '../types';
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { EntityFormButtons } from "@/components/features";
+import type { LoginLog } from "../types/login-logs.types";
 
+/**
+ * 폼 유효성 검증 스키마
+ */
 const loginLogFormSchema = z.object({
-  attempt_type: z.enum(['LOGIN', 'LOGOUT', 'FAILED_LOGIN', 'LOCKED', 'PASSWORD_RESET']),
+  attemptType: z.enum(["LOGIN", "LOGOUT", "FAILED_LOGIN", "LOCKED", "PASSWORD_RESET"]),
   success: z.boolean(),
-  ip_address: z.string().min(1, 'IP 주소를 입력하세요'),
-  mfa_used: z.boolean().default(false),
-  user_id: z.string().optional(),
-  user_type: z.enum(['MASTER', 'TENANT', 'SYSTEM']).optional(),
-  tenant_context: z.string().optional(),
+  ipAddress: z.string().min(1, "IP 주소를 입력하세요"),
+  mfaUsed: z.boolean(),
+  userId: z.string().optional(),
+  userType: z.enum(["MASTER", "TENANT", "SYSTEM"]).optional(),
+  tenantContext: z.string().optional(),
   username: z.string().optional(),
-  failure_reason: z.string().optional(),
-  session_id: z.string().optional(),
-  user_agent: z.string().optional(),
-  country_code: z.string().max(2).optional(),
+  failureReason: z.string().optional(),
+  sessionId: z.string().optional(),
+  userAgent: z.string().optional(),
+  countryCode: z.string().max(2).optional(),
   city: z.string().optional(),
-  mfa_method: z.enum(['TOTP', 'SMS', 'EMAIL']).optional(),
+  mfaMethod: z.enum(["TOTP", "SMS", "EMAIL"]).optional(),
 });
 
 type LoginLogFormData = z.infer<typeof loginLogFormSchema>;
 
 interface LoginLogsFormProps {
   initialData?: LoginLog;
-  onSubmit: (data: CreateLoginLogRequest) => void;
+  onSubmit: (data: LoginLogFormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -51,239 +53,342 @@ export function LoginLogsForm({
   onCancel,
   isLoading = false,
 }: LoginLogsFormProps) {
+  const isEditing = !!initialData;
+
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
     watch,
   } = useForm<LoginLogFormData>({
     resolver: zodResolver(loginLogFormSchema),
     defaultValues: {
-      attempt_type: 'LOGIN',
-      success: true,
-      ip_address: '',
-      mfa_used: false,
-      user_id: '',
-      user_type: undefined,
-      tenant_context: '',
-      username: '',
-      failure_reason: '',
-      session_id: '',
-      user_agent: '',
-      country_code: '',
-      city: '',
-      mfa_method: undefined,
+      attemptType: initialData?.attemptType || "LOGIN",
+      success: initialData?.success ?? true,
+      ipAddress: initialData?.ipAddress || "",
+      mfaUsed: initialData?.mfaUsed ?? false,
+      userId: initialData?.userId || "",
+      userType: initialData?.userType,
+      tenantContext: initialData?.tenantContext || "",
+      username: initialData?.username || "",
+      failureReason: initialData?.failureReason || "",
+      sessionId: initialData?.sessionId || "",
+      userAgent: initialData?.userAgent || "",
+      countryCode: initialData?.countryCode || "",
+      city: initialData?.city || "",
+      mfaMethod: initialData?.mfaMethod,
     },
   });
-
-  const attemptType = watch('attempt_type');
-  const success = watch('success');
-  const mfaUsed = watch('mfa_used');
-  const userType = watch('user_type');
-  const mfaMethod = watch('mfa_method');
 
   useEffect(() => {
     if (initialData) {
       reset({
-        attempt_type: initialData.attempt_type,
-        success: initialData.success,
-        ip_address: initialData.ip_address,
-        mfa_used: initialData.mfa_used,
-        user_id: initialData.user_id || '',
-        user_type: initialData.user_type,
-        tenant_context: initialData.tenant_context || '',
-        username: initialData.username || '',
-        failure_reason: initialData.failure_reason || '',
-        session_id: initialData.session_id || '',
-        user_agent: initialData.user_agent || '',
-        country_code: initialData.country_code || '',
-        city: initialData.city || '',
-        mfa_method: initialData.mfa_method,
+        attemptType: initialData.attemptType || "LOGIN",
+        success: initialData.success ?? true,
+        ipAddress: initialData.ipAddress || "",
+        mfaUsed: initialData.mfaUsed ?? false,
+        userId: initialData.userId || "",
+        userType: initialData.userType,
+        tenantContext: initialData.tenantContext || "",
+        username: initialData.username || "",
+        failureReason: initialData.failureReason || "",
+        sessionId: initialData.sessionId || "",
+        userAgent: initialData.userAgent || "",
+        countryCode: initialData.countryCode || "",
+        city: initialData.city || "",
+        mfaMethod: initialData.mfaMethod,
       });
     }
   }, [initialData, reset]);
 
-  const handleFormSubmit = (formData: LoginLogFormData) => {
-    const submitData: CreateLoginLogRequest = {
-      attempt_type: formData.attempt_type,
-      success: formData.success,
-      ip_address: formData.ip_address,
-      mfa_used: formData.mfa_used,
-      user_id: formData.user_id || undefined,
-      user_type: formData.user_type,
-      tenant_context: formData.tenant_context || undefined,
-      username: formData.username || undefined,
-      failure_reason: formData.failure_reason || undefined,
-      session_id: formData.session_id || undefined,
-      user_agent: formData.user_agent || undefined,
-      country_code: formData.country_code || undefined,
-      city: formData.city || undefined,
-      mfa_method: formData.mfa_method,
-    };
-    onSubmit(submitData);
-  };
+  const success = watch("success");
+  const mfaUsed = watch("mfaUsed");
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="attempt_type">
-            시도 타입 <span className="text-destructive">*</span>
-          </Label>
-          <Select
-            value={attemptType}
-            onValueChange={(value) => setValue('attempt_type', value as any)}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="LOGIN">로그인</SelectItem>
-              <SelectItem value="LOGOUT">로그아웃</SelectItem>
-              <SelectItem value="FAILED_LOGIN">로그인 실패</SelectItem>
-              <SelectItem value="LOCKED">계정 잠김</SelectItem>
-              <SelectItem value="PASSWORD_RESET">비밀번호 재설정</SelectItem>
-            </SelectContent>
-          </Select>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* 시도 정보 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-semibold whitespace-nowrap">시도 정보</h3>
+          <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
-        <div className="space-y-2">
-          <Label>성공 여부</Label>
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox
-              id="success"
-              checked={success}
-              onCheckedChange={(checked) => setValue('success', checked as boolean)}
+        <div className="space-y-4">
+          {/* 시도 유형 */}
+          <div className="space-y-2">
+            <Label htmlFor="attemptType">
+              시도 유형 <span className="text-red-500">*</span>
+            </Label>
+            <select
+              id="attemptType"
+              {...register("attemptType")}
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading || isEditing}
+            >
+              <option value="LOGIN">로그인</option>
+              <option value="LOGOUT">로그아웃</option>
+              <option value="FAILED_LOGIN">로그인 실패</option>
+              <option value="LOCKED">계정 잠김</option>
+              <option value="PASSWORD_RESET">비밀번호 재설정</option>
+            </select>
+            {errors.attemptType && (
+              <p className="text-xs text-red-500">{errors.attemptType.message}</p>
+            )}
+          </div>
+
+          {/* 성공 여부 */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label className="text-base">성공 여부</Label>
+              <p className="text-sm text-muted-foreground">
+                {success ? "성공" : "실패"}
+              </p>
+            </div>
+            <select
+              {...register("success")}
+              className="px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading}
+            >
+              <option value="true">성공</option>
+              <option value="false">실패</option>
+            </select>
+          </div>
+
+          {/* 실패 사유 */}
+          {!success && (
+            <div className="space-y-2">
+              <Label htmlFor="failureReason">실패 사유</Label>
+              <Input
+                id="failureReason"
+                {...register("failureReason")}
+                placeholder="INVALID_PASSWORD, ACCOUNT_LOCKED, MFA_FAILED"
+                disabled={isLoading}
+              />
+              {errors.failureReason && (
+                <p className="text-xs text-red-500">
+                  {errors.failureReason.message}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 사용자 정보 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-semibold whitespace-nowrap">사용자 정보</h3>
+          <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
+        </div>
+
+        <div className="space-y-4">
+          {/* 사용자명 */}
+          <div className="space-y-2">
+            <Label htmlFor="username">사용자명</Label>
+            <Input
+              id="username"
+              {...register("username")}
+              placeholder="사용자명을 입력하세요"
               disabled={isLoading}
             />
-            <label htmlFor="success" className="text-sm">성공</label>
+            {errors.username && (
+              <p className="text-xs text-red-500">{errors.username.message}</p>
+            )}
+          </div>
+
+          {/* 사용자 유형 */}
+          <div className="space-y-2">
+            <Label htmlFor="userType">사용자 유형</Label>
+            <select
+              id="userType"
+              {...register("userType")}
+              className="w-full px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading}
+            >
+              <option value="">선택</option>
+              <option value="MASTER">마스터</option>
+              <option value="TENANT">테넌트</option>
+              <option value="SYSTEM">시스템</option>
+            </select>
+            {errors.userType && (
+              <p className="text-xs text-red-500">{errors.userType.message}</p>
+            )}
+          </div>
+
+          {/* 사용자 ID */}
+          <div className="space-y-2">
+            <Label htmlFor="userId">사용자 ID</Label>
+            <Input
+              id="userId"
+              {...register("userId")}
+              placeholder="사용자 ID를 입력하세요"
+              disabled={isLoading}
+            />
+            {errors.userId && (
+              <p className="text-xs text-red-500">{errors.userId.message}</p>
+            )}
+          </div>
+
+          {/* 테넌트 컨텍스트 */}
+          <div className="space-y-2">
+            <Label htmlFor="tenantContext">테넌트 컨텍스트</Label>
+            <Input
+              id="tenantContext"
+              {...register("tenantContext")}
+              placeholder="테넌트 ID를 입력하세요"
+              disabled={isLoading}
+            />
+            {errors.tenantContext && (
+              <p className="text-xs text-red-500">
+                {errors.tenantContext.message}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
-      {!success && (
-        <div className="space-y-2">
-          <Label htmlFor="failure_reason">실패 사유</Label>
-          <Input
-            id="failure_reason"
-            {...register('failure_reason')}
-            placeholder="INVALID_PASSWORD, ACCOUNT_LOCKED, MFA_FAILED"
-            disabled={isLoading}
-          />
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="username">사용자명</Label>
-          <Input
-            id="username"
-            {...register('username')}
-            placeholder="사용자명"
-            disabled={isLoading}
-          />
+      {/* 세션 정보 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-semibold whitespace-nowrap">세션 정보</h3>
+          <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="user_type">사용자 타입</Label>
-          <Select
-            value={userType || ''}
-            onValueChange={(value) => setValue('user_type', value as any || undefined)}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MASTER">마스터</SelectItem>
-              <SelectItem value="TENANT">테넌트</SelectItem>
-              <SelectItem value="SYSTEM">시스템</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        <div className="space-y-4">
+          {/* IP 주소 */}
+          <div className="space-y-2">
+            <Label htmlFor="ipAddress">
+              IP 주소 <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="ipAddress"
+              {...register("ipAddress")}
+              placeholder="192.168.1.1"
+              disabled={isLoading}
+            />
+            {errors.ipAddress && (
+              <p className="text-xs text-red-500">{errors.ipAddress.message}</p>
+            )}
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="ip_address">
-          IP 주소 <span className="text-destructive">*</span>
-        </Label>
-        <Input
-          id="ip_address"
-          {...register('ip_address')}
-          placeholder="192.168.1.1"
-          disabled={isLoading}
-        />
-        {errors.ip_address && (
-          <p className="text-sm text-destructive">{errors.ip_address.message}</p>
-        )}
-      </div>
+          {/* 국가 코드 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="countryCode">국가 코드</Label>
+              <Input
+                id="countryCode"
+                {...register("countryCode")}
+                placeholder="KR"
+                maxLength={2}
+                disabled={isLoading}
+              />
+              {errors.countryCode && (
+                <p className="text-xs text-red-500">
+                  {errors.countryCode.message}
+                </p>
+              )}
+            </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="country_code">국가 코드</Label>
-          <Input
-            id="country_code"
-            {...register('country_code')}
-            placeholder="KR"
-            maxLength={2}
-            disabled={isLoading}
-          />
-        </div>
+            {/* 도시 */}
+            <div className="space-y-2">
+              <Label htmlFor="city">도시</Label>
+              <Input
+                id="city"
+                {...register("city")}
+                placeholder="Seoul"
+                disabled={isLoading}
+              />
+              {errors.city && (
+                <p className="text-xs text-red-500">{errors.city.message}</p>
+              )}
+            </div>
+          </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="city">도시</Label>
-          <Input
-            id="city"
-            {...register('city')}
-            placeholder="Seoul"
-            disabled={isLoading}
-          />
-        </div>
-      </div>
+          {/* User Agent */}
+          <div className="space-y-2">
+            <Label htmlFor="userAgent">User Agent</Label>
+            <Input
+              id="userAgent"
+              {...register("userAgent")}
+              placeholder="Mozilla/5.0..."
+              disabled={isLoading}
+            />
+            {errors.userAgent && (
+              <p className="text-xs text-red-500">{errors.userAgent.message}</p>
+            )}
+          </div>
 
-      <div className="space-y-2">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id="mfa_used"
-            checked={mfaUsed}
-            onCheckedChange={(checked) => setValue('mfa_used', checked as boolean)}
-            disabled={isLoading}
-          />
-          <Label htmlFor="mfa_used">MFA 사용</Label>
+          {/* 세션 ID */}
+          <div className="space-y-2">
+            <Label htmlFor="sessionId">세션 ID</Label>
+            <Input
+              id="sessionId"
+              {...register("sessionId")}
+              placeholder="세션 ID를 입력하세요"
+              disabled={isLoading}
+            />
+            {errors.sessionId && (
+              <p className="text-xs text-red-500">{errors.sessionId.message}</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {mfaUsed && (
-        <div className="space-y-2">
-          <Label htmlFor="mfa_method">MFA 방법</Label>
-          <Select
-            value={mfaMethod || ''}
-            onValueChange={(value) => setValue('mfa_method', value as any || undefined)}
-            disabled={isLoading}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="선택" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="TOTP">TOTP</SelectItem>
-              <SelectItem value="SMS">SMS</SelectItem>
-              <SelectItem value="EMAIL">이메일</SelectItem>
-            </SelectContent>
-          </Select>
+      {/* MFA 정보 */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <h3 className="text-sm font-semibold whitespace-nowrap">MFA 정보</h3>
+          <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
-      )}
 
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
-          취소
-        </Button>
-        <Button type="submit" disabled={isLoading}>
-          {isLoading ? '처리 중...' : '저장'}
-        </Button>
+        <div className="space-y-4">
+          {/* MFA 사용 */}
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label className="text-base">MFA 사용</Label>
+              <p className="text-sm text-muted-foreground">
+                {mfaUsed ? "사용" : "미사용"}
+              </p>
+            </div>
+            <select
+              {...register("mfaUsed")}
+              className="px-3 py-2 border rounded-md bg-background"
+              disabled={isLoading}
+            >
+              <option value="true">사용</option>
+              <option value="false">미사용</option>
+            </select>
+          </div>
+
+          {/* MFA 방법 */}
+          {mfaUsed && (
+            <div className="space-y-2">
+              <Label htmlFor="mfaMethod">MFA 방법</Label>
+              <select
+                id="mfaMethod"
+                {...register("mfaMethod")}
+                className="w-full px-3 py-2 border rounded-md bg-background"
+                disabled={isLoading}
+              >
+                <option value="">선택</option>
+                <option value="TOTP">TOTP</option>
+                <option value="SMS">SMS</option>
+                <option value="EMAIL">이메일</option>
+              </select>
+              {errors.mfaMethod && (
+                <p className="text-xs text-red-500">{errors.mfaMethod.message}</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
+      <EntityFormButtons
+        onCancel={onCancel}
+        isLoading={isLoading}
+        submitText={isEditing ? "수정" : "등록"}
+      />
     </form>
   );
 }

@@ -6,7 +6,7 @@
  *
  * columns 파일에서 컬럼 정의를 import하고 DataTable 컴포넌트를 설정합니다.
  * - 페이지네이션 설정
- * - 검색 설정
+ * - 결과내검색 및 컬럼필터 지원
  */
 
 import { DataTable } from "@/components/data-table";
@@ -32,8 +32,7 @@ export function RolesTable({
     <DataTable
       columns={columns}
       data={data}
-      globalFilter={""}
-      onGlobalFilterChange={undefined}
+      isLoading={isLoading}
       showPagination={true}
       pageSize={20}
     />

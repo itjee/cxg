@@ -1,1 +1,1 @@
-export * from "./api_keys.types";
+export * from "./api-keys.types";

@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { PageLayout } from "@/components/layouts/page-layout";
+import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Sliders, ToggleLeft, ToggleRight, Settings } from "lucide-react";
 
@@ -38,7 +38,7 @@ export default function FeaturesPage() {
   ];
 
   return (
-    <PageLayout
+    <Page
       title="기능 토글"
       description="기능 플래그를 관리합니다"
     >
@@ -51,6 +51,6 @@ export default function FeaturesPage() {
           </div>
         </CardContent>
       </Card>
-    </PageLayout>
+    </Page>
   );
 }

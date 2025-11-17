@@ -14,10 +14,10 @@ interface OnboardingsStore {
   selectedTenantId: string;
   currentPage: number;
   itemsPerPage: number;
-  globalFilter: string;
+  searchText: string;
   formOpen: boolean;
   selectedId: string | null;
-  
+
   // 정렬 상태
   sorting: Array<{ id: string; desc: boolean }>;
 
@@ -27,7 +27,7 @@ interface OnboardingsStore {
   setSelectedTenantId: (tenantId: string) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
@@ -41,7 +41,7 @@ const initialState = {
   selectedTenantId: '',
   currentPage: 0,
   itemsPerPage: 20,
-  globalFilter: '',
+  searchText: '',
   formOpen: false,
   selectedId: null,
   sorting: [],
@@ -55,9 +55,9 @@ export const useOnboardingsStore = create<OnboardingsStore>((set) => ({
   setSelectedTenantId: (tenantId) => set({ selectedTenantId: tenantId, currentPage: 0 }),
   setCurrentPage: (page) => set({ currentPage: page }),
   setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter: typeof filter === 'function' ? filter(state.globalFilter) : filter,
+      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
       currentPage: 0,
     })),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
@@ -68,7 +68,7 @@ export const useOnboardingsStore = create<OnboardingsStore>((set) => ({
     })),
   resetFilters: () =>
     set({
-      globalFilter: '',
+      searchText: '',
       selectedStepName: '',
       selectedStepStatus: '',
       selectedTenantId: '',

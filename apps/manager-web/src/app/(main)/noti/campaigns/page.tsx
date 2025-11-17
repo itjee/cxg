@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { PageLayout } from "@/components/layouts/page-layout";
+import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Bell, CheckCircle, Send, Users } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function CampaignsPage() {
 
 
   return (
-    <PageLayout
+    <Page
       title="캠페인"
       description="알림 캠페인을 관리합니다"
       
@@ -53,6 +53,6 @@ export default function CampaignsPage() {
       </div>
             </CardContent>
       </Card>
-    </PageLayout>
+    </Page>
   );
 }

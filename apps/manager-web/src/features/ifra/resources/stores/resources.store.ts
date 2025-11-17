@@ -10,12 +10,12 @@ interface ResourcesStoreState {
   closeForm: () => void;
 
   // Filter state
-  globalFilter: string;
+  searchText: string;
   selectedResource: ResourceType | "";
   selectedStatus: ResourceStatus | "";
   selectedRegion: string;
 
-  setGlobalFilter: (filter: string) => void;
+  setSearchText: (filter: string) => void;
   setSelectedResource: (resource: ResourceType | "") => void;
   setSelectedStatus: (status: ResourceStatus | "") => void;
   setSelectedRegion: (region: string) => void;
@@ -39,7 +39,7 @@ interface ResourcesStoreState {
 const initialState = {
   formOpen: false,
   editingId: null,
-  globalFilter: "",
+  searchText: "",
   selectedResource: "" as ResourceType | "",
   selectedStatus: "" as ResourceStatus | "",
   selectedRegion: "",
@@ -54,7 +54,7 @@ export const useResourcesStore = create<ResourcesStoreState>((set) => ({
   openForm: (editingId = null) => set({ formOpen: true, editingId }),
   closeForm: () => set({ formOpen: false, editingId: null }),
 
-  setGlobalFilter: (filter) => set({ globalFilter: filter, currentPage: 0 }),
+  setSearchText: (filter) => set({ searchText: filter, currentPage: 0 }),
   setSelectedResource: (resource) =>
     set({ selectedResource: resource, currentPage: 0 }),
   setSelectedStatus: (status) => set({ selectedStatus: status, currentPage: 0 }),
@@ -67,7 +67,7 @@ export const useResourcesStore = create<ResourcesStoreState>((set) => ({
 
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedResource: "",
       selectedStatus: "",
       selectedRegion: "",

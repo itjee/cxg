@@ -16,8 +16,8 @@ interface TenantUsersFiltersProps {
 
 export function TenantUsersFilters({ data }: TenantUsersFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     selectedTenantId,
@@ -45,7 +45,7 @@ export function TenantUsersFilters({ data }: TenantUsersFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: 'globalFilter',
+      key: 'searchText',
       label: '검색',
       description: '사용자명, 이메일, 이름...',
       type: 'search',
@@ -85,7 +85,7 @@ export function TenantUsersFilters({ data }: TenantUsersFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedTenantId,
     selectedRoleId,
@@ -94,7 +94,7 @@ export function TenantUsersFilters({ data }: TenantUsersFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: any) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: setSelectedStatus as (val: string) => void,
       selectedTenantId: setSelectedTenantId,
       selectedRoleId: setSelectedRoleId,

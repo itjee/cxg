@@ -13,7 +13,7 @@ interface SubscriptionsStore {
   selectedId: string | null;
 
   // Filter 상태
-  globalFilter: string;
+  searchText: string;
   selectedStatus: SubscriptionStatus | '';
   selectedBillingCycle: BillingCycle | '';
   selectedAutoRenewal: string;
@@ -30,7 +30,7 @@ interface SubscriptionsStore {
   closeForm: () => void;
 
   // Filter 액션
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedStatus: (status: SubscriptionStatus | '') => void;
   setSelectedBillingCycle: (cycle: BillingCycle | '') => void;
   setSelectedAutoRenewal: (renewal: string) => void;
@@ -50,7 +50,7 @@ interface SubscriptionsStore {
 const initialState = {
   formOpen: false,
   selectedId: null,
-  globalFilter: '',
+  searchText: '',
   selectedStatus: '' as SubscriptionStatus | '',
   selectedBillingCycle: '' as BillingCycle | '',
   selectedAutoRenewal: '',
@@ -67,9 +67,9 @@ export const useSubscriptionsStore = create<SubscriptionsStore>((set) => ({
   closeForm: () => set({ formOpen: false, selectedId: null }),
 
   // Filter 액션
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter: typeof filter === 'function' ? filter(state.globalFilter) : filter,
+      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
       currentPage: 0,
     })),
   setSelectedStatus: (status) => set({ selectedStatus: status, currentPage: 0 }),
@@ -77,7 +77,7 @@ export const useSubscriptionsStore = create<SubscriptionsStore>((set) => ({
   setSelectedAutoRenewal: (renewal) => set({ selectedAutoRenewal: renewal, currentPage: 0 }),
   resetFilters: () =>
     set({
-      globalFilter: '',
+      searchText: '',
       selectedStatus: '',
       selectedBillingCycle: '',
       selectedAutoRenewal: '',

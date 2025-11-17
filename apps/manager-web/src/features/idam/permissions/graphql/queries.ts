@@ -8,14 +8,35 @@
  */
 
 import { gql } from "@apollo/client";
-import type { PermissionsQueryVariables, PermissionQueryVariables } from "../types/permissions.types";
+import type {
+  PermissionsQueryVariables,
+  PermissionQueryVariables,
+} from "../types/permissions.types";
 
 /**
  * 권한 목록 조회 (복수)
  */
 export const GET_PERMISSIONS = gql`
-  query GetPermissions($limit: Int, $offset: Int, $search: String, $status: String, $category: String, $resource: String, $action: String, $scope: String) {
-    permissions(limit: $limit, offset: $offset, search: $search, status: $status, category: $category, resource: $resource, action: $action, scope: $scope) {
+  query GetPermissions(
+    $limit: Int
+    $offset: Int
+    $search: String
+    $status: String
+    $category: String
+    $resource: String
+    $action: String
+    $scope: String
+  ) {
+    permissions(
+      limit: $limit
+      offset: $offset
+      search: $search
+      status: $status
+      category: $category
+      resource: $resource
+      action: $action
+      scope: $scope
+    ) {
       id
       code
       name

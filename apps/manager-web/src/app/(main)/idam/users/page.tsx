@@ -4,25 +4,43 @@
  * Users List Page
  *
  * Manager Users 목록 페이지
- * Apollo GraphQL Hooks를 사용합니다.
+ * Jira 스타일 필터링: 쿼리 + 필터 팝업
+ *
+ * 필터링 아키텍처:
+ * - queryText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - status/userType → status/userType 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   UsersHeader,
   UsersStats,
-  UsersFilters,
+  UsersFilter,
   UsersTable,
   UsersEdit,
   useUsers,
   useUpdateUser,
   useUsersStore,
+  type UsersFilterState,
 } from "@/features/idam/users";
 
 export default function UsersPage() {
   // Store에서 UI 상태 가져오기
-  const { selectedStatus, currentPage, itemsPerPage } =
+  const { currentPage, itemsPerPage, setSearchText, setSelectedStatus } =
     useUsersStore();
+
+  // 쿼리 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
+  const [queryFilters, setQueryFilters] = useState<UsersFilterState>({
+    status: null,
+    userType: null,
+  });
+
+  // 임시 쿼리 필터 상태 (팝업 내 수정용)
+  const [localQueryFilters, setLocalQueryFilters] = useState<UsersFilterState>(queryFilters);
+
+  const [queryText, setQueryTextLocal] = useState("");
 
   // GraphQL 쿼리 - Apollo Hooks 사용
   const {
@@ -32,8 +50,9 @@ export default function UsersPage() {
   } = useUsers({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-    userType: undefined,
-    status: selectedStatus || undefined,
+    userType: queryFilters.userType ? queryFilters.userType.join(",") : undefined,
+    status: queryFilters.status ? queryFilters.status.join(",") : undefined,
+    search: queryText || undefined,
   });
 
   // GraphQL 뮤테이션 - 수정
@@ -41,6 +60,15 @@ export default function UsersPage() {
 
   // 사용자 데이터
   const users = usersResponse?.users || [];
+
+  const handleQueryTextChange = (text: string) => {
+    setQueryTextLocal(text);
+    setSearchText(text);
+  };
+
+  const handleApplyQuery = () => {
+    setQueryFilters(localQueryFilters);
+  };
 
   const handleDelete = async (user: any) => {
     if (confirm(`'${user.fullName}' 사용자를 삭제하시겠습니까?`)) {
@@ -63,10 +91,19 @@ export default function UsersPage() {
   if (loading) return <div className="p-6">로딩 중...</div>;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <UsersHeader onRefresh={() => refetch()} />
       <UsersStats data={users} />
-      <UsersFilters />
+
+      {/* Jira 스타일 쿼리 + 필터 팝업 */}
+      <UsersFilter
+        queryText={queryText}
+        onQueryTextChange={handleQueryTextChange}
+        queryFilters={queryFilters}
+        onQueryFiltersChange={setLocalQueryFilters}
+        onApplyQuery={handleApplyQuery}
+      />
+
       <UsersTable data={users} isLoading={updating} onDelete={handleDelete} />
       <UsersEdit />
     </div>

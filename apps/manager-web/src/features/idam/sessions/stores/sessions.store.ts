@@ -1,110 +1,66 @@
 /**
- * @file sessions.store.ts
- * @description 세션 관리 Zustand 상태 저장소
- * 
- * UI 상태를 관리하는 클라이언트 사이드 스토어
- * - 서버 상태(데이터)는 TanStack Query가 관리
- * - UI 상태(필터, 페이징, 모달)만 Zustand로 관리
+ * Sessions Zustand Store
+ *
+ * UI 상태만 관리합니다.
+ * 서버 상태(데이터)는 Apollo Client가 관리합니다.
+ *
+ * @example
+ * const { currentPage, itemsPerPage, formOpen } = useSessionsStore();
  */
 
-import { create } from 'zustand';
-import type { Updater } from '@tanstack/react-table';
+import { create } from "zustand";
+import type { Updater } from "@tanstack/react-table";
 
-interface SessionStoreState {
-  // Form/Modal 상태
-  formOpen: boolean;
-  editingId: string | null;
-
-  // Filter 상태
-  globalFilter: string;
-  selectedStatus: string;
-  selectedSessionType: string;
-  selectedUser: string;
-
-  // 정렬 상태
-  sorting: Array<{ id: string; desc: boolean }>;
-
-  // 페이지네이션 상태
+interface SessionsStore {
+  // ===== UI 상태 =====
   currentPage: number;
   itemsPerPage: number;
+  searchText: string;
+  formOpen: boolean;
+  selectedId: string | null;
+  sorting: Array<{ id: string; desc: boolean }>;
 
-  // Form 액션
-  openForm: (editingId?: string | null) => void;
-  closeForm: () => void;
-  setEditingId: (id: string | null) => void;
-
-  // Filter 액션
-  setGlobalFilter: (filter: Updater<string>) => void;
-  setSelectedStatus: (status: string) => void;
-  setSelectedSessionType: (type: string) => void;
-  setSelectedUser: (user: string) => void;
-  resetFilters: () => void;
-
-  // 정렬 액션
-  setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
-
-  // 페이지네이션 액션
+  // ===== 액션 =====
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
+  setSearchText: (filter: Updater<string>) => void;
+  openForm: (id?: string) => void;
+  closeForm: () => void;
+  setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
+  resetFilters: () => void;
+  reset: () => void;
 }
 
-export const useSessionStore = create<SessionStoreState>((set) => ({
-  // 초기 상태
-  formOpen: false,
-  editingId: null,
-  globalFilter: '',
-  selectedStatus: '',
-  selectedSessionType: '',
-  selectedUser: '',
-  sorting: [],
+const initialState = {
   currentPage: 0,
   itemsPerPage: 20,
+  searchText: "",
+  formOpen: false,
+  selectedId: null,
+  sorting: [],
+};
 
-  // Form 액션
-  openForm: (editingId = null) =>
-    set({
-      formOpen: true,
-      editingId,
-    }),
+export const useSessionsStore = create<SessionsStore>((set) => ({
+  ...initialState,
 
-  closeForm: () =>
-    set({
-      formOpen: false,
-      editingId: null,
-    }),
-
-  setEditingId: (id) => set({ editingId: id }),
-
-  // Filter 액션
-  setGlobalFilter: (filter) =>
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter: typeof filter === 'function' ? filter(state.globalFilter) : filter,
+      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
+      currentPage: 0,
     })),
-
-  setSelectedStatus: (status) => set({ selectedStatus: status }),
-  setSelectedSessionType: (type) => set({ selectedSessionType: type }),
-  setSelectedUser: (user) => set({ selectedUser: user }),
-
-  resetFilters: () =>
-    set({
-      globalFilter: '',
-      selectedStatus: '',
-      selectedSessionType: '',
-      selectedUser: '',
-      sorting: [],
-    }),
-
-  // 정렬 액션
+  openForm: (id) => set({ formOpen: true, selectedId: id || null }),
+  closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>
     set((state) => ({
       sorting: typeof sorting === 'function' ? sorting(state.sorting) : sorting,
     })),
-
-  // 페이지네이션 액션
-  setCurrentPage: (page) => set({ currentPage: page }),
-  setItemsPerPage: (size) =>
+  resetFilters: () =>
     set({
-      itemsPerPage: size,
+      searchText: "",
+      sorting: [],
       currentPage: 0,
     }),
+  reset: () => set(initialState),
 }));

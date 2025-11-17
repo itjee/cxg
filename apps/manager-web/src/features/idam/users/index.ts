@@ -23,20 +23,22 @@ export * from "./components";
 
 // ===== GraphQL (Hooks & Queries) =====
 export { useUsers, useUser, useCreateUser, useUpdateUser } from "./hooks";
-export type {
-  GetUsersVariables,
-  GetUserVariables,
-  CreateUserVariables,
-  UpdateUserVariables,
-} from "./graphql";
+export type { GET_USERS, GET_USER, CREATE_USER, UPDATE_USER } from "./graphql";
 
 // ===== Types =====
 export type {
   User,
-  CreateUserRequest,
-  UpdateUserRequest,
-  UsersResponse,
-  UsersQueryParams,
+  GetUsersResponse,
+  GetUserResponse,
+  CreateUserResponse,
+  UpdateUserResponse,
+  UserQueryVariables,
+  UsersQueryVariables,
+  CreateUserVariables,
+  UpdateUserVariables,
+  CreateUserInput,
+  UpdateUserInput,
+  UsersFilterState,
 } from "./types/users.types";
 
 // ===== Store =====

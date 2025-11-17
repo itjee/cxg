@@ -14,29 +14,32 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { EntityFormButtons } from "@/components/features";
-import type { Permissions } from "../types/permissions.types";
+import type { Permission } from "../types/permissions.types";
 
+/**
+ * 폼 유효성 검증 스키마
+ */
 const permissionFormSchema = z.object({
   name: z.string().min(1, "권한명을 입력해주세요"),
   description: z.string().optional(),
-  is_active: z.boolean().default(true),
+  status: z.string().min(1, "상태를 선택해주세요"),
 });
 
-type PermissionFormData = z.infer<typeof permissionFormSchema>;
+type FormData = z.infer<typeof permissionFormSchema>;
 
-interface PermissionsFormProps {
-  initialData?: Permissions;
-  onSubmit: (data: PermissionFormData) => void;
+interface FormProps {
+  initialData?: Permission;
+  onSubmit: (data: FormData) => void;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export function PermissionsForm({
+export function PermissionForm({
   initialData,
   onSubmit,
   onCancel,
   isLoading = false,
-}: PermissionsFormProps) {
+}: FormProps) {
   const isEditing = !!initialData;
 
   const {
@@ -46,12 +49,12 @@ export function PermissionsForm({
     reset,
     setValue,
     watch,
-  } = useForm<PermissionFormData>({
+  } = useForm<FormData>({
     resolver: zodResolver(permissionFormSchema),
     defaultValues: {
       name: initialData?.name || "",
       description: initialData?.description || "",
-      is_active: initialData?.is_active ?? true,
+      status: initialData?.status || "ACTIVE",
     },
   });
 
@@ -60,12 +63,12 @@ export function PermissionsForm({
       reset({
         name: initialData.name,
         description: initialData.description || "",
-        is_active: initialData.is_active,
+        status: initialData.status as "ACTIVE" | "INACTIVE",
       });
     }
   }, [initialData, reset]);
 
-  const isActive = watch("is_active");
+  const status = watch("status");
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -114,8 +117,10 @@ export function PermissionsForm({
               </p>
             </div>
             <Switch
-              checked={isActive}
-              onCheckedChange={(checked) => setValue("is_active", checked)}
+              checked={status === "ACTIVE"}
+              onCheckedChange={(checked) =>
+                setValue("status", checked ? "ACTIVE" : "INACTIVE")
+              }
               disabled={isLoading}
             />
           </div>

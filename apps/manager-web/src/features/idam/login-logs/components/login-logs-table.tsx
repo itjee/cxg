@@ -12,12 +12,14 @@ import type { LoginLog } from "../types";
 
 interface LoginLogsTableProps {
   data: LoginLog[];
+  isLoading?: boolean;
   onViewDetail?: (log: LoginLog) => void;
   onDelete?: (log: LoginLog) => void;
 }
 
 export function LoginLogsTable({
   data,
+  isLoading,
   onViewDetail,
   onDelete,
 }: LoginLogsTableProps) {
@@ -28,8 +30,7 @@ export function LoginLogsTable({
     <DataTable
       columns={columns}
       data={data}
-      searchKey="ip_address"
-      searchPlaceholder="IP 주소 또는 사용자명 검색..."
+      isLoading={isLoading}
       showPagination={true}
       pageSize={20}
       sorting={sorting}

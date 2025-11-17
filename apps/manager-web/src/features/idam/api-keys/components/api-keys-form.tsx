@@ -24,7 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EntityFormButtons } from "@/components/features";
-import type { ApiKey } from "../types/api_keys.types";
+import type { ApiKey } from "../types/api-keys.types";
 
 /**
  * 폼 유효성 검증 스키마
@@ -36,9 +36,9 @@ const apiKeyFormSchema = z.object({
   serviceAccount: z.string().optional(),
   scopes: z.string().optional(), // 콤마로 구분된 문자열
   allowedIps: z.string().optional(), // 콤마로 구분된 문자열
-  rateLimitPerMinute: z.number().min(1).default(1000),
-  rateLimitPerHour: z.number().min(1).default(10000),
-  rateLimitPerDay: z.number().min(1).default(100000),
+  rateLimitPerMinute: z.number().min(1),
+  rateLimitPerHour: z.number().min(1),
+  rateLimitPerDay: z.number().min(1),
   expiresAt: z.string().optional(),
   status: z.enum(["ACTIVE", "INACTIVE", "REVOKED"]).optional(),
 });
@@ -288,11 +288,7 @@ export function ApiKeysForm({
         )}
       </div>
 
-      <EntityFormButtons
-        isEditing={isEditing}
-        isLoading={isLoading}
-        onCancel={onCancel}
-      />
+      <EntityFormButtons isLoading={isLoading} onCancel={onCancel} />
     </form>
   );
 }

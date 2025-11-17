@@ -8,14 +8,45 @@
  */
 
 import { gql } from "@apollo/client";
-import type { LoginLogsQueryVariables, LoginLogQueryVariables } from "../types/login-logs.types";
+import type {
+  LoginLogsQueryVariables,
+  LoginLogQueryVariables,
+} from "../types/login-logs.types";
 
 /**
  * 로그인 이력 목록 조회 (복수)
  */
 export const GET_LOGIN_LOGS = gql`
-  query GetLoginLogs($limit: Int, $offset: Int, $search: String, $attemptType: String, $success: Boolean, $userId: ID, $userType: String, $tenantContext: ID, $failureReason: String, $mfaUsed: Boolean, $ipAddress: String, $startDate: String, $endDate: String) {
-    loginLogs(limit: $limit, offset: $offset, search: $search, attemptType: $attemptType, success: $success, userId: $userId, userType: $userType, tenantContext: $tenantContext, failureReason: $failureReason, mfaUsed: $mfaUsed, ipAddress: $ipAddress, startDate: $startDate, endDate: $endDate) {
+  query GetLoginLogs(
+    $limit: Int
+    $offset: Int
+    $search: String
+    $attemptType: String
+    $success: Boolean
+    $userId: ID
+    $userType: String
+    $tenantContext: ID
+    $failureReason: String
+    $mfaUsed: Boolean
+    $ipAddress: String
+    $startDate: String
+    $endDate: String
+  ) {
+    loginLogs(
+      limit: $limit
+      offset: $offset
+      search: $search
+      attemptType: $attemptType
+      success: $success
+      userId: $userId
+      userType: $userType
+      tenantContext: $tenantContext
+      failureReason: $failureReason
+      mfaUsed: $mfaUsed
+      ipAddress: $ipAddress
+      startDate: $startDate
+      endDate: $endDate
+    ) {
       id
       userId
       userType

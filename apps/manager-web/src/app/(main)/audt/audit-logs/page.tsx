@@ -13,7 +13,7 @@ import { useAuditLogsStore } from "@/features/audt/audit-logs/stores/audit-logs.
 
 export default function AuditLogsPage() {
   const {
-    globalFilter,
+    searchText,
     selectedEventType,
     selectedEventCategory,
     selectedResult,
@@ -31,7 +31,7 @@ export default function AuditLogsPage() {
   } = useAuditLogs({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     event_type: selectedEventType || undefined,
     event_category: selectedEventCategory || undefined,
     result: selectedResult || undefined,

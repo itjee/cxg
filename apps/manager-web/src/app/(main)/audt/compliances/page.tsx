@@ -15,7 +15,7 @@ import { complianceService } from "@/features/audt/compliances/services/complian
 
 export default function CompliancesPage() {
   const {
-    globalFilter,
+    searchText,
     selectedReportType,
     selectedComplianceStatus,
     selectedStatus,
@@ -33,7 +33,7 @@ export default function CompliancesPage() {
   } = useCompliances({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     report_type: selectedReportType || undefined,
     compliance_status: selectedComplianceStatus || undefined,
     status: selectedStatus || undefined,

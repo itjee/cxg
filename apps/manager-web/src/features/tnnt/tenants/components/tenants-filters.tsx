@@ -21,8 +21,8 @@ interface TenantsFiltersProps {
 
 export function TenantsFilters({ data }: TenantsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     selectedType,
@@ -43,7 +43,7 @@ export function TenantsFilters({ data }: TenantsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: 'globalFilter',
+      key: 'searchText',
       label: '검색',
       description: '코드, 이름, 상호명으로 검색',
       type: 'search',
@@ -85,7 +85,7 @@ export function TenantsFilters({ data }: TenantsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedType,
     selectedIsSuspended,
@@ -95,7 +95,7 @@ export function TenantsFilters({ data }: TenantsFiltersProps) {
     // Handle both string and string[] cases (for multi-select support)
     const stringValue = Array.isArray(value) ? value[0] : value;
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: (val) => setSelectedStatus(val as any),
       selectedType: (val) => setSelectedType(val as any),
       selectedIsSuspended: setSelectedIsSuspended,

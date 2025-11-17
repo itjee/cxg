@@ -22,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { PageLayout } from "@/components/layouts/page-layout";
+import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function ResourcesPage() {
@@ -81,7 +81,7 @@ export default function ResourcesPage() {
   );
 
   return (
-    <PageLayout
+    <Page
       title="리소스 관리"
       description="시스템 리소스 사용량을 모니터링합니다"
       actions={actions}
@@ -166,6 +166,6 @@ export default function ResourcesPage() {
           </div>
         </CardContent>
       </Card>
-    </PageLayout>
+    </Page>
   );
 }

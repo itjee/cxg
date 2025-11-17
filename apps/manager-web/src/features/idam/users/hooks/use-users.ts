@@ -29,11 +29,16 @@ import type {
 /**
  * 사용자 목록 조회 (복수)
  *
- * @param variables - 목록 조회 파라미터 (limit, offset, status, userType)
+ * @param variables - 목록 조회 파라미터 (limit, offset, status, userType, search)
  * @returns useQuery 결과 (data.users 배열)
  *
  * @example
- * const { data, loading, error, refetch } = useUsers({ limit: 20, offset: 0 });
+ * const { data, loading, error, refetch } = useUsers({
+ *   limit: 20,
+ *   offset: 0,
+ *   search: "john",      // 백엔드에서 검색 수행
+ *   status: "ACTIVE"     // 상태로 필터링
+ * });
  * // data.users는 User[] 배열
  */
 export function useUsers(variables?: UsersQueryVariables) {

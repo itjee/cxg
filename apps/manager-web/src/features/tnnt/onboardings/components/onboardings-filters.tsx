@@ -16,8 +16,8 @@ interface OnboardingsFiltersProps {
 
 export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStepName,
     setSelectedStepName,
     selectedStepStatus,
@@ -33,7 +33,7 @@ export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: 'globalFilter',
+      key: 'searchText',
       label: '검색',
       description: '테넌트 ID, 단계명...',
       type: 'search',
@@ -76,7 +76,7 @@ export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStepName,
     selectedStepStatus,
     selectedTenantId,
@@ -84,7 +84,7 @@ export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStepName: setSelectedStepName as (val: string) => void,
       selectedStepStatus: setSelectedStepStatus as (val: string) => void,
       selectedTenantId: setSelectedTenantId,

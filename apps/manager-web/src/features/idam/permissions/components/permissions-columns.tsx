@@ -30,6 +30,9 @@ export const getPermissionsColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 권한명
   {
@@ -40,12 +43,18 @@ export const getPermissionsColumns = ({
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 설명
   {
     accessorKey: "description",
     header: "설명",
     cell: ({ row }) => <div>{row.getValue("description") || "-"}</div>,
+    meta: {
+      filterable: true,
+    },
   },
   // 상태
   {
@@ -58,6 +67,9 @@ export const getPermissionsColumns = ({
           {isActive ? "활성" : "비활성"}
         </Badge>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 액션
@@ -82,5 +94,8 @@ export const getPermissionsColumns = ({
         </Button>
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
 ];

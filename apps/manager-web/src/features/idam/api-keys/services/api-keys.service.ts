@@ -12,38 +12,20 @@ import {
   CREATE_API_KEY,
   UPDATE_API_KEY,
   DELETE_API_KEY,
-  type GetApiKeysVariables,
-  type GetApiKeyVariables,
-  type CreateApiKeyVariables,
-  type UpdateApiKeyVariables,
-  type DeleteApiKeyVariables,
 } from "../graphql";
-import type { ApiKey } from "../types";
-
-/**
- * GraphQL 응답 타입
- */
-interface GetApiKeysResponse {
-  apiKeys: ApiKey[];
-}
-
-interface GetApiKeyResponse {
-  apiKey: ApiKey;
-}
-
-interface CreateApiKeyResponse {
-  createApiKey: ApiKey;
-}
-
-interface UpdateApiKeyResponse {
-  updateApiKey: ApiKey;
-}
-
-interface DeleteApiKeyResponse {
-  deleteApiKey: {
-    message: string;
-  };
-}
+import type {
+  ApiKey,
+  ApiKeysQueryVariables,
+  GetApiKeysResponse,
+  ApiKeyQueryVariables,
+  GetApiKeyResponse,
+  CreateApiKeyVariables,
+  CreateApiKeyResponse,
+  UpdateApiKeyVariables,
+  UpdateApiKeyResponse,
+  DeleteApiKeyVariables,
+  DeleteApiKeyResponse,
+} from "../types";
 
 /**
  * API Key GraphQL 서비스
@@ -60,10 +42,10 @@ export const apiKeyService = {
    * @returns API 키 목록 응답
    */
   async listApiKeys(
-    params?: GetApiKeysVariables
+    params?: ApiKeysQueryVariables
   ): Promise<{ items: ApiKey[]; total: number }> {
     try {
-      const variables: GetApiKeysVariables = {
+      const variables: ApiKeysQueryVariables = {
         limit: params?.limit || 20,
         offset: params?.offset || 0,
         status: params?.status,
@@ -100,7 +82,7 @@ export const apiKeyService = {
    */
   async getApiKey(id: string): Promise<ApiKey> {
     try {
-      const variables: GetApiKeyVariables = { id };
+      const variables: ApiKeyQueryVariables = { id };
 
       const { data } = await apolloClient.query<GetApiKeyResponse>({
         query: GET_API_KEY,

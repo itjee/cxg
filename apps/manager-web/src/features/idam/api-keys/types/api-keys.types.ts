@@ -1,5 +1,5 @@
 /**
- * @file api_keys.types.ts
+ * @file api-keys.types.ts
  * @description API Key GraphQL 타입 정의 (camelCase - GraphQL 네이티브)
  *
  * 타입 명명 규칙:

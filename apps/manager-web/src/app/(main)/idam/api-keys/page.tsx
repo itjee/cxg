@@ -4,27 +4,46 @@
  * API Keys List Page
  *
  * API 키 관리 페이지
- * Apollo GraphQL Hooks를 사용합니다.
+ * Jira 스타일 필터링: 검색 + 필터 팝업
+ *
+ * 필터링 아키텍처:
+ * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - status → status 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
+import { useState } from "react";
 import { toast } from "sonner";
 import {
   ApiKeysHeader,
   ApiKeysStats,
-  ApiKeysFilters,
+  ApiKeysFilter,
   ApiKeysTable,
   ApiKeysEdit,
   useApiKeys,
   useDeleteApiKey,
   useUpdateApiKey,
   useApiKeyStore,
+  type ApiKeysFilterState,
 } from "@/features/idam/api-keys";
 import type { ApiKey } from "@/features/idam/api-keys";
 
 export default function ApiKeysPage() {
   // Store에서 UI 상태 가져오기
-  const { selectedStatus, currentPage, itemsPerPage } =
+  const { currentPage, itemsPerPage, setSearchText, setSelectedStatus } =
     useApiKeyStore();
+
+  // 로컬 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 확정)
+  const [localFilters, setLocalFilters] = useState<ApiKeysFilterState>({
+    status: null,
+  });
+
+  // 서버에 전달할 필터 상태
+  const [appliedFilters, setAppliedFilters] = useState<ApiKeysFilterState>({
+    status: null,
+  });
+
+  const [searchText, setSearchTextLocal] = useState("");
 
   // GraphQL 쿼리 - Apollo Hooks 사용
   const {
@@ -34,7 +53,8 @@ export default function ApiKeysPage() {
   } = useApiKeys({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-    status: selectedStatus || undefined,
+    status: appliedFilters.status || undefined,
+    search: searchText || undefined,
   });
 
   // GraphQL 뮤테이션 - 삭제, 수정
@@ -43,6 +63,16 @@ export default function ApiKeysPage() {
 
   // API 키 데이터
   const apiKeys = apiKeysResponse?.apiKeys || [];
+
+  const handleSearchChange = (text: string) => {
+    setSearchTextLocal(text);
+    setSearchText(text);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(localFilters);
+    setSelectedStatus(localFilters.status || null);
+  };
 
   const handleEdit = (apiKey: ApiKey) => {
     const { openForm } = useApiKeyStore.getState();
@@ -97,7 +127,16 @@ export default function ApiKeysPage() {
     <div className="space-y-6 p-6">
       <ApiKeysHeader onRefresh={() => refetch()} />
       <ApiKeysStats data={apiKeys} />
-      <ApiKeysFilters />
+
+      {/* Jira 스타일 검색 + 필터 */}
+      <ApiKeysFilter
+        searchText={searchText}
+        onSearchChange={handleSearchChange}
+        filters={localFilters}
+        onFiltersChange={setLocalFilters}
+        onApplyFilters={handleApplyFilters}
+      />
+
       <ApiKeysTable
         data={apiKeys}
         onEdit={handleEdit}

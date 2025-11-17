@@ -10,7 +10,7 @@
 import { toast } from "sonner";
 import { EntityDrawer } from "@/components/features";
 import { ApiKeysForm } from "./api-keys-form";
-import { useApiKeyStore } from "../stores/api_keys.store";
+import { useApiKeysStore } from "../stores/api-keys.store";
 import {
   useApiKey,
   useCreateApiKey,
@@ -18,10 +18,10 @@ import {
 } from "../hooks/use-api-keys";
 
 export function ApiKeysEdit() {
-  const { formOpen, editingId, closeForm } = useApiKeyStore();
+  const { formOpen, selectedId, closeForm } = useApiKeysStore();
 
   // 수정 모드: 선택된 API 키 조회
-  const { data: apiKeyResponse } = useApiKey(editingId || "");
+  const { data: apiKeyResponse } = useApiKey(selectedId || "");
   const editingApiKey = apiKeyResponse?.apiKey;
 
   // Apollo Mutation Hooks (tuple return pattern)
@@ -32,11 +32,11 @@ export function ApiKeysEdit() {
 
   const handleSubmit = async (formData: any) => {
     try {
-      if (editingId) {
+      if (selectedId) {
         // 수정 모드
         await updateApiKey({
           variables: {
-            id: editingId,
+            id: selectedId,
             input: formData,
           },
         });
@@ -60,7 +60,7 @@ export function ApiKeysEdit() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "작업 실패";
       toast.error(
-        editingId ? "API 키 수정 실패: " + message : "API 키 생성 실패: " + message
+        selectedId ? "API 키 수정 실패: " + message : "API 키 생성 실패: " + message
       );
       console.error("Failed to save API key:", error);
     }
@@ -70,9 +70,9 @@ export function ApiKeysEdit() {
     <EntityDrawer
       open={formOpen}
       onOpenChange={closeForm}
-      title={editingId ? "API 키 수정" : "API 키 생성"}
+      title={selectedId ? "API 키 수정" : "API 키 생성"}
       description={
-        editingId
+        selectedId
           ? "API 키 정보를 수정하세요."
           : "새로운 API 키를 생성하세요. 생성된 키는 한 번만 표시됩니다."
       }

@@ -5,8 +5,9 @@
 
 export { UsersHeader } from "./users-header";
 export { UsersStats } from "./users-stats";
-export { UsersFilters } from "./users-filters";
 export { getUsersColumns } from "./users-columns";
 export { UsersTable } from "./users-table";
 export { UsersEdit } from "./users-edit";
 export { UsersForm } from "./users-form";
+export { UsersFilter } from "./users-filter";
+export type { UsersFilterState } from "../types";

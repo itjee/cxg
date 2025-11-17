@@ -8,8 +8,8 @@ interface PoliciesFiltersProps {
 
 export function PoliciesFilters({ data }: PoliciesFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedPolicyType,
     setSelectedPolicyType,
     selectedPolicyCategory,
@@ -23,7 +23,7 @@ export function PoliciesFilters({ data }: PoliciesFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "정책명으로 검색...",
       type: "search",
@@ -82,7 +82,7 @@ export function PoliciesFilters({ data }: PoliciesFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedPolicyType,
     selectedPolicyCategory,
     selectedStatus,
@@ -91,7 +91,7 @@ export function PoliciesFilters({ data }: PoliciesFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedPolicyType: setSelectedPolicyType,
       selectedPolicyCategory: setSelectedPolicyCategory,
       selectedStatus: setSelectedStatus,

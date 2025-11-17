@@ -2,24 +2,24 @@ import { create } from "zustand";
 import type { Updater } from "@tanstack/react-table";
 
 interface CompliancesStoreState {
-  globalFilter: string;
+  searchText: string;
   selectedReportType: string;
   selectedComplianceStatus: string;
   selectedStatus: string;
   selectedScope: string;
   startDate: string;
   endDate: string;
-  
+
   sorting: Array<{ id: string; desc: boolean }>;
-  
+
   currentPage: number;
   itemsPerPage: number;
-  
+
   formOpen: boolean;
   editingId: string | null;
   detailId: string | null;
 
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedReportType: (type: string) => void;
   setSelectedComplianceStatus: (status: string) => void;
   setSelectedStatus: (status: string) => void;
@@ -37,7 +37,7 @@ interface CompliancesStoreState {
 }
 
 export const useCompliancesStore = create<CompliancesStoreState>((set) => ({
-  globalFilter: "",
+  searchText: "",
   selectedReportType: "",
   selectedComplianceStatus: "",
   selectedStatus: "",
@@ -51,10 +51,10 @@ export const useCompliancesStore = create<CompliancesStoreState>((set) => ({
   editingId: null,
   detailId: null,
 
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter:
-        typeof filter === "function" ? filter(state.globalFilter) : filter,
+      searchText:
+        typeof filter === "function" ? filter(state.searchText) : filter,
     })),
   setSelectedReportType: (type) => set({ selectedReportType: type }),
   setSelectedComplianceStatus: (status) => set({ selectedComplianceStatus: status }),
@@ -64,7 +64,7 @@ export const useCompliancesStore = create<CompliancesStoreState>((set) => ({
   setEndDate: (date) => set({ endDate: date }),
   resetFilters: () =>
     set({
-      globalFilter: "",
+      searchText: "",
       selectedReportType: "",
       selectedComplianceStatus: "",
       selectedStatus: "",

@@ -8,7 +8,12 @@
  */
 
 import { gql } from "@apollo/client";
-import type { CreateUserInput, UpdateUserInput, CreateUserVariables, UpdateUserVariables } from "../types/users.types";
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+  CreateUserVariables,
+  UpdateUserVariables,
+} from "../types/users.types";
 
 /**
  * 사용자 생성 (단수)

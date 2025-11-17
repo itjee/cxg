@@ -19,7 +19,7 @@ interface WorkflowsStore {
   sorting: Array<{ id: string; desc: boolean }>;
 
   // 필터 상태
-  globalFilter: string;
+  searchText: string;
   selectedStatus: string;
 
   // Form 액션
@@ -31,7 +31,7 @@ interface WorkflowsStore {
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
 
   // 필터 액션
-  setGlobalFilter: (filter: string) => void;
+  setSearchText: (filter: string) => void;
   setSelectedStatus: (status: string) => void;
   resetFilters: () => void;
 }
@@ -40,7 +40,7 @@ const initialState = {
   formOpen: false,
   editingId: null,
   sorting: [],
-  globalFilter: '',
+  searchText: '',
   selectedStatus: '',
 };
 
@@ -64,15 +64,15 @@ export const useWorkflowsStore = create<WorkflowsStore>((set) => ({
     })),
 
   // 필터 액션
-  setGlobalFilter: (filter) =>
-    set({ globalFilter: filter }),
+  setSearchText: (filter) =>
+    set({ searchText: filter }),
 
   setSelectedStatus: (status) =>
     set({ selectedStatus: status }),
 
   resetFilters: () =>
     set({
-      globalFilter: '',
+      searchText: '',
       selectedStatus: '',
       sorting: [],
     }),

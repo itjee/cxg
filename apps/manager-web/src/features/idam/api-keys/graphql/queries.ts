@@ -4,17 +4,25 @@
  *
  * API 키 조회 쿼리 정의
  *
- * 타입 정의는 ../types/api_keys.types.ts에서 관리됨
+ * 타입 정의는 ../types/api-keys.types.ts에서 관리됨
  */
 
 import { gql } from "@apollo/client";
-import type { ApiKeysQueryVariables, ApiKeyQueryVariables } from "../types/api_keys.types";
+import type {
+  ApiKeysQueryVariables,
+  ApiKeyQueryVariables,
+} from "../types/api-keys.types";
 
 /**
  * API 키 목록 조회 (복수)
  */
 export const GET_API_KEYS = gql`
-  query GetApiKeys($limit: Int, $offset: Int, $status: String, $search: String) {
+  query GetApiKeys(
+    $limit: Int
+    $offset: Int
+    $status: String
+    $search: String
+  ) {
     apiKeys(limit: $limit, offset: $offset, status: $status, search: $search) {
       id
       keyId

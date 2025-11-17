@@ -110,6 +110,9 @@ export const getLoginLogsColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 시도 타입
   {
@@ -128,6 +131,9 @@ export const getLoginLogsColumns = ({
           </Badge>
         </div>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 성공 여부
@@ -150,6 +156,9 @@ export const getLoginLogsColumns = ({
         </div>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // 사용자명
   {
@@ -161,6 +170,9 @@ export const getLoginLogsColumns = ({
       const username = row.getValue("username") as string | undefined;
       return username || <span className="text-muted-foreground">-</span>;
     },
+    meta: {
+      filterable: true,
+    },
   },
   // 사용자 타입
   {
@@ -170,6 +182,9 @@ export const getLoginLogsColumns = ({
       const userType = row.getValue("user_type") as UserType | undefined;
       if (!userType) return <span className="text-muted-foreground">-</span>;
       return <Badge variant="secondary">{userTypeLabels[userType]}</Badge>;
+    },
+    meta: {
+      filterable: false,
     },
   },
   // IP 주소
@@ -181,6 +196,9 @@ export const getLoginLogsColumns = ({
     cell: ({ row }) => (
       <div className="font-mono text-sm">{row.getValue("ip_address")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 위치
   {
@@ -188,7 +206,7 @@ export const getLoginLogsColumns = ({
     header: "위치",
     cell: ({ row }) => {
       const city = row.original.city;
-      const countryCode = row.original.country_code;
+      const countryCode = row.original.countryCode;
       if (!city && !countryCode)
         return <span className="text-muted-foreground">-</span>;
       return (
@@ -199,6 +217,9 @@ export const getLoginLogsColumns = ({
         </div>
       );
     },
+    meta: {
+      filterable: true,
+    },
   },
   // MFA 사용
   {
@@ -208,7 +229,7 @@ export const getLoginLogsColumns = ({
     ),
     cell: ({ row }) => {
       const mfaUsed = row.getValue("mfa_used") as boolean;
-      const mfaMethod = row.original.mfa_method;
+      const mfaMethod = row.original.mfaMethod;
       if (!mfaUsed) return <span className="text-muted-foreground">-</span>;
       return (
         <div className="flex items-center gap-2">
@@ -218,6 +239,9 @@ export const getLoginLogsColumns = ({
           </span>
         </div>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 실패 사유
@@ -233,6 +257,9 @@ export const getLoginLogsColumns = ({
         </Badge>
       );
     },
+    meta: {
+      filterable: true,
+    },
   },
   // 일시
   {
@@ -245,6 +272,9 @@ export const getLoginLogsColumns = ({
         {formatDateTime(row.getValue("created_at"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 액션
   {
@@ -281,5 +311,8 @@ export const getLoginLogsColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
 ];

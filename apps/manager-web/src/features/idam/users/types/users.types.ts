@@ -80,6 +80,7 @@ export interface UsersQueryVariables {
   offset?: number;
   userType?: string;
   status?: string;
+  search?: string;
 }
 
 /**
@@ -134,4 +135,18 @@ export interface CreateUserResponse {
  */
 export interface UpdateUserResponse {
   updateUser: User;
+}
+
+// ===== UI 필터 상태 타입 =====
+
+/**
+ * 사용자 필터 상태 (UI 필터 팝업에서 사용)
+ *
+ * FilterPopup 컴포넌트에서 사용하는 필터 상태 타입 (멀티 선택)
+ * - 각 필터는 여러 값을 배열로 저장
+ * - null이면 필터가 선택되지 않은 상태
+ */
+export interface UsersFilterState {
+  status: string[] | null;      // ["ACTIVE", "LOCKED"] 등 여러 상태 선택 가능
+  userType: string[] | null;    // ["ADMIN", "USER"] 등 여러 타입 선택 가능
 }

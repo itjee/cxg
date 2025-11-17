@@ -1,76 +1,66 @@
 /**
- * 역할 Zustand Store
+ * Roles Zustand Store
  *
  * UI 상태만 관리합니다.
  * 서버 상태(데이터)는 Apollo Client가 관리합니다.
  *
  * @example
- * const { selectedStatus, currentPage, setSelectedStatus } = useRolesStore();
+ * const { currentPage, itemsPerPage, formOpen } = useRolesStore();
  */
 
-import { create } from 'zustand';
+import { create } from "zustand";
+import type { Updater } from "@tanstack/react-table";
 
 interface RolesStore {
   // ===== UI 상태 =====
-  selectedStatus: string;
   currentPage: number;
   itemsPerPage: number;
-  globalFilter: string;
+  searchText: string;
   formOpen: boolean;
   selectedId: string | null;
+  sorting: Array<{ id: string; desc: boolean }>;
 
   // ===== 액션 =====
-  setSelectedStatus: (status: string) => void;
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
-  setGlobalFilter: (filter: string) => void;
+  setSearchText: (filter: Updater<string>) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
+  setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
   resetFilters: () => void;
   reset: () => void;
 }
 
 const initialState = {
-  selectedStatus: '',
   currentPage: 0,
   itemsPerPage: 20,
-  globalFilter: '',
+  searchText: "",
   formOpen: false,
   selectedId: null,
+  sorting: [],
 };
 
-/**
- * 역할 UI 상태 스토어
- */
 export const useRolesStore = create<RolesStore>((set) => ({
   ...initialState,
 
-  // UI 상태 변경 - 상태 필터링
-  setSelectedStatus: (status) => set({ selectedStatus: status, currentPage: 0 }),
-
-  // UI 상태 변경 - 페이지 이동
   setCurrentPage: (page) => set({ currentPage: page }),
-
-  // UI 상태 변경 - 페이지 크기
   setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
-
-  // UI 상태 변경 - 전역 필터 (검색어)
-  setGlobalFilter: (filter) => set({ globalFilter: filter, currentPage: 0 }),
-
-  // UI 상태 변경 - 폼 열기
+  setSearchText: (filter) =>
+    set((state) => ({
+      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
+      currentPage: 0,
+    })),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
-
-  // UI 상태 변경 - 폼 닫기
   closeForm: () => set({ formOpen: false, selectedId: null }),
-
-  // UI 상태 변경 - 필터 리셋
+  setSorting: (sorting) =>
+    set((state) => ({
+      sorting: typeof sorting === 'function' ? sorting(state.sorting) : sorting,
+    })),
   resetFilters: () =>
     set({
-      globalFilter: '',
-      selectedStatus: '',
+      searchText: "",
+      sorting: [],
       currentPage: 0,
     }),
-
-  // UI 상태 변경 - 전체 리셋
   reset: () => set(initialState),
 }));

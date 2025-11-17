@@ -14,7 +14,7 @@ import { usePoliciesStore } from "@/features/audt/policies/stores/policies.store
 
 export default function PoliciesPage() {
   const {
-    globalFilter,
+    searchText,
     selectedPolicyType,
     selectedPolicyCategory,
     selectedStatus,
@@ -32,7 +32,7 @@ export default function PoliciesPage() {
   } = usePolicies({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     policy_type: selectedPolicyType || undefined,
     policy_category: selectedPolicyCategory || undefined,
     status: selectedStatus || undefined,

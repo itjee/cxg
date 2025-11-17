@@ -3,37 +3,53 @@
 /**
  * @file page.tsx
  * @description 로그인 이력 페이지
+ * Jira 스타일 필터링: 검색 + 필터 팝업
+ *
+ * 필터링 아키텍처:
+ * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - success → success 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - attemptType → attempt_type 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   LoginLogsHeader,
   LoginLogsStats,
-  LoginLogsFilters,
+  LoginLogsFilter,
   LoginLogsTable,
-  LoginLogsDetail,
+  type LoginLogsFilterState,
 } from '@/features/idam/login-logs';
 import {
   useLoginLogs,
   useDeleteLoginLog,
 } from '@/features/idam/login-logs/hooks';
-import { useLoginLogStore } from '@/features/idam/login-logs/stores';
+import { useLoginLogsStore } from '@/features/idam/login-logs/stores';
 import type { LoginLog } from '@/features/idam/login-logs/types';
 
 export default function LoginLogsPage() {
   const {
-    globalFilter,
-    selectedAttemptType,
-    selectedSuccess,
-    selectedUserType,
-    selectedMfaUsed,
-    startDate,
-    endDate,
     currentPage,
     itemsPerPage,
-    openDetail,
-  } = useLoginLogStore();
+    setSearchText,
+    setSelectedAttemptType,
+    setSelectedSuccess,
+  } = useLoginLogsStore();
+
+  // 로컬 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 확정)
+  const [localFilters, setLocalFilters] = useState<LoginLogsFilterState>({
+    success: null,
+    attemptType: null,
+  });
+
+  // 서버에 전달할 필터 상태
+  const [appliedFilters, setAppliedFilters] = useState<LoginLogsFilterState>({
+    success: null,
+    attemptType: null,
+  });
+
+  const [searchText, setSearchTextLocal] = useState("");
 
   // 서버 사이드 페이징 조회
   const {
@@ -44,13 +60,9 @@ export default function LoginLogsPage() {
   } = useLoginLogs({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
-    attempt_type: selectedAttemptType || undefined,
-    success: selectedSuccess ? selectedSuccess === 'true' : undefined,
-    user_type: selectedUserType || undefined,
-    mfa_used: selectedMfaUsed ? selectedMfaUsed === 'true' : undefined,
-    start_date: startDate || undefined,
-    end_date: endDate || undefined,
+    search: searchText,
+    attempt_type: appliedFilters.attemptType || undefined,
+    success: appliedFilters.success ? appliedFilters.success === 'true' : undefined,
   });
 
   // 삭제 mutation
@@ -59,6 +71,17 @@ export default function LoginLogsPage() {
   const logs = logsResponse?.data || [];
   const totalItems = logsResponse?.total || 0;
 
+  const handleSearchChange = (text: string) => {
+    setSearchTextLocal(text);
+    setSearchText(text);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(localFilters);
+    setSelectedSuccess(localFilters.success || null);
+    setSelectedAttemptType(localFilters.attemptType || null);
+  };
+
   // 통계 계산
   const stats = useMemo(() => {
     const total = logs.length;
@@ -66,7 +89,7 @@ export default function LoginLogsPage() {
     const failedCount = logs.filter((log) => !log.success).length;
     const mfaUsedCount = logs.filter((log) => log.mfa_used).length;
     const lockedCount = logs.filter((log) => log.attempt_type === 'LOCKED').length;
-    
+
     // 고유 사용자 수 계산
     const uniqueUserIds = new Set(
       logs.filter((log) => log.user_id).map((log) => log.user_id)
@@ -102,6 +125,12 @@ export default function LoginLogsPage() {
     }
   };
 
+  // 상세 보기 핸들러
+  const handleViewDetail = (log: LoginLog) => {
+    const { openDetail } = useLoginLogsStore.getState();
+    openDetail(log.id);
+  };
+
   // 내보내기 핸들러
   const handleExport = () => {
     toast.info('내보내기 기능은 준비 중입니다');
@@ -134,13 +163,21 @@ export default function LoginLogsPage() {
         lockedCount={stats.lockedCount}
         uniqueUsers={stats.uniqueUsers}
       />
-      <LoginLogsFilters />
+
+      {/* Jira 스타일 검색 + 필터 */}
+      <LoginLogsFilter
+        searchText={searchText}
+        onSearchChange={handleSearchChange}
+        filters={localFilters}
+        onFiltersChange={setLocalFilters}
+        onApplyFilters={handleApplyFilters}
+      />
+
       <LoginLogsTable
         data={logs}
-        onViewDetail={(log) => openDetail(log.id)}
+        onViewDetail={handleViewDetail}
         onDelete={handleDelete}
       />
-      <LoginLogsDetail />
     </div>
   );
 }

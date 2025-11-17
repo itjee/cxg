@@ -20,7 +20,7 @@ import {
 
 export default function TenantUsersPage() {
   const {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedTenantId,
     selectedRoleId,
@@ -39,7 +39,7 @@ export default function TenantUsersPage() {
   } = useTenantUsers({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     status: selectedStatus || undefined,
     tenant_id: selectedTenantId || undefined,
     role_id: selectedRoleId || undefined,

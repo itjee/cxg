@@ -27,7 +27,7 @@ const userFormSchema = z.object({
   fullName: z.string().min(1, "전체 이름을 입력해주세요"),
   password: z.string().min(8, "비밀번호는 8자 이상이어야 합니다").optional(),
   userType: z.enum(["ADMIN", "MANAGER", "USER"], {
-    errorMap: () => ({ message: "사용자 유형을 선택해주세요" }),
+    message: "사용자 유형을 선택해주세요",
   }),
   phone: z.string().optional(),
   department: z.string().optional(),
@@ -69,7 +69,11 @@ export function UsersForm({
       phone: initialData?.phone || "",
       department: initialData?.department || "",
       position: initialData?.position || "",
-      status: initialData?.status || "ACTIVE",
+      status: (["ACTIVE", "INACTIVE", "LOCKED"].includes(
+        initialData?.status as string
+      )
+        ? initialData?.status
+        : "ACTIVE") as "ACTIVE" | "INACTIVE" | "LOCKED",
     },
   });
 
@@ -84,7 +88,11 @@ export function UsersForm({
         phone: initialData?.phone || "",
         department: initialData?.department || "",
         position: initialData?.position || "",
-        status: initialData?.status || "ACTIVE",
+        status: (["ACTIVE", "INACTIVE", "LOCKED"].includes(
+          initialData?.status as string
+        )
+          ? initialData?.status
+          : "ACTIVE") as "ACTIVE" | "INACTIVE" | "LOCKED",
       });
     }
   }, [initialData, reset]);
@@ -164,7 +172,9 @@ export function UsersForm({
                 disabled={isLoading}
               />
               {errors.password && (
-                <p className="text-xs text-red-500">{errors.password.message}</p>
+                <p className="text-xs text-red-500">
+                  {errors.password.message}
+                </p>
               )}
             </div>
           )}

@@ -21,8 +21,8 @@ interface SubscriptionsFiltersProps {
 
 export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     selectedBillingCycle,
@@ -40,7 +40,7 @@ export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: "globalFilter",
+      key: "searchText",
       label: "검색",
       description: "테넌트 ID, 플랜 ID로 검색",
       type: "search",
@@ -81,7 +81,7 @@ export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedBillingCycle,
     selectedAutoRenewal,
@@ -91,7 +91,7 @@ export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
     // Handle both string and string[] cases (for multi-select support)
     const stringValue = Array.isArray(value) ? value[0] : value;
     const handlers: Record<string, (val: string) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: (val) => setSelectedStatus(val as any),
       selectedBillingCycle: (val) => setSelectedBillingCycle(val as any),
       selectedAutoRenewal: setSelectedAutoRenewal,

@@ -23,7 +23,7 @@ import type { Onboarding } from '@/features/tnnt/onboardings/types';
 
 export default function OnboardingsPage() {
   const {
-    globalFilter,
+    searchText,
     selectedStepName,
     selectedStepStatus,
     selectedTenantId,
@@ -41,7 +41,7 @@ export default function OnboardingsPage() {
   } = useOnboardings({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     step_name: selectedStepName || undefined,
     step_status: selectedStepStatus || undefined,
     tenant_id: selectedTenantId || undefined,

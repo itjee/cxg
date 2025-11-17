@@ -7,12 +7,14 @@ import type { Permissions } from "../types/permissions.types";
 
 interface PermissionsTableProps {
   data: Permissions[];
+  isLoading?: boolean;
   onEdit: (permission: Permissions) => void;
   onDelete: (permission: Permissions) => void;
 }
 
 export function PermissionsTable({
   data,
+  isLoading,
   onEdit,
   onDelete,
 }: PermissionsTableProps) {
@@ -23,8 +25,7 @@ export function PermissionsTable({
     <DataTable
       columns={columns}
       data={data}
-      searchKey="name"
-      searchPlaceholder="권한명 검색..."
+      isLoading={isLoading}
       showPagination={true}
       pageSize={20}
       sorting={sorting}

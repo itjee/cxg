@@ -35,7 +35,7 @@ interface TenantsStoreState {
   editingId: string | null;
 
   // Filter 상태
-  globalFilter: string;
+  searchText: string;
   selectedStatus: TenantStatus | '';
   selectedType: TenantType | '';
   selectedIsSuspended: string;
@@ -53,7 +53,7 @@ interface TenantsStoreState {
   setEditingId: (id: string | null) => void;
 
   // Filter 액션
-  setGlobalFilter: (filter: Updater<string>) => void;
+  setSearchText: (filter: Updater<string>) => void;
   setSelectedStatus: (status: TenantStatus | '') => void;
   setSelectedType: (type: TenantType | '') => void;
   setSelectedIsSuspended: (isSuspended: string) => void;
@@ -73,7 +73,7 @@ interface TenantsStoreState {
 const initialState = {
   formOpen: false,
   editingId: null,
-  globalFilter: '',
+  searchText: '',
   selectedStatus: '' as TenantStatus | '',
   selectedType: '' as TenantType | '',
   selectedIsSuspended: '',
@@ -100,9 +100,9 @@ export const useTenantsStore = create<TenantsStoreState>((set) => ({
     set({ editingId: id }),
 
   // Filter 액션
-  setGlobalFilter: (filter) =>
+  setSearchText: (filter) =>
     set((state) => ({
-      globalFilter: typeof filter === 'function' ? filter(state.globalFilter) : filter,
+      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
       currentPage: 0,
     })),
 
@@ -117,7 +117,7 @@ export const useTenantsStore = create<TenantsStoreState>((set) => ({
 
   resetFilters: () =>
     set({
-      globalFilter: '',
+      searchText: '',
       selectedStatus: '',
       selectedType: '',
       selectedIsSuspended: '',

@@ -7,48 +7,65 @@
 
 import { toast } from "sonner";
 import { EntityDrawer } from "@/components/features";
-import { PermissionsForm } from "./permissions-form";
+import { PermissionForm } from "./permissions-form";
 import { usePermissionsStore } from "../stores/permissions.store";
-import { usePermissionsById, useCreatePermissions, useUpdatePermissions } from "../hooks/use-permissions";
-import type { Permissions } from "../types/permissions.types";
+import {
+  usePermission,
+  useCreatePermission,
+  useUpdatePermission,
+} from "../hooks/use-permissions";
+import type { Permission } from "../types/permissions.types";
 
-interface PermissionsEditProps {
-  permissions: Permissions[];
+interface PermissionEditProps {
+  permission?: Permission;
 }
 
-export function PermissionsEdit({ permissions }: PermissionsEditProps) {
+export function PermissionEdit({ permission }: PermissionEditProps) {
   const { formOpen, selectedId, closeForm } = usePermissionsStore();
-  const { data: editingPermission } = usePermissionsById(selectedId || "");
-  
-  const createMutation = useCreatePermissions({
-    onSuccess: () => {
-      toast.success('권한이 생성되었습니다');
-      closeForm();
-    },
-    onError: (error) => {
-      toast.error(error.message || '권한 생성에 실패했습니다');
-      console.error('Failed to create permission:', error);
-    },
-  });
 
-  const updateMutation = useUpdatePermissions({
-    onSuccess: () => {
-      toast.success('권한이 수정되었습니다');
-      closeForm();
-    },
-    onError: (error) => {
-      toast.error(error.message || '권한 수정에 실패했습니다');
-      console.error('Failed to update permission:', error);
-    },
-  });
-  
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  //수정모드 : 선택된 권한그룹 조회 (단수)
+  const { data: permissionResponse } = usePermission(selectedId || "");
+  const editingPermission = permissionResponse?.permission;
+
+  //Apollo Mutation 훅
+  const [createPermission, { loading: createLoading }] = useCreatePermission();
+  const [updatePermission, { loading: updateLoading }] = useUpdatePermission();
+
+  const isLoading = createLoading || updateLoading;
 
   const handleSubmit = (formData: any) => {
-    if (selectedId) {
-      updateMutation.mutate({ id: selectedId, data: formData });
-    } else {
-      createMutation.mutate(formData);
+    try {
+      if (selectedId) {
+        updatePermission({
+          variables: { id: selectedId, input: formData },
+          onCompleted: () => {
+            toast.success("권한이 수정되었습니다");
+            closeForm();
+          },
+          onError: (error) => {
+            toast.error(error.message || "권한 수정에 실패했습니다");
+            console.error("Failed to update permission:", error);
+          },
+        });
+      } else {
+        createPermission({
+          variables: { input: formData },
+          onCompleted: () => {
+            toast.success("권한이 생성되었습니다");
+            closeForm();
+          },
+          onError: (error) => {
+            toast.error(error.message || "권한 생성에 실패했습니다");
+            console.error("Failed to create permission:", error);
+          },
+        });
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "작업 실패";
+      toast.error(
+        selectedId ? "권한 수정 실패: " + message : "권한 생성 실패: " + message
+      );
+      console.error("Failed to save permission:", error);
     }
   };
 
@@ -56,15 +73,15 @@ export function PermissionsEdit({ permissions }: PermissionsEditProps) {
     <EntityDrawer
       open={formOpen}
       onOpenChange={closeForm}
-      title={selectedId ? '권한 수정' : '권한 등록'}
+      title={selectedId ? "권한 수정" : "권한 등록"}
       description={
         selectedId
-          ? '권한 정보를 수정하세요.'
-          : '새로운 권한 정보를 입력하세요.'
+          ? "권한 정보를 수정하세요."
+          : "새로운 권한 정보를 입력하세요."
       }
       width="md"
     >
-      <PermissionsForm
+      <PermissionForm
         initialData={editingPermission}
         onSubmit={handleSubmit}
         onCancel={closeForm}

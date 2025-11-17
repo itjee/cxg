@@ -8,7 +8,10 @@
  */
 
 import { gql } from "@apollo/client";
-import type { UsersQueryVariables, UserQueryVariables } from "../types/users.types";
+import type {
+  UsersQueryVariables,
+  UserQueryVariables,
+} from "../types/users.types";
 
 /**
  * 사용자 목록 조회 (복수)
@@ -19,12 +22,14 @@ export const GET_USERS = gql`
     $offset: Int
     $userType: String
     $status: String
+    $search: String
   ) {
     users(
       limit: $limit
       offset: $offset
       userType: $userType
       status: $status
+      search: $search
     ) {
       id
       userType

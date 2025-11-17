@@ -96,6 +96,9 @@ export const getSessionsColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 세션 ID (짧게)
   {
@@ -108,6 +111,9 @@ export const getSessionsColumns = ({
         {(row.getValue("session_id") as string).slice(0, 16)}...
       </code>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 사용자 ID (짧게)
   {
@@ -120,6 +126,9 @@ export const getSessionsColumns = ({
         {(row.getValue("user_id") as string).slice(0, 8)}...
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 세션 타입
   {
@@ -135,6 +144,9 @@ export const getSessionsColumns = ({
         </Badge>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // IP 주소
   {
@@ -145,6 +157,9 @@ export const getSessionsColumns = ({
     cell: ({ row }) => (
       <div className="font-mono text-sm">{row.getValue("ip_address")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 위치
   {
@@ -159,6 +174,9 @@ export const getSessionsColumns = ({
           {city && countryCode ? `${city}, ${countryCode}` : city || countryCode}
         </div>
       );
+    },
+    meta: {
+      filterable: true,
     },
   },
   // User Agent (축약)
@@ -175,6 +193,9 @@ export const getSessionsColumns = ({
         </div>
       );
     },
+    meta: {
+      filterable: true,
+    },
   },
   // MFA 인증
   {
@@ -189,6 +210,9 @@ export const getSessionsColumns = ({
       ) : (
         <span className="text-muted-foreground">-</span>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 상태
@@ -205,6 +229,9 @@ export const getSessionsColumns = ({
         </Badge>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // 마지막 활동
   {
@@ -217,6 +244,9 @@ export const getSessionsColumns = ({
         {formatDateTime(row.getValue("last_activity_at"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 만료일
   {
@@ -233,6 +263,9 @@ export const getSessionsColumns = ({
         </div>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // 등록일
   {
@@ -245,6 +278,9 @@ export const getSessionsColumns = ({
         {formatDate(row.getValue("created_at"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 액션
   {
@@ -253,7 +289,7 @@ export const getSessionsColumns = ({
     cell: ({ row }) => {
       const session = row.original;
       const isActive = session.status === "ACTIVE";
-      
+
       return (
         <div className="flex justify-end gap-2">
           {isActive && (
@@ -279,5 +315,8 @@ export const getSessionsColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
 ];

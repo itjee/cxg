@@ -74,6 +74,7 @@ async def get_manager_users(
     offset: int = 0,
     user_type: str | None = None,
     status: str | None = None,
+    search: str | None = None,
 ) -> "list[ManagerUser]":
     """
     Manager 사용자 목록 조회
@@ -84,16 +85,31 @@ async def get_manager_users(
         offset: 건너뛸 개수 (페이징용)
         user_type: 사용자 타입 필터 (선택)
         status: 상태 필터 (선택)
+        search: 사용자 검색어 (full_name, email, username 검색)
 
     Returns:
         list[User]: 사용자 객체 리스트
     """
+    from sqlalchemy import or_
+
     # 필터 조건 구성
     filters = {}
     if user_type:
         filters["user_type"] = user_type
     if status:
         filters["status"] = status
+
+    # search 조건 (복잡한 OR 조건이므로 extra_conditions에서 처리)
+    extra_conditions = []
+    if search:
+        search_pattern = f"%{search}%"
+        extra_conditions.append(
+            or_(
+                UserModel.full_name.ilike(search_pattern),
+                UserModel.email.ilike(search_pattern),
+                UserModel.username.ilike(search_pattern),
+            )
+        )
 
     # 공통 모듈을 사용한 리스트 조회
     return await get_list(
@@ -103,6 +119,7 @@ async def get_manager_users(
         limit=limit,
         offset=offset,
         order_by=UserModel.created_at.desc(),  # 최신 순으로 정렬
+        extra_conditions=extra_conditions if extra_conditions else None,
         **filters,
     )
 
@@ -137,6 +154,7 @@ class ManagerUserQueries:
         offset: int = 0,
         user_type: str | None = None,
         status: str | None = None,
+        search: str | None = None,
     ) -> "list[ManagerUser]":
         """
         사용자 목록 조회 (페이징 및 필터링 지원)
@@ -146,9 +164,10 @@ class ManagerUserQueries:
             offset: 건너뛸 개수
             user_type: 사용자 타입 필터
             status: 상태 필터
+            search: 사용자 검색어 (full_name, email, username 검색)
 
         Returns:
             list[User]: 사용자 객체 리스트
         """
         db = info.context.manager_db_session
-        return await get_manager_users(db, limit, offset, user_type, status)
+        return await get_manager_users(db, limit, offset, user_type, status, search)

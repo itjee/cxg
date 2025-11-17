@@ -3,32 +3,54 @@
 /**
  * @file page.tsx
  * @description 세션 관리 페이지
+ * Jira 스타일 필터링: 검색 + 필터 팝업
+ *
+ * 필터링 아키텍처:
+ * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - status → status 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - sessionType → session_type 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import {
   SessionsHeader,
   SessionsStats,
-  SessionsFilters,
+  SessionsFilter,
   SessionsTable,
+  type SessionsFilterState,
 } from '@/features/idam/sessions';
 import {
   useSessions,
   useDeleteSession,
   useRevokeSession,
 } from '@/features/idam/sessions/hooks';
-import { useSessionStore } from '@/features/idam/sessions/stores';
+import { useSessionsStore } from '@/features/idam/sessions/stores';
 import type { Session } from '@/features/idam/sessions/types';
 
 export default function SessionsPage() {
   const {
-    globalFilter,
-    selectedStatus,
-    selectedSessionType,
     currentPage,
     itemsPerPage,
-  } = useSessionStore();
+    setSearchText,
+    setSelectedStatus,
+    setSelectedSessionType,
+  } = useSessionsStore();
+
+  // 로컬 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 확정)
+  const [localFilters, setLocalFilters] = useState<SessionsFilterState>({
+    status: null,
+    sessionType: null,
+  });
+
+  // 서버에 전달할 필터 상태
+  const [appliedFilters, setAppliedFilters] = useState<SessionsFilterState>({
+    status: null,
+    sessionType: null,
+  });
+
+  const [searchText, setSearchTextLocal] = useState("");
 
   // 서버 사이드 페이징 조회
   const {
@@ -39,9 +61,9 @@ export default function SessionsPage() {
   } = useSessions({
     page: currentPage + 1,
     pageSize: itemsPerPage,
-    search: globalFilter,
-    status: selectedStatus || undefined,
-    session_type: selectedSessionType || undefined,
+    search: searchText,
+    status: appliedFilters.status || undefined,
+    session_type: appliedFilters.sessionType || undefined,
   });
 
   // 삭제 mutation
@@ -52,6 +74,17 @@ export default function SessionsPage() {
 
   const sessions = sessionsResponse?.data || [];
   const totalItems = sessionsResponse?.total || 0;
+
+  const handleSearchChange = (text: string) => {
+    setSearchTextLocal(text);
+    setSearchText(text);
+  };
+
+  const handleApplyFilters = () => {
+    setAppliedFilters(localFilters);
+    setSelectedStatus(localFilters.status || null);
+    setSelectedSessionType(localFilters.sessionType || null);
+  };
 
   // 통계 계산
   const stats = useMemo(() => {
@@ -120,7 +153,16 @@ export default function SessionsPage() {
         revoked={stats.revoked}
         mfaVerified={stats.mfaVerified}
       />
-      <SessionsFilters />
+
+      {/* Jira 스타일 검색 + 필터 */}
+      <SessionsFilter
+        searchText={searchText}
+        onSearchChange={handleSearchChange}
+        filters={localFilters}
+        onFiltersChange={setLocalFilters}
+        onApplyFilters={handleApplyFilters}
+      />
+
       <SessionsTable data={sessions} onRevoke={handleRevoke} onDelete={handleDelete} />
     </div>
   );

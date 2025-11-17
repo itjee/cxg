@@ -29,7 +29,7 @@ export function MainLayout({ children }: MainLayoutProps) {
         >
           <MainHeader onToggleSidebar={handleToggleSidebar} />
           <main className="flex-1 overflow-y-auto bg-muted/10">
-            <div className="max-w-[1600px] mx-auto p-4 lg:p-6">{children}</div>
+            <div className="max-w-[1600px] mx-auto px-3 py-4 lg:px-3 lg:py-6">{children}</div>
           </main>
         </div>
       </div>

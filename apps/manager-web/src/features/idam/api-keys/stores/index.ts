@@ -1,1 +1,1 @@
-export * from "./api_keys.store";
+export * from "./api-keys.store";

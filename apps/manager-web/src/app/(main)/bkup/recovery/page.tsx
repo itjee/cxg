@@ -1,7 +1,7 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { PageLayout } from "@/components/layouts/page-layout";
+import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { AlertCircle, CheckCircle, Clock, RefreshCw, Server } from "lucide-react";
 
@@ -39,7 +39,7 @@ export default function RecoveryPage() {
 
 
   return (
-    <PageLayout
+    <Page
       title="복구 관리"
       description="시스템 복구를 관리합니다"
       
@@ -53,6 +53,6 @@ export default function RecoveryPage() {
       </div>
             </CardContent>
       </Card>
-    </PageLayout>
+    </Page>
   );
 }

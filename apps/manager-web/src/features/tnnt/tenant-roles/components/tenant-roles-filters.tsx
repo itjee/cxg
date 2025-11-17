@@ -16,8 +16,8 @@ interface TenantRolesFiltersProps {
 
 export function TenantRolesFilters({ data }: TenantRolesFiltersProps) {
   const {
-    globalFilter,
-    setGlobalFilter,
+    searchText,
+    setSearchText,
     selectedStatus,
     setSelectedStatus,
     selectedTenantId,
@@ -33,7 +33,7 @@ export function TenantRolesFilters({ data }: TenantRolesFiltersProps) {
 
   const filterConfigs: FilterConfig[] = [
     {
-      key: 'globalFilter',
+      key: 'searchText',
       label: '검색',
       description: '역할명, 역할 코드...',
       type: 'search',
@@ -64,7 +64,7 @@ export function TenantRolesFilters({ data }: TenantRolesFiltersProps) {
   ];
 
   const filterValues = {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedTenantId,
     showSystemRoles: showSystemRoles ? 'true' : '',
@@ -72,7 +72,7 @@ export function TenantRolesFilters({ data }: TenantRolesFiltersProps) {
 
   const handleFilterChange = (key: string, value: string) => {
     const handlers: Record<string, (val: any) => void> = {
-      globalFilter: setGlobalFilter,
+      searchText: setSearchText,
       selectedStatus: setSelectedStatus as (val: string) => void,
       selectedTenantId: setSelectedTenantId,
       showSystemRoles: (val: string) => setShowSystemRoles(val === 'true'),

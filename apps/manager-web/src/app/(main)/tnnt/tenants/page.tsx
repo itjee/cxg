@@ -27,7 +27,7 @@ import type { Tenant } from '@/features/tnnt/tenants/types';
 export default function TenantsPage() {
   // UI 상태 (필터, 페이징, 모달)
   const {
-    globalFilter,
+    searchText,
     selectedStatus,
     selectedType,
     selectedIsSuspended,
@@ -45,7 +45,7 @@ export default function TenantsPage() {
   } = useTenants({
     page: currentPage + 1, // 0-based to 1-based pagination conversion
     pageSize: itemsPerPage,
-    search: globalFilter,
+    search: searchText,
     status: selectedStatus || undefined,
     type: selectedType || undefined,
   });

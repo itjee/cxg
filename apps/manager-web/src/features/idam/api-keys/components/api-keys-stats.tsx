@@ -8,15 +8,9 @@
  */
 
 import { useMemo } from "react";
-import {
-  Key,
-  CheckCircle,
-  XCircle,
-  Ban,
-  TrendingUp,
-} from "lucide-react";
+import { Key, CheckCircle, XCircle, Ban, TrendingUp } from "lucide-react";
 import { StatsCards } from "@/components/stats/stats-cards";
-import type { ApiKey } from "../types/api_keys.types";
+import type { ApiKey } from "../types/api-keys.types";
 
 interface StatCardData {
   title: string;
@@ -43,9 +37,12 @@ export function ApiKeysStats({ data }: ApiKeysStatsProps) {
     const revoked = data.filter((k) => k.status === "REVOKED").length;
     const totalUsage = data.reduce((sum, k) => sum + k.usageCount, 0);
 
-    const activePercentage = total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
-    const inactivePercentage = total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
-    const revokedPercentage = total > 0 ? ((revoked / total) * 100).toFixed(1) : "0.0";
+    const activePercentage =
+      total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
+    const inactivePercentage =
+      total > 0 ? ((inactive / total) * 100).toFixed(1) : "0.0";
+    const revokedPercentage =
+      total > 0 ? ((revoked / total) * 100).toFixed(1) : "0.0";
 
     return [
       {
@@ -79,12 +76,14 @@ export function ApiKeysStats({ data }: ApiKeysStatsProps) {
       {
         title: "총 사용 횟수",
         value: totalUsage.toLocaleString(),
-        description: `평균 ${total > 0 ? Math.floor(totalUsage / total).toLocaleString() : 0}회`,
+        description: `평균 ${
+          total > 0 ? Math.floor(totalUsage / total).toLocaleString() : 0
+        }회`,
         icon: <TrendingUp className="h-5 w-5" />,
         color: "warning" as const,
       },
     ];
   }, [data]);
 
-  return <StatsCards cards={stats} columns={5} />;
+  return <StatsCards cards={stats} columns={4} />;
 }

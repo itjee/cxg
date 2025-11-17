@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, Eye, EyeOff } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
-import type { ApiKey, ApiKeyStatus } from "../types/api_keys.types";
+import type { ApiKey, ApiKeyStatus } from "../types/api-keys.types";
 
 /**
  * 상수 정의 - 상태별 색상
@@ -107,6 +107,9 @@ export const getApiKeysColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 키 ID
   {
@@ -119,6 +122,9 @@ export const getApiKeysColumns = ({
         {row.getValue("keyId")}
       </code>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 키 이름
   {
@@ -129,6 +135,9 @@ export const getApiKeysColumns = ({
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("keyName")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 사용자 ID
   {
@@ -139,6 +148,9 @@ export const getApiKeysColumns = ({
         {(row.getValue("userId") as string).slice(0, 8)}...
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 상태
   {
@@ -154,6 +166,9 @@ export const getApiKeysColumns = ({
         </Badge>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // 사용 횟수
   {
@@ -166,6 +181,9 @@ export const getApiKeysColumns = ({
         {formatNumber(row.getValue("usageCount"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 마지막 사용일
   {
@@ -178,6 +196,9 @@ export const getApiKeysColumns = ({
         {formatDateTime(row.getValue("lastUsedAt"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 만료일
   {
@@ -196,6 +217,9 @@ export const getApiKeysColumns = ({
         </div>
       );
     },
+    meta: {
+      filterable: false,
+    },
   },
   // 등록일
   {
@@ -208,6 +232,9 @@ export const getApiKeysColumns = ({
         {formatDate(row.getValue("createdAt"))}
       </div>
     ),
+    meta: {
+      filterable: false,
+    },
   },
   // 액션
   {
@@ -252,5 +279,8 @@ export const getApiKeysColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
 ];

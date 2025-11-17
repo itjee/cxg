@@ -70,6 +70,9 @@ export const getRolesColumns = ({
       );
     },
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
   // 역할명
   {
@@ -80,12 +83,18 @@ export const getRolesColumns = ({
     cell: ({ row }) => (
       <div className="font-medium">{row.getValue("name")}</div>
     ),
+    meta: {
+      filterable: true,
+    },
   },
   // 설명
   {
     accessorKey: "description",
     header: "설명",
     cell: ({ row }) => <div>{row.getValue("description") || "-"}</div>,
+    meta: {
+      filterable: true,
+    },
   },
   // 상태
   {
@@ -100,6 +109,9 @@ export const getRolesColumns = ({
           {formatStatus(isActive)}
         </Badge>
       );
+    },
+    meta: {
+      filterable: false,
     },
   },
   // 액션
@@ -127,5 +139,8 @@ export const getRolesColumns = ({
       </div>
     ),
     enableSorting: false,
+    meta: {
+      filterable: false,
+    },
   },
 ];
