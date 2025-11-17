@@ -236,7 +236,7 @@ export function QueryFilterPopup({
                   {filteredOptions.length > 0 ? (
                     <CheckboxGroup
                       options={filteredOptions}
-                      selectedValues={queryFilters[selectedItem.key] || []}
+                      selectedValues={Array.isArray(queryFilters[selectedItem.key]) ? queryFilters[selectedItem.key] : []}
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (
