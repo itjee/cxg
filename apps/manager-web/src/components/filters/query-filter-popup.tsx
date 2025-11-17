@@ -12,7 +12,7 @@
  * - queryFilters: 쿼리 필터 조건들 (선택형 옵션)
  */
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 import { CheckboxGroup } from "./query-checkbox-group";
 import type { FilterItemConfig } from "./query-popup.types";
 
@@ -63,10 +65,24 @@ export function QueryFilterPopup({
     items.length > 0 ? items[0].key : null
   );
 
+  // 필터값 검색어
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
   const activeQueryFilterCount = countActiveQueryFilters(queryFilters);
 
   // 현재 선택된 쿼리 필터 항목 객체
   const selectedItem = items.find((item) => item.key === selectedItemKey);
+
+  // 검색어에 따라 필터링된 옵션들
+  const filteredOptions = useMemo(() => {
+    if (!selectedItem || !searchQuery.trim()) {
+      return selectedItem?.options || [];
+    }
+    const lowerQuery = searchQuery.toLowerCase();
+    return (selectedItem?.options || []).filter((option) =>
+      option.label.toLowerCase().includes(lowerQuery)
+    );
+  }, [selectedItem, searchQuery]);
 
   /**
    * 선택된 쿼리 필터 항목의 체크박스 값 변경
@@ -117,6 +133,14 @@ export function QueryFilterPopup({
     onOpenChange(false);
   }, [onApply, onOpenChange]);
 
+  /**
+   * 필터 항목 선택 (검색어 초기화)
+   */
+  const handleSelectItem = useCallback((key: string) => {
+    setSelectedItemKey(key);
+    setSearchQuery("");
+  }, []);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl max-h-[680px] flex flex-col p-6">
@@ -145,7 +169,7 @@ export function QueryFilterPopup({
                 return (
                   <button
                     key={item.key}
-                    onClick={() => setSelectedItemKey(item.key)}
+                    onClick={() => handleSelectItem(item.key)}
                     className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-all ${
                       isSelected
                         ? "bg-primary text-primary-foreground font-semibold"
@@ -173,8 +197,26 @@ export function QueryFilterPopup({
           <div className="flex-1 min-w-0">
             {selectedItem ? (
               <div className="space-y-4 h-full flex flex-col">
-                <div className="flex items-center justify-between pb-2 border-b">
-                  <h3 className="text-sm font-semibold">{selectedItem.label}</h3>
+                {/* 검색 바 */}
+                <div className="flex items-center gap-2 pb-2 border-b">
+                  <div className="flex-1 relative">
+                    <Input
+                      type="text"
+                      placeholder={`${selectedItem.label} 검색...`}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="text-sm h-8"
+                    />
+                    {searchQuery && (
+                      <button
+                        onClick={() => setSearchQuery("")}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        title="검색 초기화"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -183,17 +225,25 @@ export function QueryFilterPopup({
                       !queryFilters[selectedItem.key] ||
                       queryFilters[selectedItem.key]!.length === 0
                     }
-                    className="text-xs h-8"
+                    className="text-xs h-8 flex-shrink-0"
                   >
-                    이 필터 지우기
+                    지우기
                   </Button>
                 </div>
+
+                {/* 필터 옵션 목록 */}
                 <div className="flex-1 overflow-y-auto">
-                  <CheckboxGroup
-                    options={selectedItem.options}
-                    selectedValues={queryFilters[selectedItem.key] || []}
-                    onValuesChange={handleCheckboxChange}
-                  />
+                  {filteredOptions.length > 0 ? (
+                    <CheckboxGroup
+                      options={filteredOptions}
+                      selectedValues={queryFilters[selectedItem.key] || []}
+                      onValuesChange={handleCheckboxChange}
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                      검색 결과가 없습니다
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
