@@ -80,8 +80,9 @@ class ManagerQuery:
         offset: int = 0,
         category: str | None = None,
         status: str | None = None,
+        search: str | None = None,
     ) -> "list[ManagerRole]":
-        return await ManagerRoleQueries.roles(self, info, limit, offset, category, status)
+        return await ManagerRoleQueries.roles(self, info, limit, offset, category, status, search)
 
     # IDAM - Permissions
     @strawberry.field(description="권한 조회 (ID)")
