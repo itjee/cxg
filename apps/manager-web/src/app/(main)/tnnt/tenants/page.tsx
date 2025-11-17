@@ -112,7 +112,7 @@ export default function TenantsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       {/* 페이지 헤더 */}
       <TenantsHeader onRefresh={() => refetch()} />
 

@@ -19,7 +19,7 @@
 import { useState } from "react";
 import { QueryBar } from "./query-bar";
 import { QueryFilterPopup } from "./query-filter-popup";
-import type { FilterItemConfig } from "./filter-popup.types";
+import type { FilterItemConfig } from "./query-popup.types";
 
 /**
  * 쿼리 조건 관리 Props
@@ -110,4 +110,4 @@ export function QueryFilter({
 }
 
 // 타입 export
-export type { FilterItemConfig } from "./filter-popup.types";
+export type { FilterItemConfig } from "./query-popup.types";

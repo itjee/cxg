@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Filters, type FilterConfig } from "@/components/filters";
+import { QueryFilters, type FilterConfig } from "@/components/filters";
 import { useAuditLogsStore } from "../stores/audit-logs.store";
 import type { AuditLog } from "../types/audit-logs.types";
 
@@ -101,7 +101,7 @@ export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

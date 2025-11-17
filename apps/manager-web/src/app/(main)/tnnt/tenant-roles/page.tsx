@@ -90,7 +90,7 @@ export default function TenantRolesPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <TenantRolesHeader onRefresh={() => refetch()} />
       <TenantRolesStats data={roles} />
       <TenantRolesFilters data={roles} />

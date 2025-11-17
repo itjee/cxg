@@ -21,11 +21,11 @@ export { QueryFilter } from "./query-filter";
 export { QueryFilterPopup } from "./query-filter-popup";
 
 // === 내부 컴포넌트 ===
-export { CheckboxGroup } from "./checkbox-group";
+export { CheckboxGroup } from "./query-checkbox-group";
 
 // === 기본 필터 컴포넌트 (Expanded 필터 UI) ===
-export { Filters } from "./filters";
-export type { FilterConfig, FilterOption, FiltersProps } from "./filters";
+export { Filters as QueryFilters } from "./query-filters";
+export type { FilterConfig, FilterOption, FiltersProps } from "./query-filters";
 
 // === Query 기반 타입 export ===
 export type {
@@ -39,4 +39,4 @@ export type {
   QueryFilterPopupProps,
   FilterItemConfig as FilterItemConfigPopup,
   FilterOption as FilterOptionPopup,
-} from "./filter-popup.types";
+} from "./query-popup.types";

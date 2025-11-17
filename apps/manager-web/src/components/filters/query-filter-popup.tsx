@@ -23,8 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckboxGroup } from "./checkbox-group";
-import type { FilterItemConfig } from "./filter-popup.types";
+import { CheckboxGroup } from "./query-checkbox-group";
+import type { FilterItemConfig } from "./query-popup.types";
 
 /**
  * Query 필터 팝업 Props

@@ -6,7 +6,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Filters, type FilterConfig } from '@/components/filters';
+import { QueryFilters, type FilterConfig } from '@/components/filters';
 import { useTenantUsersStore } from '../stores';
 import type { TenantUser } from '../types';
 
@@ -104,7 +104,7 @@ export function TenantUsersFilters({ data }: TenantUsersFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

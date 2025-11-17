@@ -124,7 +124,7 @@ export default function ApiKeysPage() {
   if (loading) return <div className="p-6">로딩 중...</div>;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <ApiKeysHeader onRefresh={() => refetch()} />
       <ApiKeysStats data={apiKeys} />
 

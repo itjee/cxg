@@ -5,7 +5,7 @@
  * @description 스케줄된 작업 검색/필터 UI
  */
 
-import { Filters, type FilterConfig } from "@/components/filters";
+import { QueryFilters, type FilterConfig } from "@/components/filters";
 import { useTasksStore } from "../stores";
 import type { Task } from "../types";
 
@@ -92,7 +92,7 @@ export function TasksFilters({ data }: TasksFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

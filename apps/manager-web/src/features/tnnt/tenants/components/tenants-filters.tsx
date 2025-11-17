@@ -11,7 +11,7 @@
  */
 
 import { useMemo } from 'react';
-import { Filters, type FilterConfig } from '@/components/filters';
+import { QueryFilters, type FilterConfig } from '@/components/filters';
 import { useTenantsStore } from '../stores/tenants.store';
 import type { Tenant } from '../types';
 
@@ -104,7 +104,7 @@ export function TenantsFilters({ data }: TenantsFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

@@ -7,6 +7,10 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
+  --font-size-xs: 0.8125rem;   /* 13px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -675,6 +679,13 @@ html.palette-rose {
   to {
     transform: translateY(100%);
     opacity: 0;
+  }
+}
+
+@layer base {
+  .text-xs {
+    font-size: 0.8125rem !important;   /* 13px */
+    line-height: 1.5rem;    /* 24px */
   }
 }
 

@@ -6,7 +6,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Filters, type FilterConfig } from '@/components/filters';
+import { QueryFilters, type FilterConfig } from '@/components/filters';
 import { useOnboardingsStore } from '../stores';
 import type { Onboarding } from '../types';
 
@@ -93,7 +93,7 @@ export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

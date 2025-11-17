@@ -11,7 +11,7 @@
  */
 
 import { useMemo } from "react";
-import { Filters, type FilterConfig } from "@/components/filters";
+import { QueryFilters, type FilterConfig } from "@/components/filters";
 import { useSubscriptionsStore } from "../stores/subscriptions.store";
 import type { Subscription } from "../types/subscriptions.types";
 
@@ -100,7 +100,7 @@ export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
   };
 
   return (
-    <Filters
+    <QueryFilters
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}
