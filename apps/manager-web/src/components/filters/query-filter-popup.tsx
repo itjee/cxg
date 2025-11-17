@@ -43,9 +43,20 @@ export interface QueryFilterPopupProps {
 
 /**
  * 활성 쿼리 필터 개수 계산
+ * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계)
+ *
+ * 예시:
+ * - status: ["ACTIVE", "INACTIVE"] → 2개
+ * - userType: ["ADMIN"] → 1개
+ * - 총: 3개
  */
 function countActiveQueryFilters(queryFilters: Record<string, string[] | null>): number {
-  return Object.values(queryFilters).filter((v) => v && v.length > 0).length;
+  return Object.values(queryFilters).reduce((total, value) => {
+    if (Array.isArray(value) && value.length > 0) {
+      return total + value.length;
+    }
+    return total;
+  }, 0);
 }
 
 /**
@@ -190,7 +201,7 @@ export function QueryFilterPopup({
               {items.map((item) => {
                 const isSelected = selectedItemKey === item.key;
                 const hasValue =
-                  queryFilters[item.key] && queryFilters[item.key]!.length > 0;
+                  tempQueryFilters[item.key] && tempQueryFilters[item.key]!.length > 0;
 
                 return (
                   <button
@@ -209,7 +220,7 @@ export function QueryFilterPopup({
                           variant={isSelected ? "default" : "secondary"}
                           className="h-5 w-5 ml-2 flex items-center justify-center p-0 text-xs rounded-full flex-shrink-0"
                         >
-                          {queryFilters[item.key]!.length}
+                          {tempQueryFilters[item.key]!.length}
                         </Badge>
                       )}
                     </span>
