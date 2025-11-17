@@ -10,11 +10,18 @@
  */
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EntityFormButtons } from "@/components/features";
 import type { User } from "../types/users.types";
 
@@ -58,6 +65,7 @@ export function UsersForm({
     formState: { errors },
     reset,
     watch,
+    control,
   } = useForm<UserFormData>({
     resolver: zodResolver(userFormSchema),
     defaultValues: {
@@ -184,16 +192,22 @@ export function UsersForm({
             <Label htmlFor="userType">
               사용자 유형 <span className="text-red-500">*</span>
             </Label>
-            <select
-              id="userType"
-              {...register("userType")}
-              className="w-full px-3 py-2 border rounded-md bg-background"
-              disabled={isLoading}
-            >
-              <option value="USER">일반 사용자</option>
-              <option value="MANAGER">매니저</option>
-              <option value="ADMIN">관리자</option>
-            </select>
+            <Controller
+              name="userType"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
+                  <SelectTrigger id="userType">
+                    <SelectValue placeholder="사용자 유형을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USER">일반 사용자</SelectItem>
+                    <SelectItem value="MANAGER">매니저</SelectItem>
+                    <SelectItem value="ADMIN">관리자</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
             {errors.userType && (
               <p className="text-xs text-red-500">{errors.userType.message}</p>
             )}
@@ -244,15 +258,22 @@ export function UsersForm({
                   : "잠금 상태"}
               </p>
             </div>
-            <select
-              {...register("status")}
-              className="px-3 py-2 border rounded-md bg-background"
-              disabled={isLoading}
-            >
-              <option value="ACTIVE">활성</option>
-              <option value="INACTIVE">비활성</option>
-              <option value="LOCKED">잠금</option>
-            </select>
+            <Controller
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange} disabled={isLoading}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">활성</SelectItem>
+                    <SelectItem value="INACTIVE">비활성</SelectItem>
+                    <SelectItem value="LOCKED">잠금</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
           </div>
         </div>
       </div>
