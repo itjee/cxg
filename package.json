@@ -25,6 +25,7 @@
     "graphql": "^16.9.0",
     "immer": "^10.2.0",
     "pretendard": "^1.3.9",
+    "react-day-picker": "^9.11.1",
     "sonner": "^2.0.7"
   }
 }

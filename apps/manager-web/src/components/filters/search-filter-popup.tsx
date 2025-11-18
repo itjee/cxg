@@ -25,7 +25,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { X } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { X, Calendar as CalendarIcon } from "lucide-react";
 import { CheckboxGroup } from "./search-checkbox-group";
 import type { FilterItemConfig } from "./search-popup.types";
 
@@ -303,82 +305,162 @@ export function SearchFilterPopup({
                 {/* 필터 옵션 목록 */}
                 <div className="flex-1 overflow-y-auto min-h-0">
                   {selectedItem.type === "daterange" ? (
-                    // 날짜 범위 필터
+                    // 날짜 범위 필터 (캘린더 포함)
                     <div className="space-y-4 p-2">
+                      {/* 시작 날짜 */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium">시작 날짜 (From)</label>
-                        <Input
-                          type="date"
-                          value={
-                            tempSearchFilters[selectedItem.key] &&
-                            typeof tempSearchFilters[selectedItem.key] === "object" &&
-                            "value" in tempSearchFilters[selectedItem.key]
-                              ? (tempSearchFilters[selectedItem.key] as {
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full justify-start text-left font-normal ${
+                                tempSearchFilters[selectedItem.key] &&
+                                typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                "value" in tempSearchFilters[selectedItem.key] &&
+                                (tempSearchFilters[selectedItem.key] as {
                                   type: string;
                                   value: { from?: string; to?: string };
-                                }).value.from || ""
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const from = e.target.value;
-                            const currentValue =
-                              tempSearchFilters[selectedItem.key] &&
+                                }).value.from
+                                  ? ""
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {tempSearchFilters[selectedItem.key] &&
                               typeof tempSearchFilters[selectedItem.key] === "object" &&
-                              "value" in tempSearchFilters[selectedItem.key]
+                              "value" in tempSearchFilters[selectedItem.key] &&
+                              (tempSearchFilters[selectedItem.key] as {
+                                type: string;
+                                value: { from?: string; to?: string };
+                              }).value.from
                                 ? (tempSearchFilters[selectedItem.key] as {
                                     type: string;
                                     value: { from?: string; to?: string };
-                                  }).value
-                                : {};
+                                  }).value.from
+                                : "날짜 선택"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={
+                                tempSearchFilters[selectedItem.key] &&
+                                typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                "value" in tempSearchFilters[selectedItem.key] &&
+                                (tempSearchFilters[selectedItem.key] as {
+                                  type: string;
+                                  value: { from?: string; to?: string };
+                                }).value.from
+                                  ? new Date(
+                                      (tempSearchFilters[selectedItem.key] as {
+                                        type: string;
+                                        value: { from?: string; to?: string };
+                                      }).value.from!
+                                    )
+                                  : undefined
+                              }
+                              onSelect={(date) => {
+                                const from = date ? date.toISOString().split("T")[0] : undefined;
+                                const currentValue =
+                                  tempSearchFilters[selectedItem.key] &&
+                                  typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                  "value" in tempSearchFilters[selectedItem.key]
+                                    ? (tempSearchFilters[selectedItem.key] as {
+                                        type: string;
+                                        value: { from?: string; to?: string };
+                                      }).value
+                                    : {};
 
-                            setTempSearchFilters({
-                              ...tempSearchFilters,
-                              [selectedItem.key]: {
-                                type: "range",
-                                value: { ...currentValue, from: from || undefined },
-                              },
-                            });
-                          }}
-                          className="text-sm"
-                        />
+                                setTempSearchFilters({
+                                  ...tempSearchFilters,
+                                  [selectedItem.key]: {
+                                    type: "range",
+                                    value: { ...currentValue, from },
+                                  },
+                                });
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
 
+                      {/* 종료 날짜 */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium">종료 날짜 (To)</label>
-                        <Input
-                          type="date"
-                          value={
-                            tempSearchFilters[selectedItem.key] &&
-                            typeof tempSearchFilters[selectedItem.key] === "object" &&
-                            "value" in tempSearchFilters[selectedItem.key]
-                              ? (tempSearchFilters[selectedItem.key] as {
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className={`w-full justify-start text-left font-normal ${
+                                tempSearchFilters[selectedItem.key] &&
+                                typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                "value" in tempSearchFilters[selectedItem.key] &&
+                                (tempSearchFilters[selectedItem.key] as {
                                   type: string;
                                   value: { from?: string; to?: string };
-                                }).value.to || ""
-                              : ""
-                          }
-                          onChange={(e) => {
-                            const to = e.target.value;
-                            const currentValue =
-                              tempSearchFilters[selectedItem.key] &&
+                                }).value.to
+                                  ? ""
+                                  : "text-muted-foreground"
+                              }`}
+                            >
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              {tempSearchFilters[selectedItem.key] &&
                               typeof tempSearchFilters[selectedItem.key] === "object" &&
-                              "value" in tempSearchFilters[selectedItem.key]
+                              "value" in tempSearchFilters[selectedItem.key] &&
+                              (tempSearchFilters[selectedItem.key] as {
+                                type: string;
+                                value: { from?: string; to?: string };
+                              }).value.to
                                 ? (tempSearchFilters[selectedItem.key] as {
                                     type: string;
                                     value: { from?: string; to?: string };
-                                  }).value
-                                : {};
+                                  }).value.to
+                                : "날짜 선택"}
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={
+                                tempSearchFilters[selectedItem.key] &&
+                                typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                "value" in tempSearchFilters[selectedItem.key] &&
+                                (tempSearchFilters[selectedItem.key] as {
+                                  type: string;
+                                  value: { from?: string; to?: string };
+                                }).value.to
+                                  ? new Date(
+                                      (tempSearchFilters[selectedItem.key] as {
+                                        type: string;
+                                        value: { from?: string; to?: string };
+                                      }).value.to!
+                                    )
+                                  : undefined
+                              }
+                              onSelect={(date) => {
+                                const to = date ? date.toISOString().split("T")[0] : undefined;
+                                const currentValue =
+                                  tempSearchFilters[selectedItem.key] &&
+                                  typeof tempSearchFilters[selectedItem.key] === "object" &&
+                                  "value" in tempSearchFilters[selectedItem.key]
+                                    ? (tempSearchFilters[selectedItem.key] as {
+                                        type: string;
+                                        value: { from?: string; to?: string };
+                                      }).value
+                                    : {};
 
-                            setTempSearchFilters({
-                              ...tempSearchFilters,
-                              [selectedItem.key]: {
-                                type: "range",
-                                value: { ...currentValue, to: to || undefined },
-                              },
-                            });
-                          }}
-                          className="text-sm"
-                        />
+                                setTempSearchFilters({
+                                  ...tempSearchFilters,
+                                  [selectedItem.key]: {
+                                    type: "range",
+                                    value: { ...currentValue, to },
+                                  },
+                                });
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </div>
                   ) : filteredOptions.length > 0 ? (
