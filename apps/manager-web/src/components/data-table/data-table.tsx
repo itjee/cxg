@@ -253,15 +253,15 @@ export function DataTableColumnHeader({
       {canSort && column.getCanSort() ? (
         <Button
           variant="ghost"
-          size="sm"
-          className="h-8 -ml-3 font-medium"
+          size="default"
+          className="h-8 -ml-3"
           onClick={() => column.toggleSorting(isSorted === "asc")}
         >
           <span>{title}</span>
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ) : (
-        <span className="font-medium">{title}</span>
+        <span>{title}</span>
       )}
     </div>
   );

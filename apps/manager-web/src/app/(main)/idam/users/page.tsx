@@ -29,12 +29,22 @@ import {
 
 export default function UsersPage() {
   // Store에서 UI 상태 가져오기
-  const { currentPage, itemsPerPage, setSearchText, setSelectedStatus, setCurrentPage, openForm, setSelectedId } =
-    useUsersStore();
+  const {
+    currentPage,
+    itemsPerPage,
+    setSearchText,
+    setSelectedStatus,
+    setCurrentPage,
+    openForm,
+    setSelectedId,
+  } = useUsersStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
   const [searchFilters, setSearchFilters] = useState<
-    Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+    Record<
+      string,
+      string[] | null | { type: string; value: { from?: string; to?: string } }
+    >
   >({
     status: null,
     userType: null,
@@ -75,7 +85,11 @@ export default function UsersPage() {
 
   const getForcePasswordChange = (): boolean | undefined => {
     const passwordFilter = searchFilters.forcePasswordChange;
-    if (!passwordFilter || !Array.isArray(passwordFilter) || passwordFilter.length === 0) {
+    if (
+      !passwordFilter ||
+      !Array.isArray(passwordFilter) ||
+      passwordFilter.length === 0
+    ) {
       return undefined;
     }
     if (passwordFilter.includes("true") && !passwordFilter.includes("false")) {
@@ -101,7 +115,9 @@ export default function UsersPage() {
       return {};
     }
 
-    const { from, to } = (createdAtFilter as { type: string; value: { from?: string; to?: string } }).value;
+    const { from, to } = (
+      createdAtFilter as { type: string; value: { from?: string; to?: string } }
+    ).value;
     return {
       createdAfter: from,
       createdBefore: to,
@@ -118,8 +134,12 @@ export default function UsersPage() {
   } = useUsers({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-    userType: searchFilters.userType ? searchFilters.userType.join(",") : undefined,
-    status: searchFilters.status ? searchFilters.status.join(",") : undefined,
+    userType: Array.isArray(searchFilters.userType)
+      ? searchFilters.userType.join(",")
+      : undefined,
+    status: Array.isArray(searchFilters.status)
+      ? searchFilters.status.join(",")
+      : undefined,
     search: debouncedSearchText || undefined,
     mfaEnabled: getMfaEnabled(),
     forcePasswordChange: getForcePasswordChange(),
@@ -201,7 +221,12 @@ export default function UsersPage() {
         onClearAllSearchFilters={handleClearAllSearchFilters}
       />
 
-      <UsersTable data={users} isLoading={updating} onEdit={handleEdit} onDelete={handleDelete} />
+      <UsersTable
+        data={users}
+        isLoading={updating}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <UsersEdit />
     </div>
   );
