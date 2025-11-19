@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { LucideIcon } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { LucideIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
   DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
-import { useState } from 'react';
+} from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 /**
  * 버튼 타입 정의
@@ -18,7 +18,7 @@ import { useState } from 'react';
  * - 'text': 텍스트 버튼 (라벨만)
  * - 'icon': 아이콘 버튼 (아이콘만)
  */
-type ButtonType = 'default' | 'lookup' | 'toggle' | 'text' | 'icon';
+type ButtonType = "default" | "lookup" | "toggle" | "text" | "icon";
 
 /**
  * 룩업 버튼의 메뉴 아이템
@@ -27,7 +27,7 @@ export interface LookupMenuItemConfig {
   label: string;
   icon?: LucideIcon;
   onClick: () => void;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
 }
 
 /**
@@ -39,7 +39,7 @@ export interface ActionButtonConfig {
   label?: string;
   icon?: LucideIcon;
   onClick?: () => void;
-  variant?: 'default' | 'outline' | 'ghost' | 'secondary' | 'destructive';
+  variant?: "default" | "outline" | "ghost" | "secondary" | "destructive";
   /** 토글 버튼용: 초기 활성 상태 */
   isActive?: boolean;
   /** 토글 버튼용: 활성/비활성 변경 콜백 */
@@ -47,7 +47,7 @@ export interface ActionButtonConfig {
   /** 룩업 버튼용: 메뉴 아이템 */
   menuItems?: LookupMenuItemConfig[];
   /** 버튼 크기 */
-  size?: 'default' | 'sm' | 'lg';
+  size?: "default" | "sm" | "lg";
 }
 
 interface PageHeaderProps {
@@ -62,13 +62,13 @@ interface PageHeaderProps {
 function ActionButton({ action }: { action: ActionButtonConfig }) {
   const Icon = action.icon;
   const [isActive, setIsActive] = useState(action.isActive ?? false);
-  const buttonType = action.type ?? 'default';
+  const buttonType = action.type ?? "default";
 
   // 1. 일반 버튼 (라벨 + 아이콘)
-  if (buttonType === 'default') {
+  if (buttonType === "default") {
     return (
       <Button
-        variant={action.variant || 'outline'}
+        variant={action.variant || "outline"}
         onClick={action.onClick}
         size={action.size}
         title={action.label}
@@ -80,12 +80,12 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
   }
 
   // 2. 룩업 버튼 (드롭다운 메뉴)
-  if (buttonType === 'lookup') {
+  if (buttonType === "lookup") {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant={action.variant || 'outline'}
+            variant={action.variant || "outline"}
             size={action.size}
             title={action.label}
           >
@@ -113,7 +113,7 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
               <DropdownMenuItem
                 key={idx}
                 onClick={item.onClick}
-                className={item.variant === 'destructive' ? 'text-red-600' : ''}
+                className={item.variant === "destructive" ? "text-red-600" : ""}
               >
                 {ItemIcon && <ItemIcon className="mr-2 h-4 w-4" />}
                 {item.label}
@@ -126,10 +126,10 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
   }
 
   // 3. 토글 버튼 (활성/비활성)
-  if (buttonType === 'toggle') {
+  if (buttonType === "toggle") {
     return (
       <Button
-        variant={isActive ? 'default' : 'outline'}
+        variant={isActive ? "default" : "outline"}
         onClick={() => {
           setIsActive(!isActive);
           action.onToggle?.(!isActive);
@@ -137,7 +137,9 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
         size={action.size}
         title={action.label}
       >
-        {Icon && <Icon className={`mr-2 h-4 w-4 ${isActive ? 'text-white' : ''}`} />}
+        {Icon && (
+          <Icon className={`mr-2 h-4 w-4 ${isActive ? "text-white" : ""}`} />
+        )}
         {action.label}
         {isActive && (
           <svg className="ml-2 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
@@ -153,7 +155,7 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
   }
 
   // 4. 텍스트 버튼 (라벨만)
-  if (buttonType === 'text') {
+  if (buttonType === "text") {
     return (
       <Button
         variant="ghost"
@@ -168,12 +170,12 @@ function ActionButton({ action }: { action: ActionButtonConfig }) {
   }
 
   // 5. 아이콘 버튼 (아이콘만)
-  if (buttonType === 'icon') {
+  if (buttonType === "icon") {
     return (
       <Button
         variant="ghost"
         onClick={action.onClick}
-        size={action.size || 'sm'}
+        size={action.size || "sm"}
         className="h-9 w-9 p-0"
         title={action.label}
       >
@@ -255,8 +257,8 @@ export function PageHeader({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
-        <p className="text-sm text-muted-foreground mt-2">{description}</p>
+        <h1 className="text-3xl font-bold text-foreground">{title}</h1>
+        <p className="text-base text-muted-foreground mt-2">{description}</p>
       </div>
       {actions.length > 0 && (
         <div className="flex items-center gap-2">

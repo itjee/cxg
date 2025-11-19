@@ -117,7 +117,7 @@ export const getTasksColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center font-medium text-muted-foreground">
+        <div className="text-center font-light text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -132,7 +132,7 @@ export const getTasksColumns = ({
       <DataTableColumnHeader column={column} title="작업명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("task_name")}</div>
+      <div className="font-light">{row.getValue("task_name")}</div>
     ),
   },
   // 작업 유형
@@ -154,7 +154,7 @@ export const getTasksColumns = ({
     accessorKey: "schedule_expression",
     header: "스케줄",
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("schedule_expression")}
       </code>
     ),
@@ -168,7 +168,7 @@ export const getTasksColumns = ({
     ),
     cell: ({ row }) => {
       const nextRun = row.getValue("next_run_at") as string | undefined;
-      return <div className="text-sm">{formatDateTime(nextRun)}</div>;
+      return <div className="text-base">{formatDateTime(nextRun)}</div>;
     },
   },
   // 마지막 실행
@@ -179,7 +179,7 @@ export const getTasksColumns = ({
     ),
     cell: ({ row }) => {
       const lastRun = row.getValue("last_run_at") as string | undefined;
-      return <div className="text-sm">{formatDateTime(lastRun)}</div>;
+      return <div className="text-base">{formatDateTime(lastRun)}</div>;
     },
   },
   // 마지막 상태
@@ -203,7 +203,7 @@ export const getTasksColumns = ({
       const total = row.original.total_runs;
       const successful = row.getValue("successful_runs") as number;
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {calculateSuccessRate(total, successful)}
         </div>
       );

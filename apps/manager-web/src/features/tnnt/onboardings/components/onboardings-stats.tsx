@@ -63,12 +63,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
     <div className="grid gap-4 md:grid-cols-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">전체</CardTitle>
+          <CardTitle className="text-base font-medium">전체</CardTitle>
           <Activity className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.total}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.total}</div>
+          <p className="text-sm text-muted-foreground">
             총 프로세스 수
           </p>
         </CardContent>
@@ -76,12 +76,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">완료</CardTitle>
+          <CardTitle className="text-base font-medium">완료</CardTitle>
           <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.completed}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.completed}</div>
+          <p className="text-sm text-muted-foreground">
             완료율 {stats.completionRate}%
           </p>
         </CardContent>
@@ -89,12 +89,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">진행 중</CardTitle>
+          <CardTitle className="text-base font-medium">진행 중</CardTitle>
           <Loader2 className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.inProgress}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.inProgress}</div>
+          <p className="text-sm text-muted-foreground">
             대기: {stats.pending}건
           </p>
         </CardContent>
@@ -102,12 +102,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">실패</CardTitle>
+          <CardTitle className="text-base font-medium">실패</CardTitle>
           <XCircle className="h-4 w-4 text-red-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.failed}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.failed}</div>
+          <p className="text-sm text-muted-foreground">
             실패율 {stats.failureRate}%
           </p>
         </CardContent>
@@ -115,12 +115,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">재시도</CardTitle>
+          <CardTitle className="text-base font-medium">재시도</CardTitle>
           <TrendingUp className="h-4 w-4 text-orange-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.withRetries}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.withRetries}</div>
+          <p className="text-sm text-muted-foreground">
             평균 {stats.avgRetries}회
           </p>
         </CardContent>
@@ -128,12 +128,12 @@ export function OnboardingsStats({ data }: OnboardingsStatsProps) {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">건너뜀</CardTitle>
+          <CardTitle className="text-base font-medium">건너뜀</CardTitle>
           <SkipForward className="h-4 w-4 text-yellow-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{stats.skipped}</div>
-          <p className="text-xs text-muted-foreground">
+          <div className="text-3xl font-bold">{stats.skipped}</div>
+          <p className="text-sm text-muted-foreground">
             {stats.total > 0 ? ((stats.skipped / stats.total) * 100).toFixed(1) : 0}%
           </p>
         </CardContent>

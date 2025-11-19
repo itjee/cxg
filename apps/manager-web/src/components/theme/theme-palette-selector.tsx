@@ -18,7 +18,7 @@ export function PaletteSelector({ value, onChange }: PaletteSelectorProps) {
     <div className="space-y-6">
       {/* Neutral Palettes */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">Neutral</Label>
+        <Label className="text-lg font-semibold">Neutral</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.neutral.map((paletteInfo) => (
             <PaletteCard
@@ -34,7 +34,7 @@ export function PaletteSelector({ value, onChange }: PaletteSelectorProps) {
 
       {/* Warm Palettes */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">Warm</Label>
+        <Label className="text-lg font-semibold">Warm</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.warm.map((paletteInfo) => (
             <PaletteCard
@@ -50,7 +50,7 @@ export function PaletteSelector({ value, onChange }: PaletteSelectorProps) {
 
       {/* Cool Palettes */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">Cool</Label>
+        <Label className="text-lg font-semibold">Cool</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.cool.map((paletteInfo) => (
             <PaletteCard
@@ -66,7 +66,7 @@ export function PaletteSelector({ value, onChange }: PaletteSelectorProps) {
 
       {/* Vibrant Palettes */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">Vibrant</Label>
+        <Label className="text-lg font-semibold">Vibrant</Label>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.vibrant.map((paletteInfo) => (
             <PaletteCard
@@ -117,7 +117,7 @@ function PaletteCard({ palette, label, selected, onClick }: PaletteCardProps) {
 
         {/* Palette Name */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium capitalize truncate">{label}</span>
+          <span className="text-base font-medium capitalize truncate">{label}</span>
           <div className={cn(
             "w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all",
             selected ? "border-primary bg-primary scale-110" : "border-border group-hover:border-primary/50"

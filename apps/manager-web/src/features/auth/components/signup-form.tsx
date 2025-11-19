@@ -114,13 +114,13 @@ export function SignupForm() {
       {displayError && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50/80 backdrop-blur-sm border border-red-200/80 shadow-sm">
           <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <span className="text-sm text-red-600">{displayError}</span>
+          <span className="text-red-600">{displayError}</span>
         </div>
       )}
 
       {/* Username */}
       <div className="space-y-2">
-        <Label htmlFor="username" className="text-neutral-200 font-medium text-sm">
+        <Label htmlFor="username" className="text-neutral-200 font-medium">
           사용자명
         </Label>
         <div className="relative group">
@@ -131,7 +131,9 @@ export function SignupForm() {
             placeholder="admin"
             className="pl-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-neutral-600 focus:border-violet-500/50 focus:bg-white/10 focus:shadow-lg focus:shadow-violet-500/20 rounded-xl transition-all"
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
             required
             disabled={isLoading}
           />
@@ -140,7 +142,7 @@ export function SignupForm() {
 
       {/* Email */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-neutral-200 font-medium text-sm">
+        <Label htmlFor="email" className="text-neutral-200 font-medium">
           이메일
         </Label>
         <div className="relative group">
@@ -151,7 +153,9 @@ export function SignupForm() {
             placeholder="admin@example.com"
             className="pl-12 h-12 bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-neutral-600 focus:border-violet-500/50 focus:bg-white/10 focus:shadow-lg focus:shadow-violet-500/20 rounded-xl transition-all"
             value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, email: e.target.value })
+            }
             required
             disabled={isLoading}
           />
@@ -160,7 +164,7 @@ export function SignupForm() {
 
       {/* Password */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-neutral-200 font-medium text-sm">
+        <Label htmlFor="password" className="text-neutral-200 font-medium">
           비밀번호
         </Label>
         <div className="relative group">
@@ -180,7 +184,11 @@ export function SignupForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-violet-400 transition-colors"
           >
-            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
           </button>
         </div>
         {formData.password && (
@@ -192,7 +200,9 @@ export function SignupForm() {
                   style={{ width: `${(passwordStrength / 5) * 100}%` }}
                 ></div>
               </div>
-              <span className="text-xs text-neutral-500 w-12">{getStrengthText()}</span>
+              <span className="text-sm text-neutral-500 w-12">
+                {getStrengthText()}
+              </span>
             </div>
           </div>
         )}
@@ -202,7 +212,7 @@ export function SignupForm() {
       <div className="space-y-2">
         <Label
           htmlFor="confirmPassword"
-          className="text-neutral-200 font-medium text-sm"
+          className="text-neutral-200 font-medium"
         >
           비밀번호 확인
         </Label>
@@ -235,7 +245,7 @@ export function SignupForm() {
         </div>
         {formData.confirmPassword && (
           <p
-            className={`text-xs flex items-center gap-1 ${
+            className={`text-sm flex items-center gap-1 ${
               formData.password === formData.confirmPassword
                 ? "text-green-600"
                 : "text-red-600"
@@ -252,7 +262,7 @@ export function SignupForm() {
       {/* Admin Approval Notice */}
       <div className="flex items-start gap-3 p-4 bg-violet-500/10 backdrop-blur-sm rounded-xl border border-violet-500/20 shadow-sm">
         <AlertCircle className="h-5 w-5 text-violet-400 flex-shrink-0 mt-0.5" />
-        <p className="text-sm text-neutral-300 leading-relaxed">
+        <p className="text-lg font-bold text-neutral-300 leading-relaxed">
           계정 신청 후 관리자 승인이 완료되면 사용하실 수 있습니다.
         </p>
       </div>
@@ -260,7 +270,7 @@ export function SignupForm() {
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full h-12 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 transition-all hover:scale-[1.02]"
+        className="w-full h-12 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white rounded-xl text-lg font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 transition-all hover:scale-[1.02]"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -275,7 +285,7 @@ export function SignupForm() {
 
       {/* Login Link */}
       <div className="text-center">
-        <p className="text-neutral-400 text-sm">
+        <p className="text-neutral-400">
           이미 계정이 있으신가요?{" "}
           <Link
             href="/signin"

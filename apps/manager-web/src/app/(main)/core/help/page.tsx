@@ -12,8 +12,8 @@ export default function HelpPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">도움말 센터</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-semibold">도움말 센터</h1>
+          <p className="text-base text-muted-foreground mt-1">
             플랫폼 사용에 필요한 도움말과 지원을 받으세요.
           </p>
         </div>
@@ -26,7 +26,7 @@ export default function HelpPage() {
             <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="도움이 필요한 내용을 검색하세요..."
-              className="pl-10 h-12 text-base"
+              className="pl-10 h-12 text-lg"
             />
           </div>
         </CardContent>
@@ -37,7 +37,7 @@ export default function HelpPage() {
         <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
           <CardHeader>
             <Book className="h-8 w-8 mb-2 text-blue-600" />
-            <CardTitle className="text-base">문서</CardTitle>
+            <CardTitle className="text-lg">문서</CardTitle>
             <CardDescription>상세한 사용 가이드와 API 문서</CardDescription>
           </CardHeader>
           <CardContent>
@@ -51,7 +51,7 @@ export default function HelpPage() {
         <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
           <CardHeader>
             <MessageCircle className="h-8 w-8 mb-2 text-green-600" />
-            <CardTitle className="text-base">커뮤니티</CardTitle>
+            <CardTitle className="text-lg">커뮤니티</CardTitle>
             <CardDescription>다른 사용자들과 질문하고 답변하기</CardDescription>
           </CardHeader>
           <CardContent>
@@ -65,7 +65,7 @@ export default function HelpPage() {
         <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
           <CardHeader>
             <Mail className="h-8 w-8 mb-2 text-orange-600" />
-            <CardTitle className="text-base">지원팀 문의</CardTitle>
+            <CardTitle className="text-lg">지원팀 문의</CardTitle>
             <CardDescription>기술 지원이 필요하신가요?</CardDescription>
           </CardHeader>
           <CardContent>
@@ -80,7 +80,7 @@ export default function HelpPage() {
       {/* Popular Topics */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">인기 주제</CardTitle>
+          <CardTitle className="text-lg">인기 주제</CardTitle>
           <CardDescription>자주 찾는 도움말 항목</CardDescription>
         </CardHeader>
         <CardContent>
@@ -88,7 +88,7 @@ export default function HelpPage() {
             <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors">
               <div>
                 <p className="font-medium">테넌트 생성 및 관리</p>
-                <p className="text-sm text-muted-foreground">새로운 테넌트를 추가하고 설정하는 방법</p>
+                <p className="text-base text-muted-foreground">새로운 테넌트를 추가하고 설정하는 방법</p>
               </div>
               <Badge variant="secondary">가이드</Badge>
             </div>
@@ -96,7 +96,7 @@ export default function HelpPage() {
             <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors">
               <div>
                 <p className="font-medium">사용자 권한 설정</p>
-                <p className="text-sm text-muted-foreground">역할과 권한을 관리하는 방법</p>
+                <p className="text-base text-muted-foreground">역할과 권한을 관리하는 방법</p>
               </div>
               <Badge variant="secondary">가이드</Badge>
             </div>
@@ -104,7 +104,7 @@ export default function HelpPage() {
             <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors">
               <div>
                 <p className="font-medium">청구 및 구독 관리</p>
-                <p className="text-sm text-muted-foreground">플랜 변경 및 결제 관리</p>
+                <p className="text-base text-muted-foreground">플랜 변경 및 결제 관리</p>
               </div>
               <Badge variant="secondary">가이드</Badge>
             </div>
@@ -112,7 +112,7 @@ export default function HelpPage() {
             <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors">
               <div>
                 <p className="font-medium">API 연동 가이드</p>
-                <p className="text-sm text-muted-foreground">API를 사용한 외부 시스템 연동</p>
+                <p className="text-base text-muted-foreground">API를 사용한 외부 시스템 연동</p>
               </div>
               <Badge variant="secondary">개발</Badge>
             </div>
@@ -120,7 +120,7 @@ export default function HelpPage() {
             <div className="flex items-center justify-between p-3 rounded-lg border hover:bg-accent/50 cursor-pointer transition-colors">
               <div>
                 <p className="font-medium">백업 및 복구</p>
-                <p className="text-sm text-muted-foreground">데이터 백업 설정 및 복구 절차</p>
+                <p className="text-base text-muted-foreground">데이터 백업 설정 및 복구 절차</p>
               </div>
               <Badge variant="secondary">가이드</Badge>
             </div>
@@ -131,7 +131,7 @@ export default function HelpPage() {
       {/* Video Tutorials */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">비디오 튜토리얼</CardTitle>
+          <CardTitle className="text-lg">비디오 튜토리얼</CardTitle>
           <CardDescription>동영상으로 쉽게 배우기</CardDescription>
         </CardHeader>
         <CardContent>
@@ -143,7 +143,7 @@ export default function HelpPage() {
                 </div>
               </div>
               <p className="font-medium">플랫폼 시작하기</p>
-              <p className="text-sm text-muted-foreground">5분</p>
+              <p className="text-base text-muted-foreground">5분</p>
             </div>
 
             <div className="rounded-lg border p-4 hover:bg-accent/50 cursor-pointer transition-colors">
@@ -153,7 +153,7 @@ export default function HelpPage() {
                 </div>
               </div>
               <p className="font-medium">대시보드 둘러보기</p>
-              <p className="text-sm text-muted-foreground">8분</p>
+              <p className="text-base text-muted-foreground">8분</p>
             </div>
           </div>
         </CardContent>
@@ -162,7 +162,7 @@ export default function HelpPage() {
       {/* Contact Support */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">지원 연락처</CardTitle>
+          <CardTitle className="text-lg">지원 연락처</CardTitle>
           <CardDescription>문제 해결이 필요하신가요?</CardDescription>
         </CardHeader>
         <CardContent>
@@ -171,8 +171,8 @@ export default function HelpPage() {
               <Mail className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">이메일 지원</p>
-                <p className="text-sm text-muted-foreground">support@cxg.com</p>
-                <p className="text-xs text-muted-foreground mt-1">평균 응답 시간: 24시간</p>
+                <p className="text-base text-muted-foreground">support@cxg.com</p>
+                <p className="text-sm text-muted-foreground mt-1">평균 응답 시간: 24시간</p>
               </div>
             </div>
 
@@ -180,7 +180,7 @@ export default function HelpPage() {
               <MessageCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
               <div>
                 <p className="font-medium">라이브 채팅</p>
-                <p className="text-sm text-muted-foreground">평일 09:00 - 18:00 (KST)</p>
+                <p className="text-base text-muted-foreground">평일 09:00 - 18:00 (KST)</p>
                 <Button variant="outline" size="sm" className="mt-2">
                   채팅 시작하기
                 </Button>

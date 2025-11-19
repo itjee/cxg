@@ -1,7 +1,12 @@
 import { useMemo } from "react";
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useAuditLogsStore } from "../stores/audit-logs.store";
 import type { AuditLog } from "../types/audit-logs.types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface AuditLogsFiltersProps {
   data: AuditLog[];
@@ -101,7 +106,7 @@ export function AuditLogsFilters({ data }: AuditLogsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

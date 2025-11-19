@@ -55,7 +55,7 @@ export function InvoiceForm({ initialData, onSubmit, onCancel, isLoading }: Invo
           </SelectContent>
         </Select>
         {form.formState.errors.tenantId && (
-          <p className="text-xs text-red-500">{form.formState.errors.tenantId.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.tenantId.message}</p>
         )}
       </div>
 
@@ -68,7 +68,7 @@ export function InvoiceForm({ initialData, onSubmit, onCancel, isLoading }: Invo
           disabled={isLoading}
         />
         {form.formState.errors.issueDate && (
-          <p className="text-xs text-red-500">{form.formState.errors.issueDate.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.issueDate.message}</p>
         )}
       </div>
 
@@ -81,7 +81,7 @@ export function InvoiceForm({ initialData, onSubmit, onCancel, isLoading }: Invo
           disabled={isLoading}
         />
         {form.formState.errors.dueDate && (
-          <p className="text-xs text-red-500">{form.formState.errors.dueDate.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.dueDate.message}</p>
         )}
       </div>
 
@@ -96,7 +96,7 @@ export function InvoiceForm({ initialData, onSubmit, onCancel, isLoading }: Invo
           disabled={isLoading}
         />
         {form.formState.errors.amount && (
-          <p className="text-xs text-red-500">{form.formState.errors.amount.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.amount.message}</p>
         )}
       </div>
 

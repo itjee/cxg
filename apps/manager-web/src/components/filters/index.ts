@@ -23,9 +23,8 @@ export { SearchFilterPopup } from "./search-filter-popup";
 // === 내부 컴포넌트 ===
 export { CheckboxGroup } from "./search-checkbox-group";
 
-// === 기본 필터 컴포넌트 (Expanded 필터 UI) ===
-export { Filters as SearchFilters } from "./search-filters";
-export type { FilterConfig, FilterOption, FiltersProps } from "./search-filters";
+// === 기본 필터 컴포넌트 (Expanded 필터 UI) - 삭제됨 ===
+// Filters 컴포넌트는 SearchFilterPopup으로 통일되었습니다.
 
 // === Search 기반 타입 export ===
 export type {

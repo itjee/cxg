@@ -175,7 +175,7 @@ export function PoliciesForm({
             <FormItem>
               <FormLabel>정책 규칙 (JSON)</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder='{"minLength": 8, "requireSpecialChar": true}' rows={6} className="font-mono text-xs" />
+                <Textarea {...field} placeholder='{"minLength": 8, "requireSpecialChar": true}' rows={6} className="font-mono text-sm" />
               </FormControl>
               <FormDescription>
                 JSON 형식으로 정책 규칙을 입력하세요
@@ -229,7 +229,7 @@ export function PoliciesForm({
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                 <div className="space-y-0.5">
-                  <FormLabel className="text-base">전체 테넌트</FormLabel>
+                  <FormLabel className="text-lg">전체 테넌트</FormLabel>
                 </div>
                 <FormControl>
                   <Switch

@@ -1,6 +1,5 @@
 "use client";
 
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { Card, CardContent } from "@/components/ui/card";
 import { Bell } from "lucide-react";
@@ -16,10 +15,13 @@ export default function NotificationsPage() {
   ];
 
   return (
-    <Page
-      title="알림 관리"
-      description="시스템 알림을 관리합니다"
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">알림 관리</h1>
+        <p className="text-muted-foreground">시스템 알림을 관리합니다</p>
+      </div>
+
       {/* 통계 카드 */}
       <StatsCards cards={stats} columns={4} />
 
@@ -31,6 +33,6 @@ export default function NotificationsPage() {
           </div>
         </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

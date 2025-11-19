@@ -118,7 +118,7 @@ export const getTransactionColumns = ({
   {
     id: "rowNumber",
     header: () => (
-      <div className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <div className="text-center text-sm font-light text-muted-foreground uppercase tracking-wider">
         NO
       </div>
     ),
@@ -127,7 +127,7 @@ export const getTransactionColumns = ({
       const pageSize = table.getState().pagination.pageSize;
       const rowIndex = row.index;
       return (
-        <div className="text-center text-sm text-foreground w-12">
+        <div className="text-center text-base text-foreground w-12">
           {pageIndex * pageSize + rowIndex + 1}
         </div>
       );
@@ -142,7 +142,7 @@ export const getTransactionColumns = ({
       <DataTableColumnHeader column={column} title="거래 번호" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("transaction_no")}
       </code>
     ),
@@ -168,7 +168,7 @@ export const getTransactionColumns = ({
       <DataTableColumnHeader column={column} title="결제 수단" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">{row.getValue("payment_method")}</div>
+      <div className="text-base">{row.getValue("payment_method")}</div>
     ),
     enableSorting: false,
   },
@@ -180,7 +180,7 @@ export const getTransactionColumns = ({
     ),
     cell: ({ row }) => {
       const gateway = row.getValue("payment_gateway") as string | null;
-      return <div className="text-sm">{gateway ? gateway : "-"}</div>;
+      return <div className="text-base">{gateway ? gateway : "-"}</div>;
     },
     enableSorting: true,
   },
@@ -191,7 +191,7 @@ export const getTransactionColumns = ({
       <DataTableColumnHeader column={column} title="금액" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">
+      <div className="font-light">
         {formatCurrency(row.getValue("amount"))}
       </div>
     ),
@@ -220,7 +220,7 @@ export const getTransactionColumns = ({
       <DataTableColumnHeader column={column} title="처리 시간" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">
+      <div className="text-base">
         {formatDateTime(row.getValue("processed_at"))}
       </div>
     ),

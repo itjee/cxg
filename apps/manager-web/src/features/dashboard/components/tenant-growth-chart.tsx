@@ -16,14 +16,14 @@ export function TenantGrowthChart() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <CardTitle className="text-base font-medium">
+          <CardTitle className="text-lg font-medium">
             테넌트 증가 추이
           </CardTitle>
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedPeriod("week")}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
               selectedPeriod === "week"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-muted"
@@ -33,7 +33,7 @@ export function TenantGrowthChart() {
           </button>
           <button
             onClick={() => setSelectedPeriod("month")}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
               selectedPeriod === "month"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-muted"
@@ -43,7 +43,7 @@ export function TenantGrowthChart() {
           </button>
           <button
             onClick={() => setSelectedPeriod("year")}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors ${
+            className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
               selectedPeriod === "year"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:bg-muted"
@@ -59,7 +59,7 @@ export function TenantGrowthChart() {
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : error ? (
-          <div className="h-[300px] flex items-center justify-center text-destructive text-sm">
+          <div className="h-[300px] flex items-center justify-center text-destructive text-base">
             차트 데이터를 로드할 수 없습니다
           </div>
         ) : (
@@ -85,7 +85,7 @@ export function TenantGrowthChart() {
             </div>
 
             {/* Y-axis labels */}
-            <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between py-4 text-xs text-muted-foreground">
+            <div className="absolute left-0 top-0 bottom-0 flex flex-col justify-between py-4 text-sm text-muted-foreground">
               <span className="pl-2">30</span>
               <span className="pl-2">24</span>
               <span className="pl-2">18</span>
@@ -95,7 +95,7 @@ export function TenantGrowthChart() {
             </div>
 
             {/* X-axis labels */}
-            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-12 pb-2 text-xs text-muted-foreground">
+            <div className="absolute bottom-0 left-0 right-0 flex justify-between px-12 pb-2 text-sm text-muted-foreground">
               <span>1월</span>
               <span>2월</span>
               <span>3월</span>
@@ -107,13 +107,13 @@ export function TenantGrowthChart() {
             {/* Stats overlay */}
             {data?.tenantGrowth && data.tenantGrowth.length > 0 && (
               <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm rounded-lg p-3 border">
-                <div className="text-xs text-muted-foreground mb-1">
+                <div className="text-sm text-muted-foreground mb-1">
                   신규 테넌트
                 </div>
-                <div className="text-xl font-bold text-primary">
+                <div className="text-2xl font-bold text-primary">
                   +{data.tenantGrowth[data.tenantGrowth.length - 1].newTenants}
                 </div>
-                <div className="text-xs text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
+                <div className="text-sm text-emerald-600 dark:text-emerald-400 mt-1 flex items-center gap-1">
                   <TrendingUp className="h-3 w-3" />
                   <span>증가 중</span>
                 </div>
@@ -123,7 +123,7 @@ export function TenantGrowthChart() {
         )}
 
         {/* Legend */}
-        <div className="flex items-center justify-center gap-6 mt-4 text-sm">
+        <div className="flex items-center justify-center gap-6 mt-4 text-base">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-primary"></div>
             <span className="text-muted-foreground">테넌트 수</span>

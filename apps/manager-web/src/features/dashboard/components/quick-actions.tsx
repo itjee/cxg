@@ -69,11 +69,11 @@ export function QuickActions({ actions, columns = 2, className }: QuickActionsPr
                   <Icon className={cn("h-5 w-5", iconColorClasses[color])} />
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <div className="text-sm font-semibold group-hover:text-primary transition-colors">
+                  <div className="text-base font-semibold group-hover:text-primary transition-colors">
                     {action.label}
                   </div>
                   {action.description && (
-                    <div className="text-xs text-muted-foreground line-clamp-1">
+                    <div className="text-sm text-muted-foreground line-clamp-1">
                       {action.description}
                     </div>
                   )}

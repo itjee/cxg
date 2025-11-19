@@ -60,7 +60,7 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-destructive text-sm">
+          <div className="text-center py-8 text-destructive text-base">
             활동 데이터를 로드할 수 없습니다
           </div>
         ) : activities.length === 0 ? (
@@ -80,17 +80,17 @@ export function ActivityFeed({ limit = 10 }: ActivityFeedProps) {
                   className="flex items-start gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   <Avatar className="h-8 w-8 border border-border">
-                    <AvatarFallback className="text-xs font-medium">
+                    <AvatarFallback className="text-sm font-medium">
                       {userInitial}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 space-y-1 min-w-0">
-                    <p className="text-sm leading-none">
+                    <p className="text-base leading-none">
                       <span className="font-semibold">{userName}</span>{" "}
                       <span className="text-muted-foreground">{activity.action}</span>{" "}
                       <span className="font-medium">{activity.description}</span>
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       {getTimeAgo(new Date(activity.createdAt))}
                     </p>
                   </div>

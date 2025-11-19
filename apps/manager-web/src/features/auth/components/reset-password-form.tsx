@@ -158,7 +158,7 @@ export function ResetPasswordForm() {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-white mb-4">
+        <h2 className="text-2xl font-bold text-white mb-4">
           비밀번호가 재설정되었습니다
         </h2>
 
@@ -180,7 +180,7 @@ export function ResetPasswordForm() {
     <div className="bg-neutral-900/60 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-8">
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
           비밀번호 재설정
         </h2>
         <p className="text-neutral-300">
@@ -194,10 +194,10 @@ export function ResetPasswordForm() {
         {testMode && (
           <div className="p-4 bg-amber-500/10 rounded-xl border border-amber-500/30">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-lg">🧪</span>
-              <p className="text-sm text-amber-400 font-semibold">Admin 테스트 모드</p>
+              <span className="text-xl">🧪</span>
+              <p className="text-base text-amber-400 font-semibold">Admin 테스트 모드</p>
             </div>
-            <p className="text-xs text-amber-300">
+            <p className="text-sm text-amber-300">
               admin 계정은 토큰 검증 없이 비밀번호를 변경할 수 있습니다.
             </p>
           </div>
@@ -206,9 +206,9 @@ export function ResetPasswordForm() {
         {/* Token Debug Info (Development Only) */}
         {process.env.NODE_ENV === "development" && token && !testMode && (
           <div className="p-3 bg-violet-500/10 rounded-lg border border-violet-500/20">
-            <p className="text-xs text-violet-400 mb-1 font-semibold">🔧 개발 정보</p>
-            <p className="text-xs text-neutral-400">토큰 길이: {token.length}자</p>
-            <p className="text-xs text-neutral-400 font-mono break-all mt-1">
+            <p className="text-sm text-violet-400 mb-1 font-semibold">🔧 개발 정보</p>
+            <p className="text-sm text-neutral-400">토큰 길이: {token.length}자</p>
+            <p className="text-sm text-neutral-400 font-mono break-all mt-1">
               {token.substring(0, 40)}...
             </p>
           </div>
@@ -218,13 +218,13 @@ export function ResetPasswordForm() {
         {displayError && (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50/80 backdrop-blur-sm border border-red-200/80 shadow-sm">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <span className="text-sm text-red-600">{displayError}</span>
+            <span className="text-base text-red-600">{displayError}</span>
           </div>
         )}
 
         {/* New Password */}
         <div className="space-y-2">
-          <Label htmlFor="newPassword" className="text-neutral-200 font-medium text-sm">
+          <Label htmlFor="newPassword" className="text-neutral-200 font-medium text-base">
             새 비밀번호
           </Label>
           <div className="relative group">
@@ -260,7 +260,7 @@ export function ResetPasswordForm() {
                     style={{ width: `${(passwordStrength / 5) * 100}%` }}
                   ></div>
                 </div>
-                <span className="text-xs text-neutral-500 w-12">{getStrengthText()}</span>
+                <span className="text-sm text-neutral-500 w-12">{getStrengthText()}</span>
               </div>
             </div>
           )}
@@ -268,7 +268,7 @@ export function ResetPasswordForm() {
 
         {/* Confirm Password */}
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword" className="text-neutral-200 font-medium text-sm">
+          <Label htmlFor="confirmPassword" className="text-neutral-200 font-medium text-base">
             비밀번호 확인
           </Label>
           <div className="relative group">
@@ -299,7 +299,7 @@ export function ResetPasswordForm() {
             </button>
           </div>
           {formData.confirmPassword && (
-            <p className={`text-xs flex items-center gap-1 ${formData.newPassword === formData.confirmPassword ? "text-green-600" : "text-red-600"}`}>
+            <p className={`text-sm flex items-center gap-1 ${formData.newPassword === formData.confirmPassword ? "text-green-600" : "text-red-600"}`}>
               <CheckCircle2 className="h-3 w-3" />
               {formData.newPassword === formData.confirmPassword ? "비밀번호가 일치합니다" : "비밀번호가 일치하지 않습니다"}
             </p>
@@ -327,7 +327,7 @@ export function ResetPasswordForm() {
       <div className="mt-6 text-center">
         <Link
           href="/signin"
-          className="text-neutral-400 text-sm hover:text-white transition-colors"
+          className="text-neutral-400 text-base hover:text-white transition-colors"
         >
           로그인으로 돌아가기
         </Link>

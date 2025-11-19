@@ -2,7 +2,15 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { Menu, Search, User, ChevronDown, LogOut, Settings, ChevronRight } from "lucide-react";
+import {
+  Menu,
+  Search,
+  User,
+  ChevronDown,
+  LogOut,
+  Settings,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -26,7 +34,7 @@ interface MainHeaderProps {
 
 export function MainHeader({
   collapsed = false,
-  onToggleSidebar
+  onToggleSidebar,
 }: MainHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -42,12 +50,12 @@ export function MainHeader({
   // 사용자 이니셜 생성
   const getUserInitials = () => {
     if (!user) return "U";
-    if (user.full_name) {
-      const names = user.full_name.split(" ");
+    if (user.fullName) {
+      const names = user.fullName.split(" ");
       if (names.length >= 2) {
         return names[0][0] + names[1][0];
       }
-      return user.full_name.substring(0, 2).toUpperCase();
+      return user.fullName.substring(0, 2).toUpperCase();
     }
     return user.username.substring(0, 2).toUpperCase();
   };
@@ -60,12 +68,12 @@ export function MainHeader({
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0"
+            className="h-8 w-8 shrink-0"
             onClick={onToggleSidebar}
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <nav className="flex items-center gap-2 text-xs overflow-x-auto">
+          <nav className="flex items-center gap-2 overflow-x-auto">
             {breadcrumbs.map((crumb, index) => (
               <div key={index} className="flex items-center gap-2 shrink-0">
                 {index > 0 && (
@@ -115,18 +123,24 @@ export function MainHeader({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 h-9">
-                <Avatar className="h-7 w-7">
-                  <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback className="font-bold text-lg">
+                    {getUserInitials()}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="text-lg font-medium">{user?.full_name || user?.username || "User"}</span>
+                <span>{user?.fullName || user?.username || "User"}</span>
                 <ChevronDown className="h-4 w-4 text-muted-foreground" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-lg font-medium">{user?.full_name || user?.username}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  <p className="text-base">
+                    {user?.fullName || user?.username}
+                  </p>
+                  <p className="text-base text-muted-foreground">
+                    {user?.email}
+                  </p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -139,7 +153,10 @@ export function MainHeader({
                 <span>시스템 설정</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive" onClick={handleLogout}>
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={handleLogout}
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>로그아웃</span>
               </DropdownMenuItem>

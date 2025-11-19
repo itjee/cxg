@@ -107,7 +107,7 @@ export const getSessionsColumns = ({
       <DataTableColumnHeader column={column} title="세션 ID" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {(row.getValue("session_id") as string).slice(0, 16)}...
       </code>
     ),
@@ -122,7 +122,7 @@ export const getSessionsColumns = ({
       <DataTableColumnHeader column={column} title="사용자 ID" />
     ),
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-xs font-mono">
+      <div className="text-muted-foreground text-sm font-mono">
         {(row.getValue("user_id") as string).slice(0, 8)}...
       </div>
     ),
@@ -155,7 +155,7 @@ export const getSessionsColumns = ({
       <DataTableColumnHeader column={column} title="IP 주소" />
     ),
     cell: ({ row }) => (
-      <div className="font-mono text-sm">{row.getValue("ip_address")}</div>
+      <div className="font-mono text-base">{row.getValue("ip_address")}</div>
     ),
     meta: {
       filterable: true,
@@ -170,7 +170,7 @@ export const getSessionsColumns = ({
       const countryCode = row.original.country_code;
       if (!city && !countryCode) return <span className="text-muted-foreground">-</span>;
       return (
-        <div className="text-sm">
+        <div className="text-base">
           {city && countryCode ? `${city}, ${countryCode}` : city || countryCode}
         </div>
       );
@@ -188,7 +188,7 @@ export const getSessionsColumns = ({
       if (!userAgent) return <span className="text-muted-foreground">-</span>;
       const truncated = userAgent.length > 30 ? userAgent.slice(0, 30) + "..." : userAgent;
       return (
-        <div className="text-xs text-muted-foreground max-w-[200px] truncate" title={userAgent}>
+        <div className="text-sm text-muted-foreground max-w-[200px] truncate" title={userAgent}>
           {truncated}
         </div>
       );
@@ -240,7 +240,7 @@ export const getSessionsColumns = ({
       <DataTableColumnHeader column={column} title="마지막 활동" />
     ),
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-sm">
+      <div className="text-muted-foreground text-base">
         {formatDateTime(row.getValue("last_activity_at"))}
       </div>
     ),

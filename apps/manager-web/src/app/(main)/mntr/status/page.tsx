@@ -2,10 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
-import { Activity, RefreshCw, Download, Server, Database, Zap, HardDrive } from "lucide-react";
+import { Activity, RefreshCw, Download, Server, Database, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export default function MonitoringStatusPage() {
@@ -48,25 +46,27 @@ export default function MonitoringStatusPage() {
     },
   ];
 
-  const actions = (
-    <ButtonGroup>
-      <Button variant="outline" onClick={handleRefresh}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        새로고침
-      </Button>
-      <Button variant="outline" onClick={handleExport}>
-        <Download className="mr-2 h-4 w-4" />
-        내보내기
-      </Button>
-    </ButtonGroup>
-  );
-
   return (
-    <Page
-      title="시스템 상태"
-      description="실시간 시스템 상태를 모니터링합니다"
-      actions={actions}
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">시스템 상태</h1>
+          <p className="mt-2 text-base text-muted-foreground">실시간 시스템 상태를 모니터링합니다</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            내보내기
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
 
       {/* Overall Status */}
@@ -78,7 +78,7 @@ export default function MonitoringStatusPage() {
         <CardContent>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-green-500 animate-pulse"></div>
-            <span className="text-lg font-semibold text-emerald-600 dark:text-emerald-500">모든 시스템 정상</span>
+            <span className="text-xl font-semibold text-emerald-600 dark:text-emerald-500">모든 시스템 정상</span>
           </div>
         </CardContent>
       </Card>
@@ -87,19 +87,19 @@ export default function MonitoringStatusPage() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">API 서비스</CardTitle>
+            <CardTitle className="text-lg">API 서비스</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">응답 시간</span>
+              <span className="text-base">응답 시간</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">45ms</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">가동률</span>
+              <span className="text-base">가동률</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">99.98%</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">초당 요청</span>
+              <span className="text-base">초당 요청</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">1,250</Badge>
             </div>
           </CardContent>
@@ -107,19 +107,19 @@ export default function MonitoringStatusPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">데이터베이스</CardTitle>
+            <CardTitle className="text-lg">데이터베이스</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">쿼리 응답 시간</span>
+              <span className="text-base">쿼리 응답 시간</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">12ms</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">연결 수</span>
+              <span className="text-base">연결 수</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">245/500</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">복제 지연</span>
+              <span className="text-base">복제 지연</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">0.5s</Badge>
             </div>
           </CardContent>
@@ -127,19 +127,19 @@ export default function MonitoringStatusPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">캐시 서버</CardTitle>
+            <CardTitle className="text-lg">캐시 서버</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">히트율</span>
+              <span className="text-base">히트율</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">94.2%</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">메모리 사용</span>
+              <span className="text-base">메모리 사용</span>
               <Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-500">72%</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">초당 작업</span>
+              <span className="text-base">초당 작업</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">8,500</Badge>
             </div>
           </CardContent>
@@ -147,19 +147,19 @@ export default function MonitoringStatusPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">스토리지</CardTitle>
+            <CardTitle className="text-lg">스토리지</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm">사용량</span>
+              <span className="text-base">사용량</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">6.5 TB / 10 TB</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">읽기 속도</span>
+              <span className="text-base">읽기 속도</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">450 MB/s</Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm">쓰기 속도</span>
+              <span className="text-base">쓰기 속도</span>
               <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-500">320 MB/s</Badge>
             </div>
           </CardContent>
@@ -169,35 +169,35 @@ export default function MonitoringStatusPage() {
       {/* Recent Events */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">최근 이벤트</CardTitle>
+          <CardTitle className="text-lg">최근 이벤트</CardTitle>
           <CardDescription>지난 24시간 동안의 시스템 이벤트</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-start gap-3 text-sm">
+            <div className="flex items-start gap-3 text-base">
               <div className="h-2 w-2 rounded-full bg-green-500 mt-1.5"></div>
               <div className="flex-1">
                 <p className="font-medium">모든 서비스 정상 작동</p>
-                <p className="text-xs text-muted-foreground">2분 전</p>
+                <p className="text-sm text-muted-foreground">2분 전</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 text-sm">
+            <div className="flex items-start gap-3 text-base">
               <div className="h-2 w-2 rounded-full bg-yellow-500 mt-1.5"></div>
               <div className="flex-1">
                 <p className="font-medium">캐시 서버 메모리 사용률 70% 초과</p>
-                <p className="text-xs text-muted-foreground">15분 전</p>
+                <p className="text-sm text-muted-foreground">15분 전</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 text-sm">
+            <div className="flex items-start gap-3 text-base">
               <div className="h-2 w-2 rounded-full bg-green-500 mt-1.5"></div>
               <div className="flex-1">
                 <p className="font-medium">데이터베이스 백업 완료</p>
-                <p className="text-xs text-muted-foreground">2시간 전</p>
+                <p className="text-sm text-muted-foreground">2시간 전</p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

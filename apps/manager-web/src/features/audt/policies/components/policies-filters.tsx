@@ -1,6 +1,11 @@
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { usePoliciesStore } from "../stores/policies.store";
 import type { Policy } from "../types/policies.types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface PoliciesFiltersProps {
   data: Policy[];
@@ -101,7 +106,7 @@ export function PoliciesFilters({ data }: PoliciesFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

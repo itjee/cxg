@@ -1,7 +1,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { BookOpen, Eye, FileText, ThumbsUp } from "lucide-react";
 
@@ -39,13 +38,17 @@ export default function KnowledgePage() {
 
 
   return (
-    <Page
-      title="지식 베이스"
-      description="지식 베이스를 관리합니다"
-      
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">지식 베이스</h1>
+        <p className="text-muted-foreground">지식 베이스를 관리합니다</p>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
-      
+
+      {/* Content */}
       <Card>
         <CardContent className="pt-6">
           <div className="rounded-lg border bg-muted/50 p-8 text-center">
@@ -53,6 +56,6 @@ export default function KnowledgePage() {
       </div>
             </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

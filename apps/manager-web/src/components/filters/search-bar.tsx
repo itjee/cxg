@@ -22,17 +22,34 @@ import { Badge } from "@/components/ui/badge";
 
 /**
  * 활성화된 검색 필터 개수 계산
- * 각 필터 key의 선택된 값의 총 개수를 계산 (배열의 길이 합계)
+ * 각 필터 key의 선택된 값의 총 개수를 계산
  *
  * 예시:
  * - status: ["ACTIVE", "INACTIVE"] → 2개
  * - userType: ["ADMIN"] → 1개
- * - 총: 3개
+ * - createdAt: { type: "range", value: { from: "2025-01-01" } } → 1개
+ * - 총: 4개
  */
 function countActiveSearchFilters(searchFilters: Record<string, any>): number {
   return Object.values(searchFilters).reduce((total, value) => {
     if (Array.isArray(value) && value.length > 0) {
       return total + value.length;
+    }
+    // daterange 필터가 from 또는 to 값을 가지면 1로 카운트
+    if (
+      value !== null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      "type" in value &&
+      "value" in value
+    ) {
+      const rangeValue = value as {
+        type: string;
+        value: { from?: string; to?: string };
+      };
+      if (rangeValue.value.from || rangeValue.value.to) {
+        return total + 1;
+      }
     }
     return total;
   }, 0);
@@ -120,9 +137,9 @@ export function SearchBar({
       <div className="flex items-center gap-1">
         <Button
           variant={activeSearchFilterCount > 0 ? "default" : "outline"}
-          size="sm"
+          size="default"
           onClick={onSearchFilterClick}
-          className="gap-2 relative whitespace-nowrap rounded-md text-xs"
+          className="gap-2 relative whitespace-nowrap rounded-md"
         >
           <Filter className="h-4 w-4" />
           <span>필터</span>
@@ -130,7 +147,7 @@ export function SearchBar({
           {activeSearchFilterCount > 0 && (
             <Badge
               variant="secondary"
-              className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-md"
+              className="ml-1 h-5 w-5 flex items-center justify-center p-0 text-sm font-light rounded-md"
             >
               {activeSearchFilterCount}
             </Badge>
@@ -141,9 +158,9 @@ export function SearchBar({
         {activeSearchFilterCount > 0 && onClearAllSearchFilters && (
           <Button
             variant="outline"
-            size="sm"
+            size="default"
             onClick={onClearAllSearchFilters}
-            className="gap-2 whitespace-nowrap rounded-md text-xs"
+            className="gap-2 whitespace-nowrap rounded-md"
             title="필터 초기화"
           >
             <X className="h-4 w-4" />
@@ -160,8 +177,8 @@ export function SearchBar({
         {/* 기본 [...] 더보기 버튼 */}
         <Button
           variant="outline"
-          size="sm"
-          className="h-8 w-8 p-0 rounded-md text-xs"
+          size="default"
+          className="h-8 w-8 p-0 rounded-md"
           title="더보기"
         >
           <MoreHorizontal className="h-4 w-4" />

@@ -118,7 +118,7 @@ export const getApiKeysColumns = ({
       <DataTableColumnHeader column={column} title="키 ID" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("keyId")}
       </code>
     ),
@@ -133,7 +133,7 @@ export const getApiKeysColumns = ({
       <DataTableColumnHeader column={column} title="키 이름" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("keyName")}</div>
+      <div className="font-light">{row.getValue("keyName")}</div>
     ),
     meta: {
       filterable: true,
@@ -144,7 +144,7 @@ export const getApiKeysColumns = ({
     accessorKey: "userId",
     header: "사용자 ID",
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-xs font-mono">
+      <div className="text-muted-foreground text-sm font-mono">
         {(row.getValue("userId") as string).slice(0, 8)}...
       </div>
     ),
@@ -192,7 +192,7 @@ export const getApiKeysColumns = ({
       <DataTableColumnHeader column={column} title="마지막 사용" />
     ),
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-sm">
+      <div className="text-muted-foreground text-base">
         {formatDateTime(row.getValue("lastUsedAt"))}
       </div>
     ),

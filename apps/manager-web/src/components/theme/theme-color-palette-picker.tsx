@@ -50,12 +50,12 @@ const PaletteCard = memo(function PaletteCard({ palette, selected, onClick }: Pa
       {/* 팔레트 정보 */}
       <div className="text-left">
         <p className={cn(
-          "text-sm font-medium transition-colors",
+          "text-base font-medium transition-colors",
           selected ? "text-primary" : "text-foreground"
         )}>
           {info.label}
         </p>
-        <p className="text-xs text-muted-foreground line-clamp-1">
+        <p className="text-sm text-muted-foreground line-clamp-1">
           {info.description}
         </p>
       </div>
@@ -70,10 +70,10 @@ export function ColorPalettePicker({ selected, onSelect }: ColorPalettePickerPro
     <div className="space-y-6">
       {/* Neutral */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <div className="w-1 h-4 bg-neutral-400 rounded-full" />
           Neutral
-          <span className="text-xs text-muted-foreground font-normal">무채색</span>
+          <span className="text-sm text-muted-foreground font-normal">무채색</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.neutral.map((info) => (
@@ -89,10 +89,10 @@ export function ColorPalettePicker({ selected, onSelect }: ColorPalettePickerPro
 
       {/* Warm */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <div className="w-1 h-4 bg-orange-500 rounded-full" />
           Warm
-          <span className="text-xs text-muted-foreground font-normal">따뜻한 색</span>
+          <span className="text-sm text-muted-foreground font-normal">따뜻한 색</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.warm.map((info) => (
@@ -108,10 +108,10 @@ export function ColorPalettePicker({ selected, onSelect }: ColorPalettePickerPro
 
       {/* Cool */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <div className="w-1 h-4 bg-cyan-500 rounded-full" />
           Cool
-          <span className="text-xs text-muted-foreground font-normal">시원한 색</span>
+          <span className="text-sm text-muted-foreground font-normal">시원한 색</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           {grouped.cool.map((info) => (
@@ -127,10 +127,10 @@ export function ColorPalettePicker({ selected, onSelect }: ColorPalettePickerPro
 
       {/* Vibrant */}
       <div>
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+        <h3 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <div className="w-1 h-4 bg-violet-600 rounded-full" />
           Vibrant
-          <span className="text-xs text-muted-foreground font-normal">선명한 색</span>
+          <span className="text-sm text-muted-foreground font-normal">선명한 색</span>
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {grouped.vibrant.map((info) => (

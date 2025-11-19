@@ -120,7 +120,7 @@ export function PlansTable({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-40">
-        <p className="text-sm text-gray-500">로딩 중...</p>
+        <p className="text-base text-gray-500">로딩 중...</p>
       </div>
     );
   }
@@ -128,7 +128,7 @@ export function PlansTable({
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40">
-        <p className="text-sm text-gray-500">데이터가 없습니다</p>
+        <p className="text-base text-gray-500">데이터가 없습니다</p>
       </div>
     );
   }

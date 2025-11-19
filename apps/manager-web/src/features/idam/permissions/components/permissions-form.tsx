@@ -75,7 +75,7 @@ export function PermissionForm({
       {/* 기본 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">기본 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">기본 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -92,7 +92,7 @@ export function PermissionForm({
               disabled={isLoading}
             />
             {errors.name && (
-              <p className="text-xs text-red-500">{errors.name.message}</p>
+              <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
 
@@ -111,8 +111,8 @@ export function PermissionForm({
           {/* 활성 상태 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">활성 상태</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-lg">활성 상태</Label>
+              <p className="text-base text-muted-foreground">
                 권한 활성화 여부를 설정합니다
               </p>
             </div>

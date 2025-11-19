@@ -104,7 +104,7 @@ export const getOnboardingsColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-base text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -121,7 +121,7 @@ export const getOnboardingsColumns = ({
     cell: ({ row }) => {
       const tenantId = row.getValue('tenant_id') as string;
       return (
-        <code className="text-xs bg-muted px-2 py-1 rounded font-mono" title={tenantId}>
+        <code className="text-sm bg-muted px-2 py-1 rounded font-mono" title={tenantId}>
           {tenantId.slice(0, 8)}...
         </code>
       );
@@ -136,7 +136,7 @@ export const getOnboardingsColumns = ({
     cell: ({ row }) => {
       const stepName = row.getValue('step_name') as OnboardingStepName;
       return (
-        <div className="font-medium">
+        <div className="font-light">
           {stepNameLabels[stepName] || stepName}
         </div>
       );
@@ -182,7 +182,7 @@ export const getOnboardingsColumns = ({
       <DataTableColumnHeader column={column} title="시작 시간" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground flex items-center gap-1">
+      <div className="text-base text-muted-foreground flex items-center gap-1">
         <Clock className="h-3 w-3" />
         {formatDateTime(row.getValue('started_at'))}
       </div>
@@ -195,7 +195,7 @@ export const getOnboardingsColumns = ({
       <DataTableColumnHeader column={column} title="완료 시간" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-base text-muted-foreground">
         {formatDateTime(row.getValue('completed_at'))}
       </div>
     ),
@@ -210,7 +210,7 @@ export const getOnboardingsColumns = ({
         row.original.completed_at
       );
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {duration}
         </div>
       );

@@ -104,7 +104,7 @@ export default function PlansPage() {
       {/* 페이지네이션 */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+          <p className="text-base text-gray-500">
             총 {total}개 중 {currentPage * pageSize + 1}-
             {Math.min((currentPage + 1) * pageSize, total)}개 표시
           </p>

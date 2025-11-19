@@ -11,9 +11,14 @@
  */
 
 import { useMemo } from "react";
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useSubscriptionsStore } from "../stores/subscriptions.store";
 import type { Subscription } from "../types/subscriptions.types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface SubscriptionsFiltersProps {
   data: Subscription[];
@@ -100,7 +105,7 @@ export function SubscriptionsFilters({ data }: SubscriptionsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

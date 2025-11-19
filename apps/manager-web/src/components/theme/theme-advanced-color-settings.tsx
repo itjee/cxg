@@ -29,10 +29,10 @@ function ColorItem({ colorInfo, useDefault, customColor, onToggleDefault, onColo
     <div className="flex items-center gap-4 p-3 border rounded-lg hover:bg-accent/50 transition-colors">
       {/* 왼쪽: 라벨과 설명 */}
       <div className="flex-1 min-w-0">
-        <Label className="text-sm font-medium">
+        <Label className="text-base font-medium">
           {colorInfo.label}
         </Label>
-        <p className="text-xs text-muted-foreground mt-0.5 truncate">
+        <p className="text-sm text-muted-foreground mt-0.5 truncate">
           {colorInfo.description}
         </p>
       </div>
@@ -53,7 +53,7 @@ function ColorItem({ colorInfo, useDefault, customColor, onToggleDefault, onColo
           onChange={(e) => onColorChange(e.target.value)}
           disabled={!isCustom}
           placeholder="oklch(50% 0.1 180)"
-          className="w-48 font-mono text-xs"
+          className="w-48 font-mono text-sm"
         />
 
         {/* Custom 체크박스 */}
@@ -65,7 +65,7 @@ function ColorItem({ colorInfo, useDefault, customColor, onToggleDefault, onColo
           />
           <Label
             htmlFor={`custom-${colorInfo.variable}`}
-            className="text-xs text-muted-foreground cursor-pointer whitespace-nowrap"
+            className="text-sm text-muted-foreground cursor-pointer whitespace-nowrap"
           >
             Custom
           </Label>
@@ -100,7 +100,7 @@ export function AdvancedColorSettings() {
       {/* 현재 편집 중인 모드 표시 */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2 text-base">
             <span className="text-muted-foreground">현재 편집 중인 모드:</span>
             <span className="font-semibold px-2 py-1 rounded bg-primary/10 text-primary">
               {mode === 'light' ? '라이트 모드' : '다크 모드'}
@@ -282,17 +282,17 @@ export function AdvancedColorSettings() {
       {/* 도움말 */}
       <Card>
         <CardContent className="pt-6">
-          <div className="text-sm space-y-2">
+          <div className="text-base space-y-2">
             <p className="font-medium">💡 OKLCH 색상 포맷</p>
             <p className="text-muted-foreground">
-              OKLCH 색상은 <code className="px-1 py-0.5 bg-muted rounded text-xs">oklch(L% C H)</code> 형식으로 입력하세요.
+              OKLCH 색상은 <code className="px-1 py-0.5 bg-muted rounded text-sm">oklch(L% C H)</code> 형식으로 입력하세요.
             </p>
             <ul className="text-muted-foreground list-disc list-inside space-y-1 ml-2">
               <li><strong>L (Lightness)</strong>: 명도 0-100%</li>
               <li><strong>C (Chroma)</strong>: 채도 0-0.4</li>
               <li><strong>H (Hue)</strong>: 색조 0-360도</li>
             </ul>
-            <p className="text-muted-foreground text-xs mt-3">
+            <p className="text-muted-foreground text-sm mt-3">
               예시: <code className="px-1 py-0.5 bg-muted rounded">oklch(50% 0.15 180)</code> = 중간 명도의 청록색
             </p>
           </div>

@@ -56,12 +56,12 @@ export function ResourcesStats({ data }: ResourcesStatsProps) {
           <CardContent className="pt-6">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                <p className="text-base font-medium text-gray-600 dark:text-gray-400">
                   {stat.title}
                 </p>
-                <p className="text-xl font-bold mt-2">{stat.value}</p>
+                <p className="text-2xl font-bold mt-2">{stat.value}</p>
                 {stat.description && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-sm text-gray-500 mt-1">
                     {stat.description}
                   </p>
                 )}

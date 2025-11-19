@@ -120,7 +120,7 @@ export function SessionsForm({
           disabled={isLoading || isEditing}
         />
         {errors.user_id && (
-          <p className="text-sm text-destructive">{errors.user_id.message}</p>
+          <p className="text-base text-destructive">{errors.user_id.message}</p>
         )}
       </div>
 
@@ -135,7 +135,7 @@ export function SessionsForm({
           disabled={isLoading}
         />
         {errors.ip_address && (
-          <p className="text-sm text-destructive">{errors.ip_address.message}</p>
+          <p className="text-base text-destructive">{errors.ip_address.message}</p>
         )}
       </div>
 
@@ -169,7 +169,7 @@ export function SessionsForm({
             disabled={isLoading}
           />
           {errors.expires_at && (
-            <p className="text-sm text-destructive">{errors.expires_at.message}</p>
+            <p className="text-base text-destructive">{errors.expires_at.message}</p>
           )}
         </div>
       </div>

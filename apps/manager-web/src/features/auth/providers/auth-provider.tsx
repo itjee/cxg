@@ -49,7 +49,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       <div className="flex items-center justify-center min-h-screen bg-neutral-950">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 border-4 border-violet-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-neutral-400 text-sm">로딩 중...</p>
+          <p className="text-neutral-400 text-base">로딩 중...</p>
         </div>
       </div>
     );

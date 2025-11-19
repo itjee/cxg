@@ -46,16 +46,13 @@ export function SigninForm() {
       {error && (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50/80 backdrop-blur-sm border border-red-200/80 shadow-sm">
           <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <span className="text-sm text-red-600">{error}</span>
+          <span className="text-red-600">{error}</span>
         </div>
       )}
 
       {/* Username Field */}
       <div className="space-y-2">
-        <Label
-          htmlFor="username"
-          className="text-neutral-200 font-medium text-sm"
-        >
+        <Label htmlFor="username" className="text-neutral-200 font-medium">
           사용자명
         </Label>
         <div className="relative group">
@@ -78,15 +75,12 @@ export function SigninForm() {
       {/* Password Field */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label
-            htmlFor="password"
-            className="text-neutral-200 font-medium text-sm"
-          >
+          <Label htmlFor="password" className="text-neutral-200 font-medium">
             비밀번호
           </Label>
           <Link
             href="/forgot-password"
-            className="text-xs text-violet-400 hover:text-violet-300 transition-colors font-medium"
+            className="text-sm font-light text-violet-400 hover:text-violet-300 transition-colors"
           >
             비밀번호 찾기
           </Link>
@@ -129,10 +123,7 @@ export function SigninForm() {
           }
           className="border-white/30 data-[state=checked]:bg-violet-500 data-[state=checked]:border-violet-500"
         />
-        <Label
-          htmlFor="remember"
-          className="text-sm text-neutral-300 cursor-pointer"
-        >
+        <Label htmlFor="remember" className="text-neutral-300 cursor-pointer">
           로그인 상태 유지
         </Label>
       </div>
@@ -140,7 +131,7 @@ export function SigninForm() {
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full h-12 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white rounded-xl font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 transition-all hover:scale-[1.02]"
+        className="w-full h-12 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-700 hover:to-violet-800 text-white rounded-xl text-lg font-semibold shadow-lg shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/30 transition-all hover:scale-[1.02]"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -157,7 +148,7 @@ export function SigninForm() {
       <Button
         type="button"
         variant="outline"
-        className="w-full h-12 bg-white/5 border border-white/10 text-neutral-300 hover:border-violet-500/50 hover:bg-white/10 hover:text-white rounded-xl font-medium transition-all"
+        className="w-full h-12 bg-white/5 border border-white/10 text-neutral-300 hover:border-violet-500/50 hover:bg-white/10 hover:text-white rounded-xl text-lg font-medium transition-all"
         onClick={handleDemoLogin}
         disabled={isLoading}
       >
@@ -166,7 +157,7 @@ export function SigninForm() {
 
       {/* Sign Up Link */}
       <div className="text-center">
-        <p className="text-neutral-400 text-sm">
+        <p className="text-neutral-400">
           아직 계정이 없으신가요?{" "}
           <Link
             href="/signup"
@@ -181,11 +172,11 @@ export function SigninForm() {
       <div className="p-5 bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-lg">
         <div className="flex items-center gap-2 mb-3">
           <div className="h-2 w-2 bg-violet-400 rounded-full animate-pulse"></div>
-          <p className="text-xs text-neutral-300 font-semibold uppercase tracking-wide">
+          <p className="text-sm text-neutral-300 font-semibold uppercase tracking-wide">
             데모 계정 정보
           </p>
         </div>
-        <div className="space-y-2 text-sm">
+        <div className="space-y-2 text-base">
           <div className="flex items-center gap-2">
             <Mail className="h-3.5 w-3.5 text-violet-400" />
             <span className="font-medium text-neutral-300">사용자명:</span>
@@ -200,12 +191,12 @@ export function SigninForm() {
         {/* Admin Test Links */}
         {process.env.NODE_ENV === "development" && (
           <div className="mt-3 pt-3 border-t border-white/10">
-            <p className="text-xs text-amber-400 mb-2 font-semibold">
+            <p className="text-sm text-amber-400 mb-2 font-semibold">
               🧪 테스트 링크
             </p>
             <Link
               href="/reset-password?username=admin"
-              className="text-xs text-amber-300 hover:text-amber-200 transition-colors block"
+              className="text-sm text-amber-300 hover:text-amber-200 transition-colors block"
             >
               → Admin 비밀번호 재설정 (토큰 불필요)
             </Link>

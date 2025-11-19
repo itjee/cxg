@@ -11,9 +11,14 @@
  */
 
 import { useMemo } from 'react';
-import { SearchFilters, type FilterConfig } from '@/components/filters';
+import { SearchFilterPopup, type FilterConfig } from '@/components/filters';
 import { useTenantsStore } from '../stores/tenants.store';
 import type { Tenant } from '../types';
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface TenantsFiltersProps {
   data: Tenant[];
@@ -104,7 +109,7 @@ export function TenantsFilters({ data }: TenantsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

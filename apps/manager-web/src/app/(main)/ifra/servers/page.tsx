@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function ServersPage() {
@@ -71,34 +69,37 @@ export default function ServersPage() {
     },
   ];
 
-  const actions = (
-    <ButtonGroup>
-      <Button variant="outline" onClick={handleRefresh}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        새로고침
-      </Button>
-      <Button onClick={handleAddServer}>
-        <Plus className="mr-2 h-4 w-4" />
-        서버 추가
-      </Button>
-      <Button variant="outline" onClick={handleExport}>
-        <Download className="mr-2 h-4 w-4" />
-        내보내기
-      </Button>
-    </ButtonGroup>
-  );
-
   return (
-    <Page
-      title="서버 관리"
-      description="플랫폼 서버 인프라를 모니터링하고 관리합니다"
-      actions={actions}
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">서버 관리</h1>
+          <p className="text-muted-foreground">플랫폼 서버 인프라를 모니터링하고 관리합니다</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
+          <Button onClick={handleAddServer}>
+            <Plus className="mr-2 h-4 w-4" />
+            서버 추가
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            내보내기
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
 
+      {/* Content */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">서버 목록</CardTitle>
+          <CardTitle className="text-lg">서버 목록</CardTitle>
           <CardDescription>모든 서버의 상태를 확인합니다.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -142,7 +143,7 @@ export default function ServersPage() {
                 <TableRow className="hover:bg-accent/50">
                   <TableCell className="font-medium">app-server-01</TableCell>
                   <TableCell>
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">192.168.1.10</code>
+                    <code className="text-sm bg-muted px-1.5 py-0.5 rounded">192.168.1.10</code>
                   </TableCell>
                   <TableCell>Seoul (KR)</TableCell>
                   <TableCell>42%</TableCell>
@@ -154,7 +155,7 @@ export default function ServersPage() {
                 <TableRow className="hover:bg-accent/50">
                   <TableCell className="font-medium">app-server-02</TableCell>
                   <TableCell>
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">192.168.1.11</code>
+                    <code className="text-sm bg-muted px-1.5 py-0.5 rounded">192.168.1.11</code>
                   </TableCell>
                   <TableCell>Seoul (KR)</TableCell>
                   <TableCell>38%</TableCell>
@@ -166,7 +167,7 @@ export default function ServersPage() {
                 <TableRow className="hover:bg-accent/50">
                   <TableCell className="font-medium">db-server-01</TableCell>
                   <TableCell>
-                    <code className="text-xs bg-muted px-1.5 py-0.5 rounded">192.168.1.20</code>
+                    <code className="text-sm bg-muted px-1.5 py-0.5 rounded">192.168.1.20</code>
                   </TableCell>
                   <TableCell>Seoul (KR)</TableCell>
                   <TableCell>75%</TableCell>
@@ -180,6 +181,6 @@ export default function ServersPage() {
           </div>
         </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

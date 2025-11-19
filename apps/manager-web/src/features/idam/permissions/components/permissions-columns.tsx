@@ -41,7 +41,7 @@ export const getPermissionsColumns = ({
       <DataTableColumnHeader column={column} title="권한명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-light">{row.getValue("name")}</div>
     ),
     meta: {
       filterable: true,

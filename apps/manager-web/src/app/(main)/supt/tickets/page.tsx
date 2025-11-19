@@ -1,7 +1,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { AlertCircle, CheckCircle, Clock, Headphones, Ticket } from "lucide-react";
 
@@ -39,13 +38,17 @@ export default function TicketsPage() {
 
 
   return (
-    <Page
-      title="지원 티켓"
-      description="고객 지원 티켓을 관리합니다"
-      
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">지원 티켓</h1>
+        <p className="text-muted-foreground">고객 지원 티켓을 관리합니다</p>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
-      
+
+      {/* Content */}
       <Card>
         <CardContent className="pt-6">
           <div className="rounded-lg border bg-muted/50 p-8 text-center">
@@ -53,6 +56,6 @@ export default function TicketsPage() {
       </div>
             </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

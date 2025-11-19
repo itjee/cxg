@@ -43,7 +43,7 @@ export function CheckboxGroup({
           />
           <Label
             htmlFor={`checkbox-${option.value}`}
-            className="text-sm font-normal cursor-pointer flex-1"
+            className="font-normal cursor-pointer flex-1"
           >
             {option.label}
           </Label>

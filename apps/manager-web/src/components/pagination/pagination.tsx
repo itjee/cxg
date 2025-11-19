@@ -1,18 +1,26 @@
-'use client';
+"use client";
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { ButtonGroup } from '@/components/ui/button-group';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 // 페이지 번호 생성 함수
-function getPageNumbers(currentPage: number, totalPages: number): (number | string)[] {
+function getPageNumbers(
+  currentPage: number,
+  totalPages: number
+): (number | string)[] {
   const pages: (number | string)[] = [];
   const maxVisible = 5; // 최대 표시할 페이지 번호 개수
 
@@ -41,7 +49,7 @@ function getPageNumbers(currentPage: number, totalPages: number): (number | stri
     }
 
     if (start > 1) {
-      pages.push('...');
+      pages.push("...");
     }
 
     for (let i = start; i <= end; i++) {
@@ -49,7 +57,7 @@ function getPageNumbers(currentPage: number, totalPages: number): (number | stri
     }
 
     if (end < totalPages - 2) {
-      pages.push('...');
+      pages.push("...");
     }
 
     pages.push(totalPages - 1); // 마지막 페이지는 항상 표시
@@ -107,7 +115,7 @@ export function Pagination({
   itemsPerPage = 10,
   onItemsPerPageChange,
   itemsPerPageOptions = [10, 20, 30, 40, 50],
-  className = '',
+  className = "",
   showInfo = true,
 }: PaginationProps) {
   const totalPages = Math.ceil(totalItems / itemsPerPage);
@@ -130,11 +138,8 @@ export function Pagination({
     <div className={`flex items-center justify-between ${className}`}>
       {/* 정보 섹션 */}
       {showInfo && (
-        <div className="flex-1 text-xs text-muted-foreground">
-          전체{' '}
-          <span className="font-medium text-foreground">
-            {totalItems}
-          </span>
+        <div className="flex-1 text-base text-muted-foreground">
+          전체 <span className="font-medium text-foreground">{totalItems}</span>
           개
         </div>
       )}
@@ -144,7 +149,7 @@ export function Pagination({
         {/* Page Size Selector */}
         {onItemsPerPageChange && (
           <div className="flex items-center gap-2">
-            <p className="text-xs text-muted-foreground">페이지당 행 수</p>
+            <p className="text-base text-muted-foreground">페이지당 행 수</p>
             <Select
               value={itemsPerPage.toString()}
               onValueChange={handleItemsPerPageChange}
@@ -193,19 +198,19 @@ export function Pagination({
 
           {/* Page Number Buttons */}
           {getPageNumbers(currentPage, totalPages).map((pageNum, idx) =>
-            pageNum === '...' ? (
+            pageNum === "..." ? (
               <div
                 key={`ellipsis-${idx}`}
                 className="h-8 w-8 flex items-center justify-center border-y border-r border-input bg-background"
               >
-                <span className="text-muted-foreground text-xs">⋯</span>
+                <span className="text-muted-foreground text-base">⋯</span>
               </div>
             ) : (
               <Button
                 key={pageNum}
-                variant={currentPage === pageNum ? 'default' : 'outline'}
+                variant={currentPage === pageNum ? "default" : "outline"}
                 size="icon"
-                className="h-8 w-8 text-xs font-medium"
+                className="h-8 w-8 text-base font-medium"
                 onClick={() => handlePageChange(pageNum as number)}
               >
                 {(pageNum as number) + 1}

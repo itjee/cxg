@@ -77,17 +77,17 @@ export function StatCard({
 
       <CardContent className="p-4 relative h-full flex flex-col justify-between">
         {/* Top: Title */}
-        <p className="text-xs font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
+        <p className="text-sm font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
 
         {/* Middle: Main value */}
-        <p className="text-xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
+        <p className="text-2xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
 
         {/* Bottom: Trend and description */}
         <div className="space-y-1">
           {trend && (
             <span
               className={cn(
-                "text-xs font-medium block",
+                "text-sm font-medium block",
                 trend.isPositive
                   ? "text-emerald-600 dark:text-emerald-500"
                   : "text-destructive"
@@ -98,7 +98,7 @@ export function StatCard({
             </span>
           )}
           {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
+            <p className="text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       </CardContent>

@@ -99,7 +99,7 @@ export const getExecutionsColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center font-medium text-muted-foreground">
+        <div className="text-center font-light text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -114,7 +114,7 @@ export const getExecutionsColumns = ({
       <DataTableColumnHeader column={column} title="실행 ID" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("execution_id")}
       </code>
     ),
@@ -156,7 +156,7 @@ export const getExecutionsColumns = ({
     ),
     cell: ({ row }) => {
       const startedAt = row.getValue("started_at") as string | undefined;
-      return <div className="text-sm">{formatDateTime(startedAt)}</div>;
+      return <div className="text-base">{formatDateTime(startedAt)}</div>;
     },
   },
   // 실행 시간
@@ -167,7 +167,7 @@ export const getExecutionsColumns = ({
     ),
     cell: ({ row }) => {
       const duration = row.getValue("duration") as number | undefined;
-      return <div className="text-sm">{formatDuration(duration)}</div>;
+      return <div className="text-base">{formatDuration(duration)}</div>;
     },
   },
   // 현재 단계
@@ -179,7 +179,7 @@ export const getExecutionsColumns = ({
       const status = row.getValue("status") as ExecutionStatus;
 
       if (status === "RUNNING" && step) {
-        return <div className="text-sm text-primary font-medium">{step}</div>;
+        return <div className="text-base text-primary font-light">{step}</div>;
       }
       return <span className="text-muted-foreground">-</span>;
     },
@@ -208,7 +208,7 @@ export const getExecutionsColumns = ({
     cell: ({ row }) => {
       const cpu = row.getValue("cpu_usage") as number | undefined;
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {formatResource(cpu, "s")}
         </div>
       );
@@ -221,7 +221,7 @@ export const getExecutionsColumns = ({
     cell: ({ row }) => {
       const memory = row.getValue("memory_usage") as number | undefined;
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {formatResource(memory, "MB")}
         </div>
       );

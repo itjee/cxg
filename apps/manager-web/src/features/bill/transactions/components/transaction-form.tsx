@@ -87,7 +87,7 @@ export function TransactionForm({
           </SelectContent>
         </Select>
         {form.formState.errors.status && (
-          <p className="text-xs text-red-500">{form.formState.errors.status.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.status.message}</p>
         )}
       </div>
 
@@ -101,7 +101,7 @@ export function TransactionForm({
             disabled={isLoading}
           />
           {form.formState.errors.processed_at && (
-            <p className="text-xs text-red-500">{form.formState.errors.processed_at.message}</p>
+            <p className="text-sm text-red-500">{form.formState.errors.processed_at.message}</p>
           )}
         </div>
 
@@ -114,7 +114,7 @@ export function TransactionForm({
             disabled={isLoading}
           />
           {form.formState.errors.failed_at && (
-            <p className="text-xs text-red-500">{form.formState.errors.failed_at.message}</p>
+            <p className="text-sm text-red-500">{form.formState.errors.failed_at.message}</p>
           )}
         </div>
       </div>
@@ -129,7 +129,7 @@ export function TransactionForm({
           rows={3}
         />
         {form.formState.errors.failure_reason && (
-          <p className="text-xs text-red-500">{form.formState.errors.failure_reason.message}</p>
+          <p className="text-sm text-red-500">{form.formState.errors.failure_reason.message}</p>
         )}
       </div>
 
@@ -145,7 +145,7 @@ export function TransactionForm({
             disabled={isLoading}
           />
           {form.formState.errors.exchange_rate && (
-            <p className="text-xs text-red-500">{form.formState.errors.exchange_rate.message}</p>
+            <p className="text-sm text-red-500">{form.formState.errors.exchange_rate.message}</p>
           )}
         </div>
 
@@ -159,7 +159,7 @@ export function TransactionForm({
             disabled={isLoading}
           />
           {form.formState.errors.card_digits && (
-            <p className="text-xs text-red-500">{form.formState.errors.card_digits.message}</p>
+            <p className="text-sm text-red-500">{form.formState.errors.card_digits.message}</p>
           )}
         </div>
       </div>

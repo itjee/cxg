@@ -26,13 +26,18 @@ import {
   type Role,
 } from "@/features/idam/roles";
 
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
+
 export default function RolesPage() {
   // Store에서 UI 상태 가져오기
   const { currentPage, itemsPerPage, setSearchText, setCurrentPage, openForm, setSelectedId } =
     useRolesStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
-  const [searchFilters, setSearchFilters] = useState<Record<string, string[] | null>>({
+  const [searchFilters, setSearchFilters] = useState<Record<string, FilterValue>>({
     status: null,
     category: null,
   });

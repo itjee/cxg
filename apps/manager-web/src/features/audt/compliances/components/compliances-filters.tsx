@@ -1,6 +1,11 @@
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useCompliancesStore } from "../stores/compliances.store";
 import type { Compliance } from "../types/compliances.types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface CompliancesFiltersProps {
   data: Compliance[];
@@ -100,7 +105,7 @@ export function CompliancesFilters({ data }: CompliancesFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

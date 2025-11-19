@@ -52,7 +52,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
           </div>
         </div>
 
-        <h2 className="text-xl font-bold text-white mb-4">
+        <h2 className="text-2xl font-bold text-white mb-4">
           이메일을 확인해주세요
         </h2>
 
@@ -63,14 +63,14 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
         {resetToken && (
           <div className="mb-6 p-4 bg-violet-500/10 rounded-xl border border-violet-500/20">
-            <p className="text-xs text-violet-400 mb-2 font-semibold">🔧 개발 환경 - 재설정 토큰</p>
+            <p className="text-sm text-violet-400 mb-2 font-semibold">🔧 개발 환경 - 재설정 토큰</p>
             <div className="bg-black/30 p-3 rounded-lg mb-3">
-              <p className="text-xs text-white font-mono break-all select-all">{resetToken}</p>
+              <p className="text-sm text-white font-mono break-all select-all">{resetToken}</p>
             </div>
             <div className="flex gap-2">
               <Link
                 href={`/reset-password?token=${resetToken}`}
-                className="flex-1 text-center px-4 py-2 text-sm text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors font-medium"
+                className="flex-1 text-center px-4 py-2 text-base text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-colors font-medium"
               >
                 바로 재설정하기 →
               </Link>
@@ -80,7 +80,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
                   navigator.clipboard.writeText(resetToken);
                   alert("토큰이 복사되었습니다!");
                 }}
-                className="px-4 py-2 text-sm text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-500/50 rounded-lg transition-colors"
+                className="px-4 py-2 text-base text-violet-400 hover:text-violet-300 border border-violet-500/30 hover:border-violet-500/50 rounded-lg transition-colors"
               >
                 복사
               </button>
@@ -88,7 +88,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
           </div>
         )}
 
-        <p className="text-sm text-neutral-400 mb-8">
+        <p className="text-base text-neutral-400 mb-8">
           이메일이 도착하지 않았나요?<br />
           스팸 메일함을 확인해주세요.
         </p>
@@ -102,7 +102,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
           <button
             onClick={() => setSuccess(false)}
-            className="w-full text-sm text-neutral-400 hover:text-white transition-colors"
+            className="w-full text-base text-neutral-400 hover:text-white transition-colors"
           >
             다른 이메일로 재시도
           </button>
@@ -116,7 +116,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
       {/* Back Button */}
       <Link
         href="/signin"
-        className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors mb-6"
+        className="inline-flex items-center gap-2 text-base text-neutral-400 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
         로그인으로 돌아가기
@@ -124,7 +124,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
       {/* Header */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+        <h2 className="text-3xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
           비밀번호 찾기
         </h2>
         <p className="text-neutral-300">
@@ -138,13 +138,13 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
         {error && (
           <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50/80 backdrop-blur-sm border border-red-200/80 shadow-sm">
             <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-            <span className="text-sm text-red-600">{error}</span>
+            <span className="text-base text-red-600">{error}</span>
           </div>
         )}
 
         {/* Email Field */}
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-neutral-200 font-medium text-sm">
+          <Label htmlFor="email" className="text-neutral-200 font-medium text-base">
             이메일
           </Label>
           <div className="relative group">
@@ -165,7 +165,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
         {/* Info Notice */}
         <div className="flex items-start gap-3 p-4 bg-violet-500/10 backdrop-blur-sm rounded-xl border border-violet-500/20 shadow-sm">
           <AlertCircle className="h-5 w-5 text-violet-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-neutral-300 leading-relaxed">
+          <p className="text-base text-neutral-300 leading-relaxed">
             입력하신 이메일로 비밀번호 재설정 링크를 발송합니다.<br />
             링크는 1시간 동안 유효합니다.
           </p>
@@ -190,7 +190,7 @@ export function ForgotPasswordForm({ onSuccess }: ForgotPasswordFormProps) {
 
       {/* Sign Up Link */}
       <div className="mt-6 text-center">
-        <p className="text-neutral-400 text-sm">
+        <p className="text-neutral-400 text-base">
           계정이 없으신가요?{" "}
           <Link
             href="/signup"

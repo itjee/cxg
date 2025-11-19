@@ -22,14 +22,19 @@ export default function SignInPage() {
           <Image
             src="/logo/manager_logo.png"
             alt="CXG Logo"
-            width={32}
-            height={32}
-            style={{ width: "32px", height: "32px", objectFit: "contain", opacity: 0.5 }}
+            width={48}
+            height={48}
+            style={{
+              width: "48px",
+              height: "48px",
+              objectFit: "contain",
+              opacity: 0.5,
+            }}
             priority
           />
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-white">ConexGrow</span>
-            <span className="text-xs text-neutral-400">by CXG</span>
+            <span className="text-3xl font-bold text-white">ConexGrow</span>
+            <span className="text-base text-neutral-400">Manager</span>
           </div>
         </div>
       </div>
@@ -50,7 +55,7 @@ export default function SignInPage() {
                   <br />
                   비즈니스 성장 플랫폼
                 </h1>
-                <p className="text-xl text-neutral-400 leading-relaxed">
+                <p className="text-3xl text-neutral-400 leading-relaxed">
                   중소기업을 위한 올인원 비즈니스 관리 솔루션으로
                   <br />
                   업무 효율을 극대화하세요
@@ -65,10 +70,10 @@ export default function SignInPage() {
                   <TrendingUp className="h-6 w-6 text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">
+                  <h3 className="font-semibold text-2xl mb-1">
                     실시간 비즈니스 인사이트
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed">
+                  <p className="text-neutral-400 leading-relaxed">
                     AI 기반 데이터 분석으로 비즈니스 성장 기회를 놓치지 마세요
                   </p>
                 </div>
@@ -79,10 +84,10 @@ export default function SignInPage() {
                   <Zap className="h-6 w-6 text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">
+                  <h3 className="font-semibold text-2xl mb-1">
                     스마트 워크플로우 자동화
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed">
+                  <p className="text-neutral-400 leading-relaxed">
                     반복 작업을 자동화하고 핵심 업무에 집중하세요
                   </p>
                 </div>
@@ -93,10 +98,10 @@ export default function SignInPage() {
                   <Shield className="h-6 w-6 text-violet-400" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-1">
+                  <h3 className="font-semibold text-2xl mb-1">
                     엔터프라이즈급 보안
                   </h3>
-                  <p className="text-neutral-400 text-sm leading-relaxed">
+                  <p className="text-neutral-400 leading-relaxed">
                     은행 수준의 보안으로 소중한 비즈니스 데이터를 보호합니다
                   </p>
                 </div>
@@ -104,7 +109,7 @@ export default function SignInPage() {
             </div>
 
             {/* Footer */}
-            <div className="flex items-center justify-between text-sm text-neutral-500 border-t border-neutral-800 pt-6">
+            <div className="flex items-center justify-between text-neutral-500 border-t border-neutral-800 pt-6">
               <p>© 2025 CXG. All rights reserved.</p>
               <div className="flex items-center gap-1">
                 <CheckCircle2 className="h-4 w-4 text-violet-400" />
@@ -129,20 +134,25 @@ export default function SignInPage() {
                   alt="CXG Logo"
                   width={32}
                   height={32}
-                  style={{ width: "32px", height: "32px", objectFit: "contain", opacity: 0.5 }}
+                  style={{
+                    width: "32px",
+                    height: "32px",
+                    objectFit: "contain",
+                    opacity: 0.5,
+                  }}
                   priority
                 />
                 <div className="flex flex-col">
-                  <span className="text-xl font-bold text-white">
+                  <span className="text-3xl font-bold text-white">
                     ConexGrow
                   </span>
-                  <span className="text-xs text-neutral-400">by CXG</span>
+                  <span className="text-base text-neutral-400">by CXG</span>
                 </div>
               </div>
 
               {/* Form Header */}
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
+                <h2 className="text-4xl font-bold bg-gradient-to-br from-white via-neutral-100 to-neutral-200 bg-clip-text text-transparent mb-2">
                   환영합니다
                 </h2>
                 <p className="text-neutral-300">관리자 계정으로 로그인하세요</p>

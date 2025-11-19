@@ -224,7 +224,7 @@ export function TenantsForm({
     <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
       {/* 기본 정보 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">기본 정보</h3>
+        <h3 className="text-base font-semibold">기본 정보</h3>
 
         {/* 테넌트 코드 */}
         <div className="space-y-2">
@@ -236,7 +236,7 @@ export function TenantsForm({
             disabled={isLoading || isEditing}
           />
           {errors.code && (
-            <p className="text-xs text-red-500">{errors.code.message}</p>
+            <p className="text-sm text-red-500">{errors.code.message}</p>
           )}
         </div>
 
@@ -250,7 +250,7 @@ export function TenantsForm({
             disabled={isLoading}
           />
           {errors.name && (
-            <p className="text-xs text-red-500">{errors.name.message}</p>
+            <p className="text-sm text-red-500">{errors.name.message}</p>
           )}
         </div>
 
@@ -269,14 +269,14 @@ export function TenantsForm({
             </SelectContent>
           </Select>
           {errors.type && (
-            <p className="text-xs text-red-500">{errors.type.message}</p>
+            <p className="text-sm text-red-500">{errors.type.message}</p>
           )}
         </div>
       </div>
 
       {/* 계약 정보 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">계약 정보</h3>
+        <h3 className="text-base font-semibold">계약 정보</h3>
 
         {/* 계약 시작일 */}
         <div className="space-y-2">
@@ -288,7 +288,7 @@ export function TenantsForm({
             disabled={isLoading}
           />
           {errors.start_date && (
-            <p className="text-xs text-red-500">{errors.start_date.message}</p>
+            <p className="text-sm text-red-500">{errors.start_date.message}</p>
           )}
         </div>
 
@@ -307,7 +307,7 @@ export function TenantsForm({
 
       {/* 사업자 정보 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">사업자 정보</h3>
+        <h3 className="text-base font-semibold">사업자 정보</h3>
 
         <div className="grid grid-cols-2 gap-4">
           {/* 사업자등록번호 */}
@@ -379,7 +379,7 @@ export function TenantsForm({
 
       {/* 주소 정보 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">주소 정보</h3>
+        <h3 className="text-base font-semibold">주소 정보</h3>
 
         <div className="space-y-2">
           {/* 우편번호 */}
@@ -440,7 +440,7 @@ export function TenantsForm({
 
       {/* 지역화 설정 */}
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold">지역화 설정</h3>
+        <h3 className="text-base font-semibold">지역화 설정</h3>
 
         <div className="grid grid-cols-3 gap-4">
           {/* 시간대 */}
@@ -485,7 +485,7 @@ export function TenantsForm({
       {/* 상태 관리 */}
       {isEditing && (
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">상태 관리</h3>
+          <h3 className="text-base font-semibold">상태 관리</h3>
 
           {/* 테넌트 상태 */}
           <div className="space-y-2">
@@ -506,8 +506,8 @@ export function TenantsForm({
           {/* 일시중단 토글 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">일시중단</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-lg">일시중단</Label>
+              <p className="text-base text-muted-foreground">
                 테넌트를 일시적으로 중단합니다
               </p>
             </div>

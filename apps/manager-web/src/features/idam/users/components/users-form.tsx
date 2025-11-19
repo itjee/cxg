@@ -65,7 +65,7 @@ function HintIcon({ hint }: { hint: string }) {
           <HelpCircle className="w-4 h-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 text-xs p-2">{hint}</PopoverContent>
+      <PopoverContent className="w-48 text-sm p-2">{hint}</PopoverContent>
     </Popover>
   );
 }
@@ -179,7 +179,7 @@ export function UsersForm({
       {/* 기본 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">기본 정보</h3>
+          <h3 className="font-semibold whitespace-nowrap">기본 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -187,7 +187,7 @@ export function UsersForm({
           {/* 사용자명 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="username" className="text-sm">
+              <Label htmlFor="username">
                 사용자명 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.username} />
@@ -199,14 +199,14 @@ export function UsersForm({
               disabled={isLoading || isEditing}
             />
             {errors.username && (
-              <p className="text-xs text-red-500">{errors.username.message}</p>
+              <p className="text-red-500">{errors.username.message}</p>
             )}
           </div>
 
           {/* 이메일 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="email" className="text-sm">
+              <Label htmlFor="email">
                 이메일 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.email} />
@@ -219,14 +219,14 @@ export function UsersForm({
               disabled={isLoading}
             />
             {errors.email && (
-              <p className="text-xs text-red-500">{errors.email.message}</p>
+              <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
 
           {/* 전체 이름 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="fullName" className="text-sm">
+              <Label htmlFor="fullName" className="text-base">
                 전체 이름 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.fullName} />
@@ -238,7 +238,7 @@ export function UsersForm({
               disabled={isLoading}
             />
             {errors.fullName && (
-              <p className="text-xs text-red-500">{errors.fullName.message}</p>
+              <p className="text-sm text-red-500">{errors.fullName.message}</p>
             )}
           </div>
 
@@ -246,7 +246,7 @@ export function UsersForm({
           {!isEditing && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm">
+                <Label htmlFor="password" className="text-base">
                   비밀번호 <span className="text-red-500">*</span>
                 </Label>
                 <HintIcon hint={fieldHints.password} />
@@ -259,7 +259,7 @@ export function UsersForm({
                 disabled={isLoading}
               />
               {errors.password && (
-                <p className="text-xs text-red-500">
+                <p className="text-sm text-red-500">
                   {errors.password.message}
                 </p>
               )}
@@ -269,7 +269,7 @@ export function UsersForm({
           {/* 사용자 유형 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="userType" className="text-sm">
+              <Label htmlFor="userType" className="text-base">
                 사용자 유형 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.userType} />
@@ -295,14 +295,14 @@ export function UsersForm({
               )}
             />
             {errors.userType && (
-              <p className="text-xs text-red-500">{errors.userType.message}</p>
+              <p className="text-sm text-red-500">{errors.userType.message}</p>
             )}
           </div>
 
           {/* 전화 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="phone" className="text-xs">
+              <Label htmlFor="phone" className="text-sm">
                 전화
               </Label>
               <HintIcon hint={fieldHints.phone} />
@@ -318,7 +318,7 @@ export function UsersForm({
           {/* 부서 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="department" className="text-xs">
+              <Label htmlFor="department" className="text-sm">
                 부서
               </Label>
               <HintIcon hint={fieldHints.department} />
@@ -334,7 +334,7 @@ export function UsersForm({
           {/* 직책 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="position" className="text-xs">
+              <Label htmlFor="position" className="text-sm">
                 직책
               </Label>
               <HintIcon hint={fieldHints.position} />
@@ -350,8 +350,8 @@ export function UsersForm({
           {/* 상태 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-xs">사용자 상태</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-sm">사용자 상태</Label>
+              <p className="text-base text-muted-foreground">
                 {status === "ACTIVE"
                   ? "활성 상태"
                   : status === "INACTIVE"

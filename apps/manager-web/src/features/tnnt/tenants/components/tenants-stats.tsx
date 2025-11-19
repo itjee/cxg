@@ -33,12 +33,12 @@ export function TenantsStats({ data }: TenantsStatsProps) {
       {/* 전체 테넌트 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">전체 테넌트</CardTitle>
+          <CardTitle className="text-base font-medium">전체 테넌트</CardTitle>
           <Building2 className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{total}</div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <div className="text-3xl font-bold">{total}</div>
+          <p className="text-sm text-muted-foreground mt-1">
             {total === 0 ? '테넌트 없음' : `${total}개`}
           </p>
         </CardContent>
@@ -47,12 +47,12 @@ export function TenantsStats({ data }: TenantsStatsProps) {
       {/* 활성 테넌트 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">활성</CardTitle>
+          <CardTitle className="text-base font-medium">활성</CardTitle>
           <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{activeCount}</div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <div className="text-3xl font-bold">{activeCount}</div>
+          <p className="text-sm text-muted-foreground mt-1">
             {total > 0
               ? `${((activeCount / total) * 100).toFixed(0)}%`
               : '0%'}
@@ -63,12 +63,12 @@ export function TenantsStats({ data }: TenantsStatsProps) {
       {/* 일시중단 테넌트 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">일시중단</CardTitle>
+          <CardTitle className="text-base font-medium">일시중단</CardTitle>
           <AlertCircle className="h-4 w-4 text-yellow-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{suspendedCount}</div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <div className="text-3xl font-bold">{suspendedCount}</div>
+          <p className="text-sm text-muted-foreground mt-1">
             {total > 0
               ? `${((suspendedCount / total) * 100).toFixed(0)}%`
               : '0%'}
@@ -79,12 +79,12 @@ export function TenantsStats({ data }: TenantsStatsProps) {
       {/* 평가판 테넌트 */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">평가판</CardTitle>
+          <CardTitle className="text-base font-medium">평가판</CardTitle>
           <Zap className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{trialCount}</div>
-          <p className="text-xs text-muted-foreground mt-1">
+          <div className="text-3xl font-bold">{trialCount}</div>
+          <p className="text-sm text-muted-foreground mt-1">
             {total > 0
               ? `${((trialCount / total) * 100).toFixed(0)}%`
               : '0%'}

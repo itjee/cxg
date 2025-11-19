@@ -77,7 +77,7 @@ export function DataTableColumnHeader<TData, TValue>({
             className="h-8 p-0 hover:bg-accent"
             onClick={() => column.toggleSorting(isSorted === "asc")}
           >
-            <span className="text-xs font-medium">{title}</span>
+            <span>{title}</span>
             <div className="ml-2 flex items-center">
               {isSorted === "asc" ? (
                 <ArrowUp className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function DataTableColumnHeader<TData, TValue>({
             </div>
           </Button>
         ) : (
-          <span className="text-xs font-medium">{title}</span>
+          <span>{title}</span>
         )}
       </div>
 
@@ -102,7 +102,9 @@ export function DataTableColumnHeader<TData, TValue>({
               size="sm"
               className={`h-8 w-8 p-0 ${hasFilter ? "bg-accent" : ""}`}
             >
-              <Filter className={`h-4 w-4 ${hasFilter ? "fill-current" : ""}`} />
+              <Filter
+                className={`h-4 w-4 ${hasFilter ? "fill-current" : ""}`}
+              />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-[200px]">
@@ -113,7 +115,7 @@ export function DataTableColumnHeader<TData, TValue>({
                   placeholder="검색..."
                   value={filterValue}
                   onChange={(e) => handleFilterChange(e.target.value)}
-                  className="h-8 text-xs"
+                  className="h-8"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
@@ -126,7 +128,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     size="sm"
                     variant="default"
                     onClick={handleApplyFilter}
-                    className="h-7 text-xs flex-1"
+                    className="h-8 flex-1"
                   >
                     적용
                   </Button>
@@ -134,7 +136,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     size="sm"
                     variant="outline"
                     onClick={() => setFilterOpen(false)}
-                    className="h-7 text-xs flex-1"
+                    className="h-8 flex-1"
                   >
                     취소
                   </Button>
@@ -143,7 +145,7 @@ export function DataTableColumnHeader<TData, TValue>({
             ) : (
               <div className="p-3 space-y-2">
                 <Select value={filterValue} onValueChange={handleFilterChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-8">
                     <SelectValue placeholder="선택..." />
                   </SelectTrigger>
                   <SelectContent>
@@ -160,7 +162,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     size="sm"
                     variant="default"
                     onClick={handleApplyFilter}
-                    className="h-7 text-xs flex-1"
+                    className="h-8 flex-1"
                   >
                     적용
                   </Button>
@@ -168,7 +170,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     size="sm"
                     variant="outline"
                     onClick={() => setFilterOpen(false)}
-                    className="h-7 text-xs flex-1"
+                    className="h-8 flex-1"
                   >
                     취소
                   </Button>
@@ -184,7 +186,7 @@ export function DataTableColumnHeader<TData, TValue>({
                   variant="ghost"
                   size="sm"
                   onClick={handleClearFilter}
-                  className="w-full h-8 text-xs justify-start text-destructive hover:text-destructive"
+                  className="w-full h-8 justify-start text-destructive hover:text-destructive"
                 >
                   <X className="h-3 w-3 mr-2" />
                   필터 초기화

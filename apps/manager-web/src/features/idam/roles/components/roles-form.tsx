@@ -66,7 +66,7 @@ function HintIcon({ hint }: { hint: string }) {
           <HelpCircle className="w-4 h-4" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 text-xs p-2">{hint}</PopoverContent>
+      <PopoverContent className="w-48 text-sm p-2">{hint}</PopoverContent>
     </Popover>
   );
 }
@@ -169,7 +169,7 @@ export function RolesForm({
       {/* 기본 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">기본 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">기본 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -177,7 +177,7 @@ export function RolesForm({
           {/* 역할 코드 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="code" className="text-sm">
+              <Label htmlFor="code" className="text-base">
                 역할 코드 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.code} />
@@ -189,14 +189,14 @@ export function RolesForm({
               disabled={isLoading || isEditing}
             />
             {errors.code && (
-              <p className="text-xs text-red-500">{errors.code.message}</p>
+              <p className="text-sm text-red-500">{errors.code.message}</p>
             )}
           </div>
 
           {/* 역할명 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="name" className="text-sm">
+              <Label htmlFor="name" className="text-base">
                 역할명 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.name} />
@@ -208,14 +208,14 @@ export function RolesForm({
               disabled={isLoading}
             />
             {errors.name && (
-              <p className="text-xs text-red-500">{errors.name.message}</p>
+              <p className="text-sm text-red-500">{errors.name.message}</p>
             )}
           </div>
 
           {/* 카테고리 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="category" className="text-sm">
+              <Label htmlFor="category" className="text-base">
                 카테고리 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.category} />
@@ -238,14 +238,14 @@ export function RolesForm({
               )}
             />
             {errors.category && (
-              <p className="text-xs text-red-500">{errors.category.message}</p>
+              <p className="text-sm text-red-500">{errors.category.message}</p>
             )}
           </div>
 
           {/* 범위 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="scope" className="text-sm">
+              <Label htmlFor="scope" className="text-base">
                 범위 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.scope} />
@@ -266,14 +266,14 @@ export function RolesForm({
               )}
             />
             {errors.scope && (
-              <p className="text-xs text-red-500">{errors.scope.message}</p>
+              <p className="text-sm text-red-500">{errors.scope.message}</p>
             )}
           </div>
 
           {/* 레벨 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="level" className="text-sm">
+              <Label htmlFor="level" className="text-base">
                 레벨
               </Label>
               <HintIcon hint={fieldHints.level} />
@@ -286,14 +286,14 @@ export function RolesForm({
               disabled={isLoading}
             />
             {errors.level && (
-              <p className="text-xs text-red-500">{errors.level.message}</p>
+              <p className="text-sm text-red-500">{errors.level.message}</p>
             )}
           </div>
 
           {/* 우선순위 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="priority" className="text-sm">
+              <Label htmlFor="priority" className="text-base">
                 우선순위
               </Label>
               <HintIcon hint={fieldHints.priority} />
@@ -306,14 +306,14 @@ export function RolesForm({
               disabled={isLoading}
             />
             {errors.priority && (
-              <p className="text-xs text-red-500">{errors.priority.message}</p>
+              <p className="text-sm text-red-500">{errors.priority.message}</p>
             )}
           </div>
 
           {/* 상태 */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="status" className="text-sm">
+              <Label htmlFor="status" className="text-base">
                 상태 <span className="text-red-500">*</span>
               </Label>
               <HintIcon hint={fieldHints.status} />
@@ -334,7 +334,7 @@ export function RolesForm({
               )}
             />
             {errors.status && (
-              <p className="text-xs text-red-500">{errors.status.message}</p>
+              <p className="text-sm text-red-500">{errors.status.message}</p>
             )}
           </div>
         </div>
@@ -342,7 +342,7 @@ export function RolesForm({
         {/* 설명 */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <Label htmlFor="description" className="text-sm">
+            <Label htmlFor="description" className="text-base">
               설명
             </Label>
             <HintIcon hint={fieldHints.description} />
@@ -354,7 +354,7 @@ export function RolesForm({
             disabled={isLoading}
           />
           {errors.description && (
-            <p className="text-xs text-red-500">{errors.description.message}</p>
+            <p className="text-sm text-red-500">{errors.description.message}</p>
           )}
         </div>
       </div>

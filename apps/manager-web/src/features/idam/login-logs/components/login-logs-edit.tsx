@@ -34,7 +34,7 @@ export function LoginLogsEdit() {
         <div className="space-y-6">
           {/* 알림 */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800">
+            <p className="text-base text-blue-800">
               ℹ️ 로그인 이력은 보안 감사 목적의 데이터로 편집할 수 없습니다.
             </p>
           </div>
@@ -42,18 +42,18 @@ export function LoginLogsEdit() {
           {/* 기본 정보 */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase">
+              <label className="text-sm font-semibold text-gray-500 uppercase">
                 사용자명
               </label>
-              <p className="mt-1 text-sm font-medium text-gray-900">
+              <p className="mt-1 text-base font-medium text-gray-900">
                 {loginLog.username || "-"}
               </p>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-500 uppercase">
+              <label className="text-sm font-semibold text-gray-500 uppercase">
                 사용자 유형
               </label>
-              <p className="mt-1 text-sm font-medium text-gray-900">
+              <p className="mt-1 text-base font-medium text-gray-900">
                 {loginLog.userType || "-"}
               </p>
             </div>
@@ -61,22 +61,22 @@ export function LoginLogsEdit() {
 
           {/* 시도 정보 */}
           <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold text-gray-900">시도 정보</h3>
+            <h3 className="text-base font-semibold text-gray-900">시도 정보</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   시도 유형
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-base text-gray-900">
                   {loginLog.attemptType}
                 </p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   결과
                 </label>
                 <p
-                  className={`mt-1 text-sm font-medium ${
+                  className={`mt-1 text-base font-medium ${
                     loginLog.success
                       ? "text-green-600"
                       : "text-red-600"
@@ -89,10 +89,10 @@ export function LoginLogsEdit() {
 
             {loginLog.failureReason && (
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   실패 사유
                 </label>
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-base text-red-600">
                   {loginLog.failureReason}
                 </p>
               </div>
@@ -101,38 +101,38 @@ export function LoginLogsEdit() {
 
           {/* 세션 정보 */}
           <div className="space-y-4 pt-4 border-t">
-            <h3 className="text-sm font-semibold text-gray-900">세션 정보</h3>
+            <h3 className="text-base font-semibold text-gray-900">세션 정보</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   IP 주소
                 </label>
-                <p className="mt-1 text-sm font-mono text-gray-900">
+                <p className="mt-1 text-base font-mono text-gray-900">
                   {loginLog.ipAddress}
                 </p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   위치
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-base text-gray-900">
                   {loginLog.city || "-"} ({loginLog.countryCode || "N/A"})
                 </p>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase">
+                <label className="text-sm font-semibold text-gray-500 uppercase">
                   MFA 사용
                 </label>
-                <p className="mt-1 text-sm text-gray-900">
+                <p className="mt-1 text-base text-gray-900">
                   {loginLog.mfaUsed ? "예" : "아니오"}
                 </p>
               </div>
               {loginLog.mfaMethod && (
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 uppercase">
+                  <label className="text-sm font-semibold text-gray-500 uppercase">
                     MFA 방식
                   </label>
-                  <p className="mt-1 text-sm text-gray-900">
+                  <p className="mt-1 text-base text-gray-900">
                     {loginLog.mfaMethod}
                   </p>
                 </div>
@@ -141,7 +141,7 @@ export function LoginLogsEdit() {
           </div>
 
           {/* 타임스탬프 */}
-          <div className="space-y-4 pt-4 border-t text-xs text-gray-500">
+          <div className="space-y-4 pt-4 border-t text-sm text-gray-500">
             <div className="flex justify-between">
               <span>생성 일시:</span>
               <span>{loginLog.createdAt}</span>

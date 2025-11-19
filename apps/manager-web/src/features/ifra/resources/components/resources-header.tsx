@@ -15,7 +15,7 @@ export function ResourcesHeader({ onRefresh, onExport }: ResourcesHeaderProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">리소스 관리</h1>
+        <h1 className="text-3xl font-bold tracking-tight">리소스 관리</h1>
         <p className="text-gray-600 mt-1">클라우드 리소스를 관리합니다</p>
       </div>
       <div className="flex gap-2">

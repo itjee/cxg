@@ -11,11 +11,16 @@
 import { SearchFilter } from "@/components/filters";
 import type { FilterItemConfig } from "@/components/filters";
 
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
+
 interface RolesFilterProps {
   searchText: string;
   onSearchTextChange: (text: string) => void;
-  searchFilters: Record<string, string[] | null>;
-  onSearchFiltersChange: (filters: Record<string, string[] | null>) => void;
+  searchFilters: Record<string, FilterValue>;
+  onSearchFiltersChange: (filters: Record<string, FilterValue>) => void;
   onApplySearch: () => void;
   onClearAllSearchFilters?: () => void;
 }

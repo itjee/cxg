@@ -12,9 +12,14 @@
  */
 
 import { useMemo } from "react";
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useWorkflowsStore } from "../stores";
 import type { Workflows } from "../types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface WorkflowsFiltersProps {
   data: Workflows[];
@@ -66,7 +71,7 @@ export function WorkflowsFilters({ data }: WorkflowsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

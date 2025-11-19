@@ -112,7 +112,7 @@ function ColorPaletteRow({ palette, label, onSelect }: ColorPaletteRowProps) {
 
   return (
     <div className="space-y-1">
-      <p className="text-xs font-medium text-muted-foreground capitalize">{label}</p>
+      <p className="text-sm font-medium text-muted-foreground capitalize">{label}</p>
       <div className="grid grid-cols-11 gap-1">
         {shades.map((shade) => (
           <button

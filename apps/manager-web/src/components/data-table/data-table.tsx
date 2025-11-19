@@ -152,7 +152,7 @@ export function DataTable<TData, TValue>({
                   {headerGroup.headers.map((header) => (
                     <TableHead
                       key={header.id}
-                      className="px-6 py-2 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider h-10"
+                      className="px-6 py-2 text-left text-muted-foreground uppercase tracking-wider h-10"
                     >
                       {header.isPlaceholder
                         ? null
@@ -173,7 +173,7 @@ export function DataTable<TData, TValue>({
                     className="h-32 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="text-4xl opacity-20">⏳</div>
+                      <div className="text-3xl opacity-20">⏳</div>
                       <p>로딩 중...</p>
                     </div>
                   </TableCell>
@@ -186,10 +186,7 @@ export function DataTable<TData, TValue>({
                     className="hover:bg-accent/50 transition-colors"
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="px-6 py-1.5 h-8 text-xs font-light"
-                      >
+                      <TableCell key={cell.id} className="px-6 py-1.5 h-8">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -205,7 +202,7 @@ export function DataTable<TData, TValue>({
                     className="h-32 text-center text-muted-foreground"
                   >
                     <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="text-4xl opacity-20">📊</div>
+                      <div className="text-3xl opacity-20">📊</div>
                       <p>{emptyMessage}</p>
                     </div>
                   </TableCell>
@@ -264,7 +261,7 @@ export function DataTableColumnHeader({
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ) : (
-        <span className="text-sm font-medium">{title}</span>
+        <span className="font-medium">{title}</span>
       )}
     </div>
   );

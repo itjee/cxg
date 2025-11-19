@@ -25,11 +25,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { X, Calendar as CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import { CheckboxGroup } from "./search-checkbox-group";
 import type { FilterItemConfig } from "./search-popup.types";
+
+type FilterValue =
+  | string[]
+  | null
+  | { type: string; value: { from?: string; to?: string } };
 
 /**
  * Search 필터 팝업 Props
@@ -37,10 +48,25 @@ import type { FilterItemConfig } from "./search-popup.types";
 export interface SearchFilterPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  searchFilters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>;
-  onSearchFiltersChange: (filters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>) => void;
+  searchFilters: Record<string, FilterValue>;
+  onSearchFiltersChange: (filters: Record<string, FilterValue>) => void;
   onApply: () => void;
   items: FilterItemConfig[];
+}
+
+/**
+ * daterange 필터 타입 가드
+ */
+function isDateRangeFilter(
+  value: FilterValue
+): value is { type: string; value: { from?: string; to?: string } } {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    "type" in value &&
+    "value" in value
+  );
 }
 
 /**
@@ -54,16 +80,15 @@ export interface SearchFilterPopupProps {
  * - 총: 4개
  */
 function countActiveSearchFilters(
-  searchFilters: Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
+  searchFilters: Record<string, FilterValue>
 ): number {
   return Object.values(searchFilters).reduce((total, value) => {
     if (Array.isArray(value) && value.length > 0) {
       return total + value.length;
     }
-    if (value && typeof value === "object" && "type" in value && "value" in value) {
+    if (isDateRangeFilter(value)) {
       // daterange 필터가 from 또는 to 값을 가지면 1로 카운트
-      const range = (value as { type: string; value: { from?: string; to?: string } }).value;
-      if (range.from || range.to) {
+      if (value.value.from || value.value.to) {
         return total + 1;
       }
     }
@@ -93,9 +118,12 @@ export function SearchFilterPopup({
   const [searchQuery, setSearchQuery] = useState<string>("");
 
   // 팝업 내에서의 임시 필터 상태 (적용 전까지 임시로 보관)
-  const [tempSearchFilters, setTempSearchFilters] = useState<
-    Record<string, string[] | null | { type: string; value: { from?: string; to?: string } }>
-  >(searchFilters);
+  const [tempSearchFilters, setTempSearchFilters] =
+    useState<Record<string, FilterValue>>(searchFilters);
+
+  // Popover 오픈 상태 관리 (From, To)
+  const [openFromPopover, setOpenFromPopover] = useState(false);
+  const [openToPopover, setOpenToPopover] = useState(false);
 
   const activeSearchFilterCount = countActiveSearchFilters(tempSearchFilters);
 
@@ -103,17 +131,20 @@ export function SearchFilterPopup({
   const selectedItem = items.find((item) => item.key === selectedItemKey);
 
   // 팝업이 열릴 때 tempSearchFilters 초기화
-  const handleOpenChange = useCallback((newOpen: boolean) => {
-    if (newOpen) {
-      // 팝업 열 때: 부모의 searchFilters를 임시 상태로 복사
-      setTempSearchFilters(searchFilters);
-      setSearchQuery("");
-    } else {
-      // 팝업 닫을 때: 취소 시 임시 상태 버림
-      setTempSearchFilters(searchFilters);
-    }
-    onOpenChange(newOpen);
-  }, [searchFilters, onOpenChange]);
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      if (newOpen) {
+        // 팝업 열 때: 부모의 searchFilters를 임시 상태로 복사
+        setTempSearchFilters(searchFilters);
+        setSearchQuery("");
+      } else {
+        // 팝업 닫을 때: 취소 시 임시 상태 버림
+        setTempSearchFilters(searchFilters);
+      }
+      onOpenChange(newOpen);
+    },
+    [searchFilters, onOpenChange]
+  );
 
   // 검색어에 따라 필터링된 옵션들
   const filteredOptions = useMemo(() => {
@@ -145,13 +176,10 @@ export function SearchFilterPopup({
    * 모든 검색 필터 초기화 (임시 상태)
    */
   const handleClearAll = useCallback(() => {
-    const resetFilters = items.reduce(
-      (acc, item) => {
-        acc[item.key] = null;
-        return acc;
-      },
-      {} as Record<string, string[] | null>
-    );
+    const resetFilters = items.reduce((acc, item) => {
+      acc[item.key] = null;
+      return acc;
+    }, {} as Record<string, string[] | null>);
     setTempSearchFilters(resetFilters);
   }, [items]);
 
@@ -194,13 +222,16 @@ export function SearchFilterPopup({
         <DialogHeader className="pb-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <DialogTitle className="text-lg">검색 필터</DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-1">
+              <DialogTitle className="text-3xl">검색 필터</DialogTitle>
+              <DialogDescription className="text-muted-foreground mt-1">
                 필터 항목을 선택하고 값을 검색하여 멀티 선택할 수 있습니다.
               </DialogDescription>
             </div>
             {activeSearchFilterCount > 0 && (
-              <Badge variant="secondary" className="rounded-md px-2 py-1 flex-shrink-0">
+              <Badge
+                variant="secondary"
+                className="rounded-md px-2 py-1 flex-shrink-0"
+              >
                 {activeSearchFilterCount}개 선택됨
               </Badge>
             )}
@@ -220,28 +251,28 @@ export function SearchFilterPopup({
                 const filterValue = tempSearchFilters[item.key];
                 if (item.type === "daterange") {
                   // daterange 필터의 경우
-                  if (
-                    filterValue &&
-                    typeof filterValue === "object" &&
-                    "value" in filterValue
-                  ) {
-                    const range = (
-                      filterValue as { type: string; value: { from?: string; to?: string } }
-                    ).value;
-                    hasValue = !!(range.from || range.to);
-                    valueCount = (range.from ? 1 : 0) + (range.to ? 1 : 0);
+                  if (isDateRangeFilter(filterValue)) {
+                    hasValue = !!(
+                      filterValue.value.from || filterValue.value.to
+                    );
+                    valueCount =
+                      (filterValue.value.from ? 1 : 0) +
+                      (filterValue.value.to ? 1 : 0);
                   }
                 } else {
                   // 체크박스 필터의 경우
-                  hasValue = Array.isArray(filterValue) && filterValue.length > 0;
-                  valueCount = Array.isArray(filterValue) ? filterValue.length : 0;
+                  hasValue =
+                    Array.isArray(filterValue) && filterValue.length > 0;
+                  valueCount = Array.isArray(filterValue)
+                    ? filterValue.length
+                    : 0;
                 }
 
                 return (
                   <button
                     key={item.key}
                     onClick={() => handleSelectItem(item.key)}
-                    className={`w-full text-left px-3 py-2.5 rounded-md text-sm transition-all ${
+                    className={`w-full text-left px-3 py-2 rounded-md transition-all ${
                       isSelected
                         ? "bg-primary text-primary-foreground font-semibold"
                         : "hover:bg-muted text-foreground font-medium"
@@ -252,7 +283,7 @@ export function SearchFilterPopup({
                       {hasValue && (
                         <Badge
                           variant={isSelected ? "default" : "secondary"}
-                          className="h-5 w-5 ml-2 flex items-center justify-center p-0 text-xs rounded-full flex-shrink-0"
+                          className="h-5 w-5 ml-2 flex items-center justify-center p-0 text-sm rounded-full flex-shrink-0"
                         >
                           {valueCount > 0 ? valueCount : "✓"}
                         </Badge>
@@ -276,7 +307,7 @@ export function SearchFilterPopup({
                       placeholder={`${selectedItem.label} 검색...`}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="text-sm h-8"
+                      className="h-8"
                     />
                     {searchQuery && (
                       <button
@@ -292,11 +323,17 @@ export function SearchFilterPopup({
                     variant="ghost"
                     size="sm"
                     onClick={handleClearCurrent}
-                    disabled={
-                      !tempSearchFilters[selectedItem.key] ||
-                      tempSearchFilters[selectedItem.key]!.length === 0
-                    }
-                    className="text-xs h-8 flex-shrink-0"
+                    disabled={(() => {
+                      const value = tempSearchFilters[selectedItem.key];
+                      if (Array.isArray(value)) {
+                        return value.length === 0;
+                      }
+                      if (isDateRangeFilter(value)) {
+                        return !value.value.from && !value.value.to;
+                      }
+                      return true;
+                    })()}
+                    className="h-8 flex-shrink-0"
                   >
                     지우기
                   </Button>
@@ -306,163 +343,125 @@ export function SearchFilterPopup({
                 <div className="flex-1 overflow-y-auto min-h-0">
                   {selectedItem.type === "daterange" ? (
                     // 날짜 범위 필터 (캘린더 포함)
-                    <div className="space-y-4 p-2">
-                      {/* 시작 날짜 */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">시작 날짜 (From)</label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={`w-full justify-start text-left font-normal ${
-                                tempSearchFilters[selectedItem.key] &&
-                                typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                "value" in tempSearchFilters[selectedItem.key] &&
-                                (tempSearchFilters[selectedItem.key] as {
-                                  type: string;
-                                  value: { from?: string; to?: string };
-                                }).value.from
-                                  ? ""
-                                  : "text-muted-foreground"
-                              }`}
+                    (() => {
+                      const currentFilterValue =
+                        tempSearchFilters[selectedItem.key];
+                      const dateRangeValue = isDateRangeFilter(
+                        currentFilterValue
+                      )
+                        ? currentFilterValue.value
+                        : { from: undefined, to: undefined };
+
+                      return (
+                        <div className="space-y-4 p-2">
+                          {/* 시작 날짜 */}
+                          <div className="space-y-2">
+                            <label>시작 날짜 (From)</label>
+                            <Popover
+                              open={openFromPopover}
+                              onOpenChange={setOpenFromPopover}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {tempSearchFilters[selectedItem.key] &&
-                              typeof tempSearchFilters[selectedItem.key] === "object" &&
-                              "value" in tempSearchFilters[selectedItem.key] &&
-                              (tempSearchFilters[selectedItem.key] as {
-                                type: string;
-                                value: { from?: string; to?: string };
-                              }).value.from
-                                ? (tempSearchFilters[selectedItem.key] as {
-                                    type: string;
-                                    value: { from?: string; to?: string };
-                                  }).value.from
-                                : "날짜 선택"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={
-                                tempSearchFilters[selectedItem.key] &&
-                                typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                "value" in tempSearchFilters[selectedItem.key] &&
-                                (tempSearchFilters[selectedItem.key] as {
-                                  type: string;
-                                  value: { from?: string; to?: string };
-                                }).value.from
-                                  ? new Date(
-                                      (tempSearchFilters[selectedItem.key] as {
-                                        type: string;
-                                        value: { from?: string; to?: string };
-                                      }).value.from!
-                                    )
-                                  : undefined
-                              }
-                              onSelect={(date) => {
-                                const from = date ? date.toISOString().split("T")[0] : undefined;
-                                const currentValue =
-                                  tempSearchFilters[selectedItem.key] &&
-                                  typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                  "value" in tempSearchFilters[selectedItem.key]
-                                    ? (tempSearchFilters[selectedItem.key] as {
-                                        type: string;
-                                        value: { from?: string; to?: string };
-                                      }).value
-                                    : {};
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full justify-start text-left ${
+                                    dateRangeValue.from
+                                      ? ""
+                                      : "text-muted-foreground"
+                                  }`}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {dateRangeValue.from || "날짜 선택"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  showWeekNumber={true}
+                                  selected={
+                                    dateRangeValue.from
+                                      ? new Date(dateRangeValue.from)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    const from = date
+                                      ? format(date, "yyyy-MM-dd")
+                                      : undefined;
 
-                                setTempSearchFilters({
-                                  ...tempSearchFilters,
-                                  [selectedItem.key]: {
-                                    type: "range",
-                                    value: { ...currentValue, from },
-                                  },
-                                });
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
+                                    setTempSearchFilters({
+                                      ...tempSearchFilters,
+                                      [selectedItem.key]: {
+                                        type: "range",
+                                        value: { ...dateRangeValue, from },
+                                      },
+                                    });
 
-                      {/* 종료 날짜 */}
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium">종료 날짜 (To)</label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={`w-full justify-start text-left font-normal ${
-                                tempSearchFilters[selectedItem.key] &&
-                                typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                "value" in tempSearchFilters[selectedItem.key] &&
-                                (tempSearchFilters[selectedItem.key] as {
-                                  type: string;
-                                  value: { from?: string; to?: string };
-                                }).value.to
-                                  ? ""
-                                  : "text-muted-foreground"
-                              }`}
+                                    // 날짜 선택 후 Popover 자동 닫힘
+                                    setOpenFromPopover(false);
+                                  }}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+
+                          {/* 종료 날짜 */}
+                          <div className="space-y-2">
+                            <label>종료 날짜 (To)</label>
+                            <Popover
+                              open={openToPopover}
+                              onOpenChange={setOpenToPopover}
                             >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {tempSearchFilters[selectedItem.key] &&
-                              typeof tempSearchFilters[selectedItem.key] === "object" &&
-                              "value" in tempSearchFilters[selectedItem.key] &&
-                              (tempSearchFilters[selectedItem.key] as {
-                                type: string;
-                                value: { from?: string; to?: string };
-                              }).value.to
-                                ? (tempSearchFilters[selectedItem.key] as {
-                                    type: string;
-                                    value: { from?: string; to?: string };
-                                  }).value.to
-                                : "날짜 선택"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={
-                                tempSearchFilters[selectedItem.key] &&
-                                typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                "value" in tempSearchFilters[selectedItem.key] &&
-                                (tempSearchFilters[selectedItem.key] as {
-                                  type: string;
-                                  value: { from?: string; to?: string };
-                                }).value.to
-                                  ? new Date(
-                                      (tempSearchFilters[selectedItem.key] as {
-                                        type: string;
-                                        value: { from?: string; to?: string };
-                                      }).value.to!
-                                    )
-                                  : undefined
-                              }
-                              onSelect={(date) => {
-                                const to = date ? date.toISOString().split("T")[0] : undefined;
-                                const currentValue =
-                                  tempSearchFilters[selectedItem.key] &&
-                                  typeof tempSearchFilters[selectedItem.key] === "object" &&
-                                  "value" in tempSearchFilters[selectedItem.key]
-                                    ? (tempSearchFilters[selectedItem.key] as {
-                                        type: string;
-                                        value: { from?: string; to?: string };
-                                      }).value
-                                    : {};
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  className={`w-full justify-start text-left ${
+                                    dateRangeValue.to
+                                      ? ""
+                                      : "text-muted-foreground"
+                                  }`}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4" />
+                                  {dateRangeValue.to || "날짜 선택"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  showWeekNumber={true}
+                                  selected={
+                                    dateRangeValue.to
+                                      ? new Date(dateRangeValue.to)
+                                      : undefined
+                                  }
+                                  onSelect={(date) => {
+                                    const to = date
+                                      ? format(date, "yyyy-MM-dd")
+                                      : undefined;
 
-                                setTempSearchFilters({
-                                  ...tempSearchFilters,
-                                  [selectedItem.key]: {
-                                    type: "range",
-                                    value: { ...currentValue, to },
-                                  },
-                                });
-                              }}
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </div>
+                                    setTempSearchFilters({
+                                      ...tempSearchFilters,
+                                      [selectedItem.key]: {
+                                        type: "range",
+                                        value: { ...dateRangeValue, to },
+                                      },
+                                    });
+
+                                    // 날짜 선택 후 Popover 자동 닫힘
+                                    setOpenToPopover(false);
+                                  }}
+                                />
+                              </PopoverContent>
+                            </Popover>
+                          </div>
+                        </div>
+                      );
+                    })()
                   ) : filteredOptions.length > 0 ? (
                     // 체크박스 필터
                     <CheckboxGroup
@@ -475,14 +474,14 @@ export function SearchFilterPopup({
                       onValuesChange={handleCheckboxChange}
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
                       검색 결과가 없습니다
                     </div>
                   )}
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+              <div className="flex items-center justify-center h-full text-muted-foreground">
                 왼쪽에서 검색 필터를 선택해주세요
               </div>
             )}
@@ -513,10 +512,7 @@ export function SearchFilterPopup({
             >
               취소
             </Button>
-            <Button
-              onClick={handleApply}
-              className="w-20"
-            >
+            <Button onClick={handleApply} className="w-20">
               적용
             </Button>
           </div>

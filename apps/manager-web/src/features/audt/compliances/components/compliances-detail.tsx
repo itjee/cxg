@@ -84,7 +84,7 @@ export function CompliancesDetail() {
         </DialogHeader>
         <div className="space-y-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">{compliance.report_name}</h3>
+            <h3 className="text-xl font-semibold mb-2">{compliance.report_name}</h3>
             <div className="flex gap-2">
               <Badge variant="outline" className="bg-blue-500/10 text-blue-600">
                 {reportTypeLabels[compliance.report_type]}
@@ -100,36 +100,36 @@ export function CompliancesDetail() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">보고 기간</p>
+              <p className="text-base text-muted-foreground">보고 기간</p>
               <p className="mt-1">
                 {formatDate(compliance.start_date, "yyyy-MM-dd")} ~ {formatDate(compliance.close_date, "yyyy-MM-dd")}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">생성일시</p>
+              <p className="text-base text-muted-foreground">생성일시</p>
               <p className="mt-1">{formatDate(compliance.generated_at, "yyyy-MM-dd HH:mm:ss")}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">적용 범위</p>
+              <p className="text-base text-muted-foreground">적용 범위</p>
               <p className="mt-1">{scopeLabels[compliance.scope]}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">파일 형식</p>
+              <p className="text-base text-muted-foreground">파일 형식</p>
               <p className="mt-1">{fileTypeLabels[compliance.file_type]}</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">발견된 이슈</p>
-              <p className="mt-1 text-2xl font-bold">{compliance.findings_count}</p>
+              <p className="text-base text-muted-foreground">발견된 이슈</p>
+              <p className="mt-1 text-3xl font-bold">{compliance.findings_count}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">심각한 이슈</p>
-              <p className="mt-1 text-2xl font-bold text-destructive">
+              <p className="text-base text-muted-foreground">심각한 이슈</p>
+              <p className="mt-1 text-3xl font-bold text-destructive">
                 {compliance.critical_count}
               </p>
             </div>
@@ -137,8 +137,8 @@ export function CompliancesDetail() {
 
           {compliance.file_path && (
             <div>
-              <p className="text-sm text-muted-foreground">파일 경로</p>
-              <code className="mt-1 block p-2 bg-muted rounded text-xs">
+              <p className="text-base text-muted-foreground">파일 경로</p>
+              <code className="mt-1 block p-2 bg-muted rounded text-sm">
                 {compliance.file_path}
               </code>
             </div>
@@ -146,7 +146,7 @@ export function CompliancesDetail() {
 
           {compliance.file_size && (
             <div>
-              <p className="text-sm text-muted-foreground">파일 크기</p>
+              <p className="text-base text-muted-foreground">파일 크기</p>
               <p className="mt-1">
                 {(compliance.file_size / 1024 / 1024).toFixed(2)} MB
               </p>
@@ -156,12 +156,12 @@ export function CompliancesDetail() {
           {compliance.approved_at && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">승인일시</p>
+                <p className="text-base text-muted-foreground">승인일시</p>
                 <p className="mt-1">{formatDate(compliance.approved_at, "yyyy-MM-dd HH:mm:ss")}</p>
               </div>
               {compliance.approved_by && (
                 <div>
-                  <p className="text-sm text-muted-foreground">승인자</p>
+                  <p className="text-base text-muted-foreground">승인자</p>
                   <p className="mt-1">{compliance.approved_by}</p>
                 </div>
               )}
@@ -170,7 +170,7 @@ export function CompliancesDetail() {
 
           {compliance.tenant_ids && compliance.tenant_ids.length > 0 && (
             <div>
-              <p className="text-sm text-muted-foreground">대상 테넌트</p>
+              <p className="text-base text-muted-foreground">대상 테넌트</p>
               <div className="mt-1 flex flex-wrap gap-2">
                 {compliance.tenant_ids.map((id) => (
                   <Badge key={id} variant="outline">

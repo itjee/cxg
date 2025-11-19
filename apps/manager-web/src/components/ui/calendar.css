@@ -1,0 +1,132 @@
+/* React Day Picker - Violet Theme Overrides */
+
+/* Override default sizing */
+.rdp-root {
+  --rdp-cell-size: 32px;
+  --rdp-accent-color: var(--primary);
+  --rdp-font-size: var(--font-size-base);
+  --rdp-day-height: 32px;
+  --rdp-day-width: 32px;
+  --rdp-day_button-height: 32px;
+  --rdp-day_button-width: 32px;
+  --rdp-week_number_height: 32px;
+  --rdp-week_number_width: 32px;
+  --rdp-today-color: var(--secondary);
+  --rdp-selected-color: var(--primary);
+}
+
+/* Font sizes to match project standards (13px) */
+.rdp-head_cell {
+  font-size: var(--font-size-base);
+}
+
+.rdp-weekday {
+  font-size: var(--font-size-base);
+}
+
+.rdp-day_button {
+  font-size: var(--font-size-base) !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  color: inherit !important;
+  background-color: transparent !important;
+  border: none !important;
+}
+
+/* Cell sizing */
+.rdp-cell {
+  width: 32px !important;
+  height: 32px !important;
+  padding: 0 !important;
+}
+
+.rdp-day {
+  width: 32px !important;
+  height: 32px !important;
+}
+
+/* Color overrides */
+.rdp-day_selected:not([disabled]):not(.rdp-day_outside) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  font-weight: bold !important;
+}
+
+.rdp-day_today:not(.rdp-day_selected) {
+  color: var(--secondary) !important;
+  font-weight: bold !important;
+  border-bottom: 2px solid var(--secondary) !important;
+}
+
+.rdp-day_range_start,
+.rdp-day_range_end {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+}
+
+.rdp-day_range_middle {
+  background-color: var(--accent) !important;
+}
+
+/* Hover state */
+.rdp-day:hover:not([disabled]):not(.rdp-day_outside):not(.rdp-day_disabled):not(
+    .rdp-day_selected
+  ) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  opacity: 0.7;
+}
+
+/* Other state colors */
+.rdp-day_today {
+  color: var(--secondary) !important;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_outside) {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
+  opacity: 0.7;
+}
+
+/* Disabled state */
+.rdp-day_disabled {
+  opacity: 0.5;
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+
+/* Outside month days */
+.rdp-day_outside {
+  opacity: 0.5;
+  color: var(--muted-foreground);
+}
+
+/* Hide all caption elements */
+.rdp-caption,
+.rdp-caption_label,
+.rdp-caption_dropdowns,
+.rdp-nav,
+.rdp-nav_button,
+.rdp-month_caption {
+  display: none !important;
+}
+
+/* Hide weekday header row */
+.rdp-head_row {
+  display: none;
+}
+
+.rdp-week_number {
+  color: var(--color-muted-foreground);
+  background-color: var(--color-muted);
+  border-radius: var(--radius-sm);
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}

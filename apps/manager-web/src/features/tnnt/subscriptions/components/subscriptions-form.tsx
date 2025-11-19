@@ -112,7 +112,7 @@ export function SubscriptionsForm({
       >
         {/* 기본 정보 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">기본 정보</h3>
+          <h3 className="text-base font-semibold">기본 정보</h3>
 
           <FormField
             control={form.control}
@@ -174,7 +174,7 @@ export function SubscriptionsForm({
 
         {/* 구독 기간 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">구독 기간</h3>
+          <h3 className="text-base font-semibold">구독 기간</h3>
 
           <FormField
             control={form.control}
@@ -234,7 +234,7 @@ export function SubscriptionsForm({
 
         {/* 사용량 제한 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">사용량 제한</h3>
+          <h3 className="text-base font-semibold">사용량 제한</h3>
 
           <FormField
             control={form.control}
@@ -296,7 +296,7 @@ export function SubscriptionsForm({
 
         {/* 요금 정보 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">요금 정보</h3>
+          <h3 className="text-base font-semibold">요금 정보</h3>
 
           <FormField
             control={form.control}
@@ -368,7 +368,7 @@ export function SubscriptionsForm({
 
         {/* 갱신 설정 */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold">갱신 설정</h3>
+          <h3 className="text-base font-semibold">갱신 설정</h3>
 
           <FormField
             control={form.control}

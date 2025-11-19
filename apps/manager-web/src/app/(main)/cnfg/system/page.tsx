@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Page } from "@/components/layouts/page";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Bell, Shield } from "lucide-react";
 
@@ -10,10 +9,14 @@ export default function SystemConfigPage() {
   const [activeTab, setActiveTab] = useState("general");
 
   return (
-    <Page
-      title="시스템 설정"
-      description="시스템 구성 및 환경을 관리합니다"
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">시스템 설정</h1>
+        <p className="mt-2 text-base text-muted-foreground">시스템 구성 및 환경을 관리합니다</p>
+      </div>
+
+      {/* Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
           <TabsTrigger value="general" className="gap-2">
@@ -66,6 +69,6 @@ export default function SystemConfigPage() {
           </Card>
         </TabsContent>
       </Tabs>
-    </Page>
+    </div>
   );
 }

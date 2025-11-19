@@ -24,8 +24,8 @@ function ResetPasswordContent() {
             priority
           />
           <div className="flex flex-col">
-            <span className="text-xl font-bold text-white">ConexGrow</span>
-            <span className="text-xs text-neutral-400">by CXG</span>
+            <span className="text-2xl font-bold text-white">ConexGrow</span>
+            <span className="text-sm text-neutral-400">by CXG</span>
           </div>
         </div>
       </div>

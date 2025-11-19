@@ -69,25 +69,25 @@ export function AuditLogsDetail() {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">이벤트 유형</p>
+              <p className="text-base text-muted-foreground">이벤트 유형</p>
               <Badge variant="outline" className="mt-1 bg-blue-500/10 text-blue-600">
                 {eventTypeLabels[log.event_type]}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">이벤트 분류</p>
+              <p className="text-base text-muted-foreground">이벤트 분류</p>
               <Badge variant="outline" className="mt-1 bg-purple-500/10 text-purple-600">
                 {eventCategoryLabels[log.event_category]}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">결과</p>
+              <p className="text-base text-muted-foreground">결과</p>
               <Badge className={`mt-1 ${resultColors[log.result]}`}>
                 {resultLabels[log.result]}
               </Badge>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">위험도</p>
+              <p className="text-base text-muted-foreground">위험도</p>
               <Badge className={`mt-1 ${riskLevelColors[log.risk_level]}`}>
                 {riskLevelLabels[log.risk_level]}
               </Badge>
@@ -95,27 +95,27 @@ export function AuditLogsDetail() {
           </div>
 
           <div>
-            <p className="text-sm text-muted-foreground">설명</p>
+            <p className="text-base text-muted-foreground">설명</p>
             <p className="mt-1">{log.description}</p>
           </div>
 
           {log.failure_reason && (
             <div>
-              <p className="text-sm text-muted-foreground">실패 사유</p>
+              <p className="text-base text-muted-foreground">실패 사유</p>
               <p className="mt-1 text-destructive">{log.failure_reason}</p>
             </div>
           )}
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">IP 주소</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded">
+              <p className="text-base text-muted-foreground">IP 주소</p>
+              <code className="text-sm bg-muted px-2 py-1 rounded">
                 {log.source_ip || "-"}
               </code>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">세션 ID</p>
-              <code className="text-xs bg-muted px-2 py-1 rounded">
+              <p className="text-base text-muted-foreground">세션 ID</p>
+              <code className="text-sm bg-muted px-2 py-1 rounded">
                 {log.session_id || "-"}
               </code>
             </div>
@@ -123,20 +123,20 @@ export function AuditLogsDetail() {
 
           {log.user_agent && (
             <div>
-              <p className="text-sm text-muted-foreground">User Agent</p>
-              <p className="mt-1 text-xs">{log.user_agent}</p>
+              <p className="text-base text-muted-foreground">User Agent</p>
+              <p className="mt-1 text-sm">{log.user_agent}</p>
             </div>
           )}
 
           {log.resource && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-muted-foreground">리소스</p>
+                <p className="text-base text-muted-foreground">리소스</p>
                 <p className="mt-1">{log.resource}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">리소스 ID</p>
-                <code className="text-xs bg-muted px-2 py-1 rounded">
+                <p className="text-base text-muted-foreground">리소스 ID</p>
+                <code className="text-sm bg-muted px-2 py-1 rounded">
                   {log.resource_id || "-"}
                 </code>
               </div>
@@ -145,20 +145,20 @@ export function AuditLogsDetail() {
 
           {log.action_performed && (
             <div>
-              <p className="text-sm text-muted-foreground">수행 작업</p>
+              <p className="text-base text-muted-foreground">수행 작업</p>
               <p className="mt-1">{log.action_performed}</p>
             </div>
           )}
 
           <div>
-            <p className="text-sm text-muted-foreground">발생 시간</p>
+            <p className="text-base text-muted-foreground">발생 시간</p>
             <p className="mt-1">{formatDate(log.created_at, "yyyy-MM-dd HH:mm:ss")}</p>
           </div>
 
           {log.extra_data && Object.keys(log.extra_data).length > 0 && (
             <div>
-              <p className="text-sm text-muted-foreground">추가 데이터</p>
-              <pre className="mt-1 p-2 bg-muted rounded text-xs overflow-auto">
+              <p className="text-base text-muted-foreground">추가 데이터</p>
+              <pre className="mt-1 p-2 bg-muted rounded text-sm overflow-auto">
                 {JSON.stringify(log.extra_data, null, 2)}
               </pre>
             </div>

@@ -35,8 +35,8 @@ export default function SettingsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">시스템 설정</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-semibold">시스템 설정</h1>
+          <p className="text-base text-muted-foreground mt-1">
             플랫폼 전역 설정을 관리합니다.
           </p>
         </div>
@@ -96,7 +96,7 @@ export default function SettingsPage() {
                 시스템
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               시스템 설정은 추후 지원 예정입니다.
             </p>
           </div>
@@ -135,7 +135,7 @@ export default function SettingsPage() {
                 <SelectItem value="rose">Rose (장미)</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               선택한 색상이 사이트 전체에 적용됩니다. 더 세밀한 조정은 고급 설정에서 가능합니다.
             </p>
           </div>
@@ -200,7 +200,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>2단계 인증 강제</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 모든 사용자에게 2FA를 요구합니다
               </p>
             </div>
@@ -212,7 +212,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>세션 타임아웃</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 비활성 시 자동 로그아웃 시간
               </p>
             </div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>IP 화이트리스트</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 특정 IP에서만 접근 허용
               </p>
             </div>
@@ -269,7 +269,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>이메일 알림</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 중요 이벤트 발생 시 이메일 발송
               </p>
             </div>
@@ -281,7 +281,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Slack 통합</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 Slack으로 알림 전송
               </p>
             </div>
@@ -293,7 +293,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>시스템 상태 알림</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 서버 상태 변경 시 알림
               </p>
             </div>
@@ -312,7 +312,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>자동 백업</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 정기적으로 데이터 백업
               </p>
             </div>
@@ -324,7 +324,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>백업 주기</Label>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-base text-muted-foreground">
                 백업 실행 간격
               </p>
             </div>

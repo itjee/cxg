@@ -61,7 +61,7 @@ export const getResourcesColumns = ({
       <DataTableColumnHeader column={column} title="리소스명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("resource_name")}</div>
+      <div className="font-light">{row.getValue("resource_name")}</div>
     ),
   },
   {
@@ -80,7 +80,7 @@ export const getResourcesColumns = ({
       <DataTableColumnHeader column={column} title="리소스 ID" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded">
+      <code className="text-sm bg-muted px-2 py-1 rounded">
         {row.getValue("resource_id")}
       </code>
     ),

@@ -128,7 +128,7 @@ export function PlansForm({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {/* 기본 정보 섹션 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">기본 정보</h3>
+          <h3 className="text-xl font-semibold">기본 정보</h3>
 
           <FormField
             control={form.control}
@@ -225,7 +225,7 @@ export function PlansForm({
 
         {/* 가격 정보 섹션 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">가격 정보</h3>
+          <h3 className="text-xl font-semibold">가격 정보</h3>
 
           <div className="grid grid-cols-3 gap-4">
             <FormField
@@ -298,7 +298,7 @@ export function PlansForm({
 
         {/* 사용량 제한 섹션 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">사용량 제한</h3>
+          <h3 className="text-xl font-semibold">사용량 제한</h3>
 
           <div className="grid grid-cols-3 gap-4">
             <FormField
@@ -349,7 +349,7 @@ export function PlansForm({
 
         {/* 유효 기간 섹션 */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">유효 기간</h3>
+          <h3 className="text-xl font-semibold">유효 기간</h3>
 
           <div className="grid grid-cols-2 gap-4">
             <FormField

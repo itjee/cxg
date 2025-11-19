@@ -88,8 +88,8 @@ export const getCompliancesColumns = ({
     ),
     cell: ({ row }) => (
       <div className="max-w-md">
-        <div className="font-medium">{row.getValue("report_name")}</div>
-        <div className="text-xs text-muted-foreground">
+        <div className="font-light">{row.getValue("report_name")}</div>
+        <div className="text-sm text-muted-foreground">
           {formatDate(row.original.start_date, "yyyy-MM-dd")} ~{" "}
           {formatDate(row.original.close_date, "yyyy-MM-dd")}
         </div>
@@ -134,9 +134,9 @@ export const getCompliancesColumns = ({
       const critical = row.original.critical_count;
       return (
         <div className="text-center">
-          <div className="font-medium">{total}</div>
+          <div className="font-light">{total}</div>
           {critical > 0 && (
-            <div className="text-xs text-destructive">심각: {critical}</div>
+            <div className="text-sm text-destructive">심각: {critical}</div>
           )}
         </div>
       );
@@ -160,7 +160,7 @@ export const getCompliancesColumns = ({
     cell: ({ row }) => {
       const fileType = row.getValue("file_type") as FileType;
       return (
-        <code className="text-xs bg-muted px-2 py-1 rounded">
+        <code className="text-sm bg-muted px-2 py-1 rounded">
           {fileTypeLabels[fileType]}
         </code>
       );
@@ -172,7 +172,7 @@ export const getCompliancesColumns = ({
       <DataTableColumnHeader column={column} title="생성일시" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">
+      <div className="text-base">
         {formatDate(row.getValue("generated_at"), "yyyy-MM-dd HH:mm")}
       </div>
     ),

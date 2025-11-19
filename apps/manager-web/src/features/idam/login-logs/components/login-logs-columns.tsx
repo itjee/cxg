@@ -194,7 +194,7 @@ export const getLoginLogsColumns = ({
       <DataTableColumnHeader column={column} title="IP 주소" />
     ),
     cell: ({ row }) => (
-      <div className="font-mono text-sm">{row.getValue("ip_address")}</div>
+      <div className="font-mono text-base">{row.getValue("ip_address")}</div>
     ),
     meta: {
       filterable: true,
@@ -210,7 +210,7 @@ export const getLoginLogsColumns = ({
       if (!city && !countryCode)
         return <span className="text-muted-foreground">-</span>;
       return (
-        <div className="text-sm">
+        <div className="text-base">
           {city && countryCode
             ? `${city}, ${countryCode}`
             : city || countryCode}
@@ -234,7 +234,7 @@ export const getLoginLogsColumns = ({
       return (
         <div className="flex items-center gap-2">
           <Shield className="h-4 w-4 text-green-600" />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             {mfaMethod ? mfaMethodLabels[mfaMethod] : "Yes"}
           </span>
         </div>
@@ -268,7 +268,7 @@ export const getLoginLogsColumns = ({
       <DataTableColumnHeader column={column} title="일시" />
     ),
     cell: ({ row }) => (
-      <div className="text-muted-foreground text-sm">
+      <div className="text-muted-foreground text-base">
         {formatDateTime(row.getValue("created_at"))}
       </div>
     ),

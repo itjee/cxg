@@ -6,9 +6,14 @@
 'use client';
 
 import { useMemo } from 'react';
-import { SearchFilters, type FilterConfig } from '@/components/filters';
+import { SearchFilterPopup, type FilterConfig } from '@/components/filters';
 import { useOnboardingsStore } from '../stores';
 import type { Onboarding } from '../types';
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface OnboardingsFiltersProps {
   data: Onboarding[];
@@ -93,7 +98,7 @@ export function OnboardingsFilters({ data }: OnboardingsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

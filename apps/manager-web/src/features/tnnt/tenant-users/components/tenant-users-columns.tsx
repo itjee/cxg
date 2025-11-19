@@ -80,7 +80,7 @@ export const getTenantUsersColumns = ({
           ) : (
             <UserCircle className="h-4 w-4 text-muted-foreground" />
           )}
-          <span className="font-medium">{row.getValue('username')}</span>
+          <span className="font-light">{row.getValue('username')}</span>
         </div>
       );
     },

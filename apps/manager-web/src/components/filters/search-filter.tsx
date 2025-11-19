@@ -22,6 +22,14 @@ import { SearchFilterPopup } from "./search-filter-popup";
 import type { FilterItemConfig } from "./search-popup.types";
 
 /**
+ * 필터 값 타입
+ * - string[]: 다중 선택 필터 값
+ * - null: 선택되지 않은 필터
+ * - { type: string; value: { from?: string; to?: string } }: daterange 필터 값
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
+
+/**
  * 검색 조건 관리 Props
  */
 export interface SearchFilterProps {
@@ -31,8 +39,8 @@ export interface SearchFilterProps {
   onSearchTextChange: (text: string) => void;
 
   /** 검색 필터 조건들 (선택형 옵션) */
-  searchFilters: Record<string, string[] | null>;
-  onSearchFiltersChange: (filters: Record<string, string[] | null>) => void;
+  searchFilters: Record<string, FilterValue>;
+  onSearchFiltersChange: (filters: Record<string, FilterValue>) => void;
 
   /** 적용 버튼 클릭 시 실행 (서버 검색 실행) */
   onApply: () => void;

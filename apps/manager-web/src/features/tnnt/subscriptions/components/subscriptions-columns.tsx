@@ -83,7 +83,7 @@ export const getSubscriptionsColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-base text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -100,7 +100,7 @@ export const getSubscriptionsColumns = ({
     cell: ({ row }) => {
       const tenantId = row.getValue("tenant_id") as string;
       return (
-        <code className="text-xs bg-muted px-2 py-1 rounded font-mono" title={tenantId}>
+        <code className="text-sm bg-muted px-2 py-1 rounded font-mono" title={tenantId}>
           {tenantId.slice(0, 8)}...
         </code>
       );
@@ -115,7 +115,7 @@ export const getSubscriptionsColumns = ({
     cell: ({ row }) => {
       const planId = row.getValue("plan_id") as string;
       return (
-        <code className="text-xs bg-muted px-2 py-1 rounded font-mono" title={planId}>
+        <code className="text-sm bg-muted px-2 py-1 rounded font-mono" title={planId}>
           {planId.slice(0, 8)}...
         </code>
       );
@@ -163,7 +163,7 @@ export const getSubscriptionsColumns = ({
       const amount = row.getValue("base_amount") as number;
       const currency = row.original.currency;
       return (
-        <div className="flex items-center gap-1 text-sm font-medium">
+        <div className="flex items-center gap-1 text-base font-light">
           <DollarSign className="h-3 w-3" />
           {formatCurrency(amount, currency)}
         </div>
@@ -180,7 +180,7 @@ export const getSubscriptionsColumns = ({
       const maxApiCalls = row.original.max_api_calls;
       
       return (
-        <div className="text-xs space-y-1">
+        <div className="text-sm space-y-1">
           {maxUsers && (
             <div className="flex items-center gap-1">
               <Users className="h-3 w-3" />
@@ -212,7 +212,7 @@ export const getSubscriptionsColumns = ({
       <DataTableColumnHeader column={column} title="시작일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground flex items-center gap-1">
+      <div className="text-base text-muted-foreground flex items-center gap-1">
         <Calendar className="h-3 w-3" />
         {formatDate(row.getValue("start_date"))}
       </div>
@@ -227,7 +227,7 @@ export const getSubscriptionsColumns = ({
     cell: ({ row }) => {
       const closeDate = row.getValue("close_date") as string | undefined;
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {closeDate ? formatDate(closeDate) : <Badge variant="outline">무기한</Badge>}
         </div>
       );

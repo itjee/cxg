@@ -110,7 +110,7 @@ export function LoginLogsForm({
       {/* 시도 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">시도 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">시도 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -133,15 +133,15 @@ export function LoginLogsForm({
               <option value="PASSWORD_RESET">비밀번호 재설정</option>
             </select>
             {errors.attemptType && (
-              <p className="text-xs text-red-500">{errors.attemptType.message}</p>
+              <p className="text-sm text-red-500">{errors.attemptType.message}</p>
             )}
           </div>
 
           {/* 성공 여부 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">성공 여부</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-lg">성공 여부</Label>
+              <p className="text-base text-muted-foreground">
                 {success ? "성공" : "실패"}
               </p>
             </div>
@@ -166,7 +166,7 @@ export function LoginLogsForm({
                 disabled={isLoading}
               />
               {errors.failureReason && (
-                <p className="text-xs text-red-500">
+                <p className="text-sm text-red-500">
                   {errors.failureReason.message}
                 </p>
               )}
@@ -178,7 +178,7 @@ export function LoginLogsForm({
       {/* 사용자 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">사용자 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">사용자 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -193,7 +193,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.username && (
-              <p className="text-xs text-red-500">{errors.username.message}</p>
+              <p className="text-sm text-red-500">{errors.username.message}</p>
             )}
           </div>
 
@@ -212,7 +212,7 @@ export function LoginLogsForm({
               <option value="SYSTEM">시스템</option>
             </select>
             {errors.userType && (
-              <p className="text-xs text-red-500">{errors.userType.message}</p>
+              <p className="text-sm text-red-500">{errors.userType.message}</p>
             )}
           </div>
 
@@ -226,7 +226,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.userId && (
-              <p className="text-xs text-red-500">{errors.userId.message}</p>
+              <p className="text-sm text-red-500">{errors.userId.message}</p>
             )}
           </div>
 
@@ -240,7 +240,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.tenantContext && (
-              <p className="text-xs text-red-500">
+              <p className="text-sm text-red-500">
                 {errors.tenantContext.message}
               </p>
             )}
@@ -251,7 +251,7 @@ export function LoginLogsForm({
       {/* 세션 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">세션 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">세션 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -268,7 +268,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.ipAddress && (
-              <p className="text-xs text-red-500">{errors.ipAddress.message}</p>
+              <p className="text-sm text-red-500">{errors.ipAddress.message}</p>
             )}
           </div>
 
@@ -284,7 +284,7 @@ export function LoginLogsForm({
                 disabled={isLoading}
               />
               {errors.countryCode && (
-                <p className="text-xs text-red-500">
+                <p className="text-sm text-red-500">
                   {errors.countryCode.message}
                 </p>
               )}
@@ -300,7 +300,7 @@ export function LoginLogsForm({
                 disabled={isLoading}
               />
               {errors.city && (
-                <p className="text-xs text-red-500">{errors.city.message}</p>
+                <p className="text-sm text-red-500">{errors.city.message}</p>
               )}
             </div>
           </div>
@@ -315,7 +315,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.userAgent && (
-              <p className="text-xs text-red-500">{errors.userAgent.message}</p>
+              <p className="text-sm text-red-500">{errors.userAgent.message}</p>
             )}
           </div>
 
@@ -329,7 +329,7 @@ export function LoginLogsForm({
               disabled={isLoading}
             />
             {errors.sessionId && (
-              <p className="text-xs text-red-500">{errors.sessionId.message}</p>
+              <p className="text-sm text-red-500">{errors.sessionId.message}</p>
             )}
           </div>
         </div>
@@ -338,7 +338,7 @@ export function LoginLogsForm({
       {/* MFA 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">MFA 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">MFA 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -346,8 +346,8 @@ export function LoginLogsForm({
           {/* MFA 사용 */}
           <div className="flex items-center justify-between rounded-lg border p-4">
             <div className="space-y-0.5">
-              <Label className="text-base">MFA 사용</Label>
-              <p className="text-sm text-muted-foreground">
+              <Label className="text-lg">MFA 사용</Label>
+              <p className="text-base text-muted-foreground">
                 {mfaUsed ? "사용" : "미사용"}
               </p>
             </div>
@@ -377,7 +377,7 @@ export function LoginLogsForm({
                 <option value="EMAIL">이메일</option>
               </select>
               {errors.mfaMethod && (
-                <p className="text-xs text-red-500">{errors.mfaMethod.message}</p>
+                <p className="text-sm text-red-500">{errors.mfaMethod.message}</p>
               )}
             </div>
           )}

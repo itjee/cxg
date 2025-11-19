@@ -51,8 +51,8 @@ export default function AuditReportsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">감사 보고서</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <h1 className="text-3xl font-semibold">감사 보고서</h1>
+          <p className="text-base text-muted-foreground mt-1">
             감사 보고서를 생성하고 조회합니다.
           </p>
         </div>
@@ -84,38 +84,38 @@ export default function AuditReportsPage() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">총 보고서</CardTitle>
+            <CardTitle className="text-base font-medium">총 보고서</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">생성된 보고서</p>
+            <div className="text-3xl font-bold">24</div>
+            <p className="text-sm text-muted-foreground">생성된 보고서</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">이번 달</CardTitle>
+            <CardTitle className="text-base font-medium">이번 달</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">6</div>
-            <p className="text-xs text-emerald-600 dark:text-emerald-500">신규 보고서</p>
+            <div className="text-3xl font-bold">6</div>
+            <p className="text-sm text-emerald-600 dark:text-emerald-500">신규 보고서</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">자동 생성</CardTitle>
+            <CardTitle className="text-base font-medium">자동 생성</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">18</div>
-            <p className="text-xs text-muted-foreground">정기 보고서</p>
+            <div className="text-3xl font-bold">18</div>
+            <p className="text-sm text-muted-foreground">정기 보고서</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">수동 생성</CardTitle>
+            <CardTitle className="text-base font-medium">수동 생성</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">6</div>
-            <p className="text-xs text-muted-foreground">요청 보고서</p>
+            <div className="text-3xl font-bold">6</div>
+            <p className="text-sm text-muted-foreground">요청 보고서</p>
           </CardContent>
         </Card>
       </div>
@@ -123,7 +123,7 @@ export default function AuditReportsPage() {
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">보고서 목록</CardTitle>
+          <CardTitle className="text-lg">보고서 목록</CardTitle>
           <CardDescription>생성된 감사 보고서를 확인합니다.</CardDescription>
         </CardHeader>
         <CardContent>

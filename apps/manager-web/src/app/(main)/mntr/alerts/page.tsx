@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function AlertsPage() {
@@ -67,30 +65,33 @@ export default function AlertsPage() {
     },
   ];
 
-  const actions = (
-    <ButtonGroup>
-      <Button variant="outline" onClick={handleRefresh}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        새로고침
-      </Button>
-      <Button variant="outline" onClick={handleExport}>
-        <Download className="mr-2 h-4 w-4" />
-        내보내기
-      </Button>
-    </ButtonGroup>
-  );
-
   return (
-    <Page
-      title="알림 관리"
-      description="시스템 알림 및 경고를 확인합니다"
-      actions={actions}
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">알림 관리</h1>
+          <p className="mt-2 text-base text-muted-foreground">시스템 알림 및 경고를 확인합니다</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            내보내기
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
 
+      {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">알림 목록</CardTitle>
+          <CardTitle className="text-lg">알림 목록</CardTitle>
           <CardDescription>시스템 알림 및 경고를 확인합니다.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -168,6 +169,6 @@ export default function AlertsPage() {
           </div>
         </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

@@ -86,8 +86,8 @@ export const getPoliciesColumns = ({
     ),
     cell: ({ row }) => (
       <div className="max-w-md">
-        <div className="font-medium">{row.getValue("policy_name")}</div>
-        <div className="text-xs text-muted-foreground">
+        <div className="font-light">{row.getValue("policy_name")}</div>
+        <div className="text-sm text-muted-foreground">
           버전 {row.original.version}
         </div>
       </div>
@@ -153,10 +153,10 @@ export const getPoliciesColumns = ({
       <DataTableColumnHeader column={column} title="시행일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">
+      <div className="text-base">
         <div>{formatDate(row.getValue("effective_date"), "yyyy-MM-dd")}</div>
         {row.original.expiry_date && (
-          <div className="text-xs text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             ~ {formatDate(row.original.expiry_date, "yyyy-MM-dd")}
           </div>
         )}
@@ -167,7 +167,7 @@ export const getPoliciesColumns = ({
     id: "scope",
     header: "적용범위",
     cell: ({ row }) => (
-      <div className="text-sm">
+      <div className="text-base">
         {row.original.apply_to_all_tenants ? "전체" : "특정 테넌트"}
       </div>
     ),

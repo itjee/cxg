@@ -5,9 +5,14 @@
  * @description 스케줄된 작업 검색/필터 UI
  */
 
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useTasksStore } from "../stores";
 import type { Task } from "../types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface TasksFiltersProps {
   data: Task[];
@@ -92,7 +97,7 @@ export function TasksFilters({ data }: TasksFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

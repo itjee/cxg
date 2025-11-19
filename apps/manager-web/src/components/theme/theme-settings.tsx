@@ -34,8 +34,8 @@ export function ThemeSettings() {
             <Palette className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl font-bold">테마 설정</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="text-2xl font-bold">테마 설정</h2>
+            <p className="text-base text-muted-foreground">
               애플리케이션의 색상 테마를 변경하세요
             </p>
           </div>
@@ -76,7 +76,7 @@ export function ThemeSettings() {
               {/* 변경 사항 알림 */}
               {hasChanges && (
                 <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-                  <p className="text-sm text-primary font-medium">
+                  <p className="text-base text-primary font-medium">
                     색상이 변경되었습니다. '적용' 버튼을 클릭하여 저장하세요.
                   </p>
                 </div>
@@ -128,10 +128,10 @@ export function ThemeSettings() {
       {/* 추가 정보 */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">테마 정보</CardTitle>
+          <CardTitle className="text-lg">테마 정보</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-base">
             <div>
               <p className="text-muted-foreground mb-1">현재 팔레트</p>
               <p className="font-semibold capitalize">{palette}</p>

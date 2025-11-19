@@ -51,7 +51,7 @@ export const getTenantRolesColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-base text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -74,7 +74,7 @@ export const getTenantRolesColumns = ({
           ) : (
             <ShieldOff className="h-4 w-4 text-muted-foreground" />
           )}
-          <span className="font-medium">{row.getValue('role_name')}</span>
+          <span className="font-light">{row.getValue('role_name')}</span>
         </div>
       );
     },
@@ -86,7 +86,7 @@ export const getTenantRolesColumns = ({
       <DataTableColumnHeader column={column} title="역할 코드" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded">
+      <code className="text-sm bg-muted px-2 py-1 rounded">
         {row.getValue('role_code')}
       </code>
     ),
@@ -98,7 +98,7 @@ export const getTenantRolesColumns = ({
       <DataTableColumnHeader column={column} title="테넌트 ID" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded">
+      <code className="text-sm bg-muted px-2 py-1 rounded">
         {row.getValue('tenant_id')}
       </code>
     ),
@@ -110,7 +110,7 @@ export const getTenantRolesColumns = ({
     cell: ({ row }) => {
       const description = row.getValue('description') as string | undefined;
       return (
-        <div className="text-sm text-muted-foreground max-w-[300px] truncate">
+        <div className="text-base text-muted-foreground max-w-[300px] truncate">
           {description || '-'}
         </div>
       );
@@ -151,7 +151,7 @@ export const getTenantRolesColumns = ({
       <DataTableColumnHeader column={column} title="생성일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">{formatDate(row.getValue('created_at'))}</div>
+      <div className="text-base">{formatDate(row.getValue('created_at'))}</div>
     ),
   },
   // 액션

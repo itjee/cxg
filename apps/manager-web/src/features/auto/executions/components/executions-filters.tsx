@@ -12,9 +12,14 @@
  */
 
 import { useMemo } from "react";
-import { SearchFilters, type FilterConfig } from "@/components/filters";
+import { SearchFilterPopup, type FilterConfig } from "@/components/filters";
 import { useExecutionsStore } from "../stores";
 import type { Execution } from "../types";
+
+/**
+ * 필터 값 타입
+ */
+type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
 
 interface ExecutionsFiltersProps {
   data: Execution[];
@@ -84,7 +89,7 @@ export function ExecutionsFilters({ data }: ExecutionsFiltersProps) {
   };
 
   return (
-    <SearchFilters
+    <SearchFilterPopup
       filters={filterConfigs}
       values={filterValues}
       onChange={handleFilterChange}

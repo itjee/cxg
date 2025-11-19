@@ -1,66 +1,201 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import * as React from "react";
+import { DayPicker, type DayPickerProps } from "react-day-picker";
+import { ko } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import "react-day-picker/style.css";
+import "./calendar.css";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+export type CalendarProps = DayPickerProps;
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(
+  ({ className, classNames, showOutsideDays = true, ...props }, ref) => {
+    // selected 날짜에서 초기 month 결정
+    const getInitialMonth = () => {
+      const selected = (props as any).selected;
+      if (selected instanceof Date) {
+        return new Date(selected.getFullYear(), selected.getMonth(), 1);
+      }
+      return props.month || new Date();
+    };
 
-function Calendar({
-  className,
-  classNames,
-  showOutsideDays = true,
-  ...props
-}: CalendarProps) {
-  return (
-    <DayPicker
-      showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
-      classNames={{
-        months: "flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex items-center justify-between pt-1",
-        caption_label: "text-sm font-medium",
-        nav: "flex items-center space-x-1",
-        nav_button: cn(
-          buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
-        ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
-        day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
-        ),
-        day_range_end: "day-range-end",
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside:
-          "day-outside text-muted-foreground opacity-50 aria-selected:bg-accent/50 aria-selected:text-muted-foreground aria-selected:opacity-30",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
-        day_hidden: "invisible",
-        ...classNames,
-      }}
-      components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
-      }}
-      {...props}
-    />
-  )
-}
-Calendar.displayName = "Calendar"
+    const [displayMonth, setDisplayMonth] = React.useState(getInitialMonth());
 
-export { Calendar }
+    const currentYear = displayMonth.getFullYear();
+    const currentMonthNum = displayMonth.getMonth();
+
+    // 월 옵션 (0-11)
+    const monthOptions = [
+      { value: 0, label: "1월" },
+      { value: 1, label: "2월" },
+      { value: 2, label: "3월" },
+      { value: 3, label: "4월" },
+      { value: 4, label: "5월" },
+      { value: 5, label: "6월" },
+      { value: 6, label: "7월" },
+      { value: 7, label: "8월" },
+      { value: 8, label: "9월" },
+      { value: 9, label: "10월" },
+      { value: 10, label: "11월" },
+      { value: 11, label: "12월" },
+    ];
+
+    // 연도 옵션 (현재 년도 ±10년)
+    const yearOptions = Array.from({ length: 21 }, (_, i) => ({
+      value: currentYear - 10 + i,
+      label: String(currentYear - 10 + i),
+    }));
+
+    const handleMonthChange = React.useCallback(
+      (monthStr: string) => {
+        const month = parseInt(monthStr, 10);
+        const newDate = new Date(currentYear, month, 1);
+        setDisplayMonth(newDate);
+        props.onMonthChange?.(newDate);
+      },
+      [currentYear, props]
+    );
+
+    const handleYearChange = React.useCallback(
+      (yearStr: string) => {
+        const year = parseInt(yearStr, 10);
+        const newDate = new Date(year, currentMonthNum, 1);
+        setDisplayMonth(newDate);
+        props.onMonthChange?.(newDate);
+      },
+      [currentMonthNum, props]
+    );
+
+    // 이전 월로 이동
+    const handlePrevMonth = React.useCallback(() => {
+      const newDate = new Date(currentYear, currentMonthNum - 1, 1);
+      setDisplayMonth(newDate);
+      props.onMonthChange?.(newDate);
+    }, [currentYear, currentMonthNum, props]);
+
+    // 다음 월로 이동
+    const handleNextMonth = React.useCallback(() => {
+      const newDate = new Date(currentYear, currentMonthNum + 1, 1);
+      setDisplayMonth(newDate);
+      props.onMonthChange?.(newDate);
+    }, [currentYear, currentMonthNum, props]);
+
+    // 오늘 날짜로 이동 및 선택
+    const handleToday = React.useCallback(() => {
+      const today = new Date();
+      setDisplayMonth(today);
+      props.onMonthChange?.(today);
+      // onSelect 콜백이 있으면 호출 (날짜 선택 처리)
+      const onSelect = (props as any).onSelect;
+      if (onSelect && typeof onSelect === 'function') {
+        onSelect(today);
+      }
+    }, [props]);
+
+    // props.month이 변경되면 displayMonth 업데이트
+    React.useEffect(() => {
+      if (props.month) {
+        setDisplayMonth(props.month);
+      }
+    }, [props.month]);
+
+    // props.selected가 변경되면 displayMonth를 선택된 날짜의 월로 업데이트
+    React.useEffect(() => {
+      const selected = (props as any).selected;
+      if (selected instanceof Date) {
+        setDisplayMonth(new Date(selected.getFullYear(), selected.getMonth(), 1));
+      } else if (!selected && props.month) {
+        // selected가 없으면 month를 사용
+        setDisplayMonth(props.month);
+      }
+    }, [(props as any).selected, props.month]);
+
+    return (
+      <div ref={ref}>
+        <div className="flex items-center justify-center gap-2 mb-2 px-3 py-2 border-b border-input">
+          <button
+            onClick={handlePrevMonth}
+            className="w-8 h-8 flex items-center justify-center hover:bg-muted rounded-md transition-colors"
+            title="이전 월"
+            type="button"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <Select
+            value={String(currentMonthNum)}
+            onValueChange={handleMonthChange}
+          >
+            <SelectTrigger className="w-20 h-8" size="sm">
+              <SelectValue placeholder={monthOptions[currentMonthNum]?.label} />
+            </SelectTrigger>
+            <SelectContent>
+              {monthOptions.map((option) => (
+                <SelectItem key={option.value} value={String(option.value)}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={String(currentYear)} onValueChange={handleYearChange}>
+            <SelectTrigger className="w-24 h-8" size="sm">
+              <SelectValue placeholder={String(currentYear)} />
+            </SelectTrigger>
+            <SelectContent>
+              {yearOptions.map((option) => (
+                <SelectItem key={option.value} value={String(option.value)}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <button
+            onClick={handleNextMonth}
+            className="w-8 h-8 flex items-center justify-center hover:bg-muted rounded-md transition-colors"
+            title="다음 월"
+            type="button"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+        <DayPicker
+          showOutsideDays={showOutsideDays}
+          className={cn("p-2", className)}
+          locale={ko}
+          month={displayMonth}
+          onMonthChange={setDisplayMonth}
+          disabled={(date) => {
+            if (typeof (props as any).disabled === 'function') {
+              return (props as any).disabled(date);
+            }
+            return false;
+          }}
+          {...props}
+        />
+        <div className="flex justify-center border-t border-input pt-1.5 pb-1.5">
+          <button
+            onClick={handleToday}
+            className="w-32 h-8 text-base font-medium text-primary hover:bg-primary/10 rounded-md transition-colors"
+            type="button"
+          >
+            오늘
+          </button>
+        </div>
+      </div>
+    );
+  }
+);
+Calendar.displayName = "Calendar";
+
+export { Calendar };

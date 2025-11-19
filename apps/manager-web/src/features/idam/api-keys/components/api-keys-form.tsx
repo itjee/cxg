@@ -112,7 +112,7 @@ export function ApiKeysForm({
       {/* 기본 정보 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">기본 정보</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">기본 정보</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -127,7 +127,7 @@ export function ApiKeysForm({
             disabled={isLoading}
           />
           {errors.keyName && (
-            <p className="text-sm text-destructive">{errors.keyName.message}</p>
+            <p className="text-base text-destructive">{errors.keyName.message}</p>
           )}
         </div>
 
@@ -142,7 +142,7 @@ export function ApiKeysForm({
             disabled={isLoading || isEditing}
           />
           {errors.userId && (
-            <p className="text-sm text-destructive">{errors.userId.message}</p>
+            <p className="text-base text-destructive">{errors.userId.message}</p>
           )}
         </div>
 
@@ -170,7 +170,7 @@ export function ApiKeysForm({
       {/* 권한 및 스코프 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">
+          <h3 className="text-base font-semibold whitespace-nowrap">
             권한 및 스코프
           </h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
@@ -185,7 +185,7 @@ export function ApiKeysForm({
             disabled={isLoading}
             rows={2}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             콤마(,)로 구분하여 여러 스코프를 입력하세요
           </p>
         </div>
@@ -199,7 +199,7 @@ export function ApiKeysForm({
             disabled={isLoading}
             rows={2}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             콤마(,)로 구분하여 여러 IP를 입력하세요
           </p>
         </div>
@@ -208,7 +208,7 @@ export function ApiKeysForm({
       {/* 사용 제한 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">사용 제한</h3>
+          <h3 className="text-base font-semibold whitespace-nowrap">사용 제한</h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
         </div>
 
@@ -248,7 +248,7 @@ export function ApiKeysForm({
       {/* 만료 및 상태 */}
       <div className="space-y-4">
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold whitespace-nowrap">
+          <h3 className="text-base font-semibold whitespace-nowrap">
             만료 및 상태
           </h3>
           <div className="flex-1 h-px bg-gradient-to-r from-border to-transparent"></div>
@@ -262,7 +262,7 @@ export function ApiKeysForm({
             {...register("expiresAt")}
             disabled={isLoading}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             비워두면 만료되지 않습니다
           </p>
         </div>

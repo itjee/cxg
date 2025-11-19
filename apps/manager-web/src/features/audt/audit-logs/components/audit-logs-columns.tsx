@@ -79,7 +79,7 @@ export const getAuditLogsColumns = ({
       <DataTableColumnHeader column={column} title="발생시간" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm">
+      <div className="text-base">
         {formatDate(row.getValue("created_at"), "yyyy-MM-dd HH:mm:ss")}
       </div>
     ),
@@ -116,7 +116,7 @@ export const getAuditLogsColumns = ({
     accessorKey: "description",
     header: "설명",
     cell: ({ row }) => (
-      <div className="max-w-md truncate text-sm">
+      <div className="max-w-md truncate text-base">
         {row.getValue("description")}
       </div>
     ),
@@ -125,7 +125,7 @@ export const getAuditLogsColumns = ({
     accessorKey: "source_ip",
     header: "IP 주소",
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded">
+      <code className="text-sm bg-muted px-2 py-1 rounded">
         {row.getValue("source_ip") || "-"}
       </code>
     ),
@@ -163,7 +163,7 @@ export const getAuditLogsColumns = ({
       <div className="flex justify-end">
         <button
           onClick={() => onViewDetails?.(row.original)}
-          className="text-sm text-primary hover:underline"
+          className="text-base text-primary hover:underline"
         >
           상세
         </button>

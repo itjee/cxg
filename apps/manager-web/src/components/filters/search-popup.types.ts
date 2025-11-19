@@ -19,12 +19,16 @@ export interface FilterOption {
  * 필터 타입:
  * - "checkbox" (기본값): 다중 선택 체크박스
  * - "daterange": 날짜 범위 선택 (from ~ to)
+ *
+ * 옵션:
+ * - enableTimeSelect?: 시간:분 선택 활성화 (daterange 타입에만 적용)
  */
 export interface FilterItemConfig {
   key: string;
   label: string;
   type?: "checkbox" | "daterange";
   options: FilterOption[];
+  enableTimeSelect?: boolean; // 시간:분 선택 활성화 (daterange 타입)
 }
 
 /**

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -22,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 
 export default function ResourcesPage() {
@@ -67,30 +65,33 @@ export default function ResourcesPage() {
     },
   ];
 
-  const actions = (
-    <ButtonGroup>
-      <Button variant="outline" onClick={handleRefresh}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        새로고침
-      </Button>
-      <Button variant="outline" onClick={handleExport}>
-        <Download className="mr-2 h-4 w-4" />
-        내보내기
-      </Button>
-    </ButtonGroup>
-  );
-
   return (
-    <Page
-      title="리소스 관리"
-      description="시스템 리소스 사용량을 모니터링합니다"
-      actions={actions}
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold tracking-tight">리소스 관리</h1>
+          <p className="text-muted-foreground">시스템 리소스 사용량을 모니터링합니다</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={handleRefresh}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            새로고침
+          </Button>
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            내보내기
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
 
+      {/* Content */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">리소스 사용량</CardTitle>
+          <CardTitle className="text-lg">리소스 사용량</CardTitle>
           <CardDescription>테넌트별 리소스 소비량을 확인합니다.</CardDescription>
         </CardHeader>
         <CardContent>
@@ -166,6 +167,6 @@ export default function ResourcesPage() {
           </div>
         </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

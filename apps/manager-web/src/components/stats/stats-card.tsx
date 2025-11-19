@@ -50,44 +50,57 @@ export function StatCard({
   className,
 }: StatCardProps) {
   return (
-    <Card className={cn(
-      colorClasses[color],
-      "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-28",
-      className
-    )}>
+    <Card
+      className={cn(
+        colorClasses[color],
+        "relative overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 h-28",
+        className
+      )}
+    >
       {/* 배경 그라디언트 */}
-      <div className={cn(
-        "absolute inset-0 bg-gradient-to-br transition-opacity duration-300 group-hover:opacity-100",
-        gradientClasses[color]
-      )} />
+      <div
+        className={cn(
+          "absolute inset-0 bg-gradient-to-br transition-opacity duration-300 group-hover:opacity-100",
+          gradientClasses[color]
+        )}
+      />
 
       {/* 배경 아이콘 */}
       {icon && (
-        <div className={cn(
-          "absolute -right-1 -top-1 opacity-5 rotate-12 transition-all duration-500 group-hover:opacity-15 group-hover:scale-110 group-hover:rotate-6",
-          iconColorClasses[color]
-        )}>
+        <div
+          className={cn(
+            "absolute -right-1 -top-1 opacity-5 rotate-12 transition-all duration-500 group-hover:opacity-15 group-hover:scale-110 group-hover:rotate-6",
+            iconColorClasses[color]
+          )}
+        >
           <div className="w-28 h-28">
-            {React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-              className: "w-full h-full"
-            })}
+            {React.cloneElement(
+              icon as React.ReactElement<{ className?: string }>,
+              {
+                className: "w-full h-full",
+              }
+            )}
           </div>
         </div>
       )}
 
       <CardContent className="p-4 relative h-full flex flex-col justify-between">
         {/* 상단: 제목 */}
-        <p className="text-xs font-medium text-muted-foreground transition-colors duration-300 group-hover:text-foreground">{title}</p>
+        <p className="text-base font-medium letter-spacing-tight text-muted-foreground transition-colors duration-300 group-hover:text-foreground">
+          {title}
+        </p>
 
         {/* 중간: 메인 값 */}
-        <p className="text-xl font-bold text-foreground transition-all duration-300 group-hover:scale-105">{value}</p>
+        <p className="text-4xl font-extrabold letter-spacing-tight text-foreground transition-all duration-300 group-hover:scale-105">
+          {value}
+        </p>
 
         {/* 하단: Trend와 설명 */}
         <div className="space-y-1">
           {trend && (
             <span
               className={cn(
-                "text-xs font-medium block",
+                "text-sm font-light block",
                 trend.isPositive
                   ? "text-emerald-600 dark:text-emerald-500"
                   : "text-destructive"
@@ -98,7 +111,7 @@ export function StatCard({
             </span>
           )}
           {description && (
-            <p className="text-xs text-muted-foreground">{description}</p>
+            <p className="text-sm text-muted-foreground">{description}</p>
           )}
         </div>
       </CardContent>

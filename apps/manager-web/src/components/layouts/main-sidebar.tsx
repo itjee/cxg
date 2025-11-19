@@ -27,7 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
-import { useThemeStore } from '@/shared/stores';
+import { useThemeStore } from "@/shared/stores";
 import { ChevronRight } from "lucide-react";
 
 interface NavItem {
@@ -358,7 +358,10 @@ const bottomNavItems: NavItem[] = [
   },
 ];
 
-export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) {
+export function MainSidebar({
+  collapsed,
+  onCollapsedChange,
+}: MainSidebarProps) {
   const pathname = usePathname();
   const { customColors, mode } = useThemeStore();
   const [isHovered, setIsHovered] = useState(false);
@@ -366,31 +369,38 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
   // Find which group contains the current path
   const getActiveGroupId = () => {
     for (const group of navGroups) {
-      if (group.items.some(item => pathname === item.href || pathname.startsWith(item.href + '/'))) {
+      if (
+        group.items.some(
+          (item) =>
+            pathname === item.href || pathname.startsWith(item.href + "/")
+        )
+      ) {
         return group.id;
       }
     }
     return null;
   };
 
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() => {
-    const activeGroupId = getActiveGroupId();
-    return {
-      "tenant-management": activeGroupId === "tenant-management",
-      "billing": activeGroupId === "billing",
-      "infrastructure": activeGroupId === "infrastructure",
-      "monitoring": activeGroupId === "monitoring",
-      "security": activeGroupId === "security",
-      "audit": activeGroupId === "audit",
-      "notifications": activeGroupId === "notifications",
-      "support": activeGroupId === "support",
-      "integrations": activeGroupId === "integrations",
-      "configuration": activeGroupId === "configuration",
-      "analytics": activeGroupId === "analytics",
-      "automation": activeGroupId === "automation",
-      "backup": activeGroupId === "backup",
-    };
-  });
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
+    () => {
+      const activeGroupId = getActiveGroupId();
+      return {
+        "tenant-management": activeGroupId === "tenant-management",
+        billing: activeGroupId === "billing",
+        infrastructure: activeGroupId === "infrastructure",
+        monitoring: activeGroupId === "monitoring",
+        security: activeGroupId === "security",
+        audit: activeGroupId === "audit",
+        notifications: activeGroupId === "notifications",
+        support: activeGroupId === "support",
+        integrations: activeGroupId === "integrations",
+        configuration: activeGroupId === "configuration",
+        analytics: activeGroupId === "analytics",
+        automation: activeGroupId === "automation",
+        backup: activeGroupId === "backup",
+      };
+    }
+  );
 
   const isExpanded = !collapsed;
 
@@ -412,7 +422,10 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
         )}
       >
         {/* Logo */}
-        <div className="flex items-center border-b border-sidebar-border px-3 bg-sidebar text-sidebar-foreground" style={{ height: '57px' }}>
+        <div
+          className="flex items-center border-b border-sidebar-border px-3 bg-sidebar text-sidebar-foreground"
+          style={{ height: "57px" }}
+        >
           {isExpanded ? (
             <Link href="/" className="flex items-center gap-2">
               <Image
@@ -424,8 +437,10 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
                 priority
               />
               <div className="flex flex-col">
-                <span className="font-bold text-base leading-tight">ConexGrow</span>
-                <span className="text-xs text-muted-foreground">Manager</span>
+                <span className="font-bold text-xl letter-spacing-tight leading-tight">
+                  ConexGrow
+                </span>
+                <span className="text-sm text-muted-foreground">Manager</span>
               </div>
             </Link>
           ) : (
@@ -451,7 +466,7 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
                 key={item.id}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                   pathname === item.href
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground",
@@ -472,7 +487,7 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
                 <>
                   <button
                     onClick={() => toggleGroup(group.id)}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors rounded-md"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-base font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors rounded-md"
                   >
                     {group.icon}
                     <span className="flex-1 text-left">{group.label}</span>
@@ -495,7 +510,7 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
                         key={item.id}
                         href={item.href}
                         className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors hover:bg-accent hover:text-accent-foreground pl-9",
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-base transition-colors hover:bg-accent hover:text-accent-foreground pl-9",
                           pathname === item.href
                             ? "bg-accent text-accent-foreground"
                             : "text-muted-foreground"
@@ -515,7 +530,8 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
                 <button
                   className={cn(
                     "w-full flex items-center justify-center px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-accent transition-colors rounded-md",
-                    group.items.some(item => pathname === item.href) && "bg-accent text-accent-foreground"
+                    group.items.some((item) => pathname === item.href) &&
+                      "bg-accent text-accent-foreground"
                   )}
                   title={group.label}
                 >
@@ -533,7 +549,7 @@ export function MainSidebar({ collapsed, onCollapsedChange }: MainSidebarProps) 
               key={item.id}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                "flex items-center gap-3 rounded-md px-3 py-2 text-base font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
                 pathname === item.href
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground",

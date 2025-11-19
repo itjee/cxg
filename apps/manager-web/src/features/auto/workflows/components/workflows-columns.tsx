@@ -63,7 +63,7 @@ export const getWorkflowsColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center font-medium text-muted-foreground">
+        <div className="text-center font-light text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -78,7 +78,7 @@ export const getWorkflowsColumns = ({
       <DataTableColumnHeader column={column} title="워크플로우명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-light">{row.getValue("name")}</div>
     ),
   },
   // 설명
@@ -86,7 +86,7 @@ export const getWorkflowsColumns = ({
     accessorKey: "description",
     header: "설명",
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground max-w-md truncate">
+      <div className="text-base text-muted-foreground max-w-md truncate">
         {row.getValue("description") || "-"}
       </div>
     ),
@@ -115,7 +115,7 @@ export const getWorkflowsColumns = ({
     ),
     cell: ({ row }) => {
       const updatedAt = row.getValue("updated_at") as string;
-      return <div className="text-sm">{formatDate(updatedAt)}</div>;
+      return <div className="text-base">{formatDate(updatedAt)}</div>;
     },
   },
   // 액션

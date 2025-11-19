@@ -1,7 +1,6 @@
 "use client";
 import { Card, CardContent } from "@/components/ui/card";
 
-import { Page } from "@/components/layouts/page";
 import { StatsCards } from "@/components/stats/stats-cards";
 import { AlertCircle, CheckCircle, Clock, FileText } from "lucide-react";
 
@@ -39,13 +38,17 @@ export default function ReportsPage() {
 
 
   return (
-    <Page
-      title="통계 보고서"
-      description="통계 보고서를 관리합니다"
-      
-    >
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">통계 보고서</h1>
+        <p className="text-muted-foreground">통계 보고서를 관리합니다</p>
+      </div>
+
+      {/* Stats */}
       <StatsCards cards={stats} columns={4} />
-      
+
+      {/* Content */}
       <Card>
         <CardContent className="pt-6">
           <div className="rounded-lg border bg-muted/50 p-8 text-center">
@@ -53,6 +56,6 @@ export default function ReportsPage() {
       </div>
             </CardContent>
       </Card>
-    </Page>
+    </div>
   );
 }

@@ -46,12 +46,12 @@ export default function DashboardPage() {
       {/* Tenant Growth Chart */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-medium">Tenant Growth Over Time</CardTitle>
+          <CardTitle className="text-lg font-medium">Tenant Growth Over Time</CardTitle>
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 text-xs border rounded hover:bg-accent transition-colors">
+            <button className="px-3 py-1.5 text-sm border rounded hover:bg-accent transition-colors">
               Export
             </button>
-            <button className="px-3 py-1.5 text-xs border rounded hover:bg-accent transition-colors">
+            <button className="px-3 py-1.5 text-sm border rounded hover:bg-accent transition-colors">
               Settings
             </button>
           </div>
@@ -72,8 +72,8 @@ export default function DashboardPage() {
       {/* Recent Tenants Table */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-medium">Recent Tenants</CardTitle>
-          <button className="px-3 py-1.5 text-xs border rounded hover:bg-accent transition-colors">
+          <CardTitle className="text-lg font-medium">Recent Tenants</CardTitle>
+          <button className="px-3 py-1.5 text-sm border rounded hover:bg-accent transition-colors">
             View All
           </button>
         </CardHeader>
@@ -82,12 +82,12 @@ export default function DashboardPage() {
             <table className="w-full">
               <thead className="bg-secondary">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Tenant Name</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Plan</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Users</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">MRR</th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Created</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">Tenant Name</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">Plan</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">Status</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">Users</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">MRR</th>
+                  <th className="px-4 py-3 text-left text-base font-medium text-muted-foreground">Created</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,7 +95,7 @@ export default function DashboardPage() {
                   <td className="px-4 py-3">Acme Corporation</td>
                   <td className="px-4 py-3">Enterprise</td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 text-xs rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
+                    <span className="px-2 py-1 text-sm rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
                       Active
                     </span>
                   </td>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
                   <td className="px-4 py-3">Tech Solutions Inc.</td>
                   <td className="px-4 py-3">Professional</td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 text-xs rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
+                    <span className="px-2 py-1 text-sm rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
                       Active
                     </span>
                   </td>
@@ -119,7 +119,7 @@ export default function DashboardPage() {
                   <td className="px-4 py-3">Global Logistics</td>
                   <td className="px-4 py-3">Business</td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 text-xs rounded bg-[rgba(255,152,48,0.2)] text-chart-3 font-medium">
+                    <span className="px-2 py-1 text-sm rounded bg-[rgba(255,152,48,0.2)] text-chart-3 font-medium">
                       Trial
                     </span>
                   </td>
@@ -131,7 +131,7 @@ export default function DashboardPage() {
                   <td className="px-4 py-3">Retail Solutions</td>
                   <td className="px-4 py-3">Professional</td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 text-xs rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
+                    <span className="px-2 py-1 text-sm rounded bg-[rgba(115,191,105,0.2)] text-chart-1 font-medium">
                       Active
                     </span>
                   </td>
@@ -143,7 +143,7 @@ export default function DashboardPage() {
                   <td className="px-4 py-3">Manufacturing Pro</td>
                   <td className="px-4 py-3">Enterprise</td>
                   <td className="px-4 py-3">
-                    <span className="px-2 py-1 text-xs rounded bg-[rgba(158,167,180,0.2)] text-muted-foreground font-medium">
+                    <span className="px-2 py-1 text-sm rounded bg-[rgba(158,167,180,0.2)] text-muted-foreground font-medium">
                       Suspended
                     </span>
                   </td>

@@ -112,7 +112,7 @@ export const getInvoiceColumns = ({
   {
     id: "rowNumber",
     header: () => (
-      <div className="text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <div className="text-center text-sm font-light text-muted-foreground uppercase tracking-wider">
         NO
       </div>
     ),
@@ -121,7 +121,7 @@ export const getInvoiceColumns = ({
       const pageSize = table.getState().pagination.pageSize;
       const rowIndex = row.index;
       return (
-        <div className="text-center text-sm text-foreground w-12">
+        <div className="text-center text-base text-foreground w-12">
           {pageIndex * pageSize + rowIndex + 1}
         </div>
       );
@@ -136,7 +136,7 @@ export const getInvoiceColumns = ({
       <DataTableColumnHeader column={column} title="청구서 번호" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("invoiceNumber")}
       </code>
     ),

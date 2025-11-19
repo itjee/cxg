@@ -29,8 +29,8 @@ export default function AdvancedThemePage() {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-semibold">고급 테마 설정</h1>
-            <p className="text-sm text-muted-foreground mt-1">
+            <h1 className="text-3xl font-semibold">고급 테마 설정</h1>
+            <p className="text-base text-muted-foreground mt-1">
               테마 색상과 개별 변수를 세밀하게 조정할 수 있습니다.
             </p>
           </div>

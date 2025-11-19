@@ -29,15 +29,15 @@ export function ThemePreview() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold mb-4">미리보기</h3>
-        <p className="text-sm text-muted-foreground mb-6">
+        <h3 className="text-xl font-semibold mb-4">미리보기</h3>
+        <p className="text-base text-muted-foreground mb-6">
           선택한 색상이 실제 UI에 어떻게 적용되는지 확인하세요
         </p>
       </div>
 
       {/* 통계 카드 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           통계 카드
         </p>
         <StatsCards cards={sampleStats} columns={2} />
@@ -45,7 +45,7 @@ export function ThemePreview() {
 
       {/* 버튼 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           버튼
         </p>
         <div className="flex flex-wrap gap-2">
@@ -59,7 +59,7 @@ export function ThemePreview() {
 
       {/* 배지 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           배지
         </p>
         <div className="flex flex-wrap gap-2">
@@ -72,7 +72,7 @@ export function ThemePreview() {
 
       {/* 입력 필드 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           입력 필드
         </p>
         <div className="grid gap-3">
@@ -83,7 +83,7 @@ export function ThemePreview() {
 
       {/* 카드 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           카드
         </p>
         <Card>
@@ -99,12 +99,12 @@ export function ThemePreview() {
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <p className="text-xl font-bold text-primary">1,234</p>
-                <p className="text-xs text-muted-foreground">총 방문자</p>
+                <p className="text-2xl font-bold text-primary">1,234</p>
+                <p className="text-sm text-muted-foreground">총 방문자</p>
               </div>
               <div className="flex-1">
-                <p className="text-xl font-bold">567</p>
-                <p className="text-xs text-muted-foreground">신규 사용자</p>
+                <p className="text-2xl font-bold">567</p>
+                <p className="text-sm text-muted-foreground">신규 사용자</p>
               </div>
             </div>
           </CardContent>
@@ -113,7 +113,7 @@ export function ThemePreview() {
 
       {/* 텍스트 색상 미리보기 */}
       <div>
-        <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
+        <p className="text-sm font-medium text-muted-foreground mb-3 uppercase tracking-wider">
           텍스트 색상
         </p>
         <div className="space-y-2 p-4 bg-card rounded-lg border">

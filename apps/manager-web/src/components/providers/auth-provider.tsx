@@ -110,7 +110,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-950">
         <div className="flex flex-col items-center gap-4">
           <div className="h-12 w-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-indigo-300 text-sm">로딩 중...</p>
+          <p className="text-indigo-300">로딩 중...</p>
         </div>
       </div>
     );

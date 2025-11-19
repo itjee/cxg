@@ -104,7 +104,7 @@ export function WorkflowsForm({
           render={({ field }) => (
             <FormItem className="flex items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
-                <FormLabel className="text-base">활성 상태</FormLabel>
+                <FormLabel className="text-lg">활성 상태</FormLabel>
                 <FormDescription>워크플로우 활성화 여부</FormDescription>
               </div>
               <FormControl>

@@ -48,7 +48,7 @@ export const plansColumns: ColumnDef<Plan>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div className="font-mono text-sm font-medium">{row.getValue('code')}</div>
+      <div className="font-mono text-base font-light">{row.getValue('code')}</div>
     ),
     size: 150,
   },
@@ -67,7 +67,7 @@ export const plansColumns: ColumnDef<Plan>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('name')}</div>
+      <div className="font-light">{row.getValue('name')}</div>
     ),
     size: 200,
   },
@@ -118,7 +118,7 @@ export const plansColumns: ColumnDef<Plan>[] = [
       const price = row.getValue('base_price') as number;
       const currency = row.original.currency;
       return (
-        <div className="text-right font-medium">
+        <div className="text-right font-light">
           {currency} {price.toLocaleString()}
         </div>
       );
@@ -185,7 +185,7 @@ export const plansColumns: ColumnDef<Plan>[] = [
     ),
     cell: ({ row }) => {
       const date = new Date(row.getValue('created_at') as string);
-      return <div className="text-sm">{date.toLocaleDateString('ko-KR')}</div>;
+      return <div className="text-base">{date.toLocaleDateString('ko-KR')}</div>;
     },
     size: 120,
   },

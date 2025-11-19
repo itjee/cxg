@@ -53,7 +53,7 @@ export const getUsersColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center text-sm">
+        <div className="text-center">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -71,7 +71,7 @@ export const getUsersColumns = ({
       <DataTableColumnHeader column={column} title="사용자명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("fullName")}</div>
+      <div className="font-light">{row.getValue("fullName")}</div>
     ),
     meta: {
       filterable: true,
@@ -85,7 +85,7 @@ export const getUsersColumns = ({
       <DataTableColumnHeader column={column} title="이메일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-muted-foreground">
         {row.getValue("email") || "-"}
       </div>
     ),
@@ -107,7 +107,10 @@ export const getUsersColumns = ({
           {mfaEnabled ? (
             <>
               <Shield className="h-4 w-4 text-green-600" />
-              <Badge variant="outline" className={getMfaStatusColor(mfaEnabled)}>
+              <Badge
+                variant="outline"
+                className={getMfaStatusColor(mfaEnabled)}
+              >
                 {formatMfaStatus(mfaEnabled)}
               </Badge>
             </>
@@ -144,14 +147,20 @@ export const getUsersColumns = ({
 
           {/* 로그인 실패 표시 */}
           {failedAttempts > 0 && status !== "LOCKED" && (
-            <span className="text-xs text-orange-600" title={`실패 횟수: ${failedAttempts}`}>
+            <span
+              className="text-orange-600"
+              title={`실패 횟수: ${failedAttempts}`}
+            >
               ⚠️ {failedAttempts}회
             </span>
           )}
 
           {/* 계정 잠금 표시 */}
           {status === "LOCKED" && (
-            <span className="text-xs text-red-600" title={`잠금 해제 예정: ${formatAbsoluteTime(lockedUntil)}`}>
+            <span
+              className="text-red-600"
+              title={`잠금 해제 예정: ${formatAbsoluteTime(lockedUntil)}`}
+            >
               🔒 잠김
             </span>
           )}
@@ -174,14 +183,14 @@ export const getUsersColumns = ({
       const lastLoginIp = row.original.lastLoginIp;
 
       if (!lastLoginAt) {
-        return <div className="text-sm text-muted-foreground">로그인 없음</div>;
+        return <div className="text-muted-foreground">로그인 없음</div>;
       }
 
       return (
         <div className="flex flex-col gap-1">
-          <div className="text-sm font-medium">{formatRelativeTime(lastLoginAt)}</div>
+          <div className="font-light">{formatRelativeTime(lastLoginAt)}</div>
           {lastLoginIp && (
-            <div className="text-xs text-muted-foreground" title={`IP: ${lastLoginIp}`}>
+            <div className="text-muted-foreground" title={`IP: ${lastLoginIp}`}>
               {lastLoginIp}
             </div>
           )}
@@ -211,7 +220,13 @@ export const getUsersColumns = ({
           ) : attempts > 0 ? (
             <Unlock className="h-4 w-4 text-orange-600" />
           ) : null}
-          <span className={attempts > 0 ? "text-orange-600 font-medium" : "text-muted-foreground"}>
+          <span
+            className={
+              attempts > 0
+                ? "text-orange-600 font-light"
+                : "text-muted-foreground"
+            }
+          >
             {attempts}회
           </span>
         </div>
@@ -233,8 +248,8 @@ export const getUsersColumns = ({
       const createdAt = row.getValue("createdAt") as string;
       return (
         <div className="flex flex-col gap-0.5">
-          <div className="text-sm font-medium">{formatRelativeTime(createdAt)}</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="font-light">{formatRelativeTime(createdAt)}</div>
+          <div className="text-muted-foreground">
             {formatAbsoluteTime(createdAt, false)}
           </div>
         </div>
@@ -256,11 +271,14 @@ export const getUsersColumns = ({
       const forceChange = row.getValue("forcePasswordChange") as boolean;
 
       if (!forceChange) {
-        return <div className="text-sm text-muted-foreground">정상</div>;
+        return <div className="text-muted-foreground">정상</div>;
       }
 
       return (
-        <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300">
+        <Badge
+          variant="destructive"
+          className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        >
           ⚠️ 변경필요
         </Badge>
       );

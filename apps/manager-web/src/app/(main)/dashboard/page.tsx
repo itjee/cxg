@@ -169,7 +169,7 @@ export default function DashboardPage() {
           <button
             onClick={handleRefresh}
             disabled={loading || isRefreshing}
-            className="px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 text-base font-medium text-muted-foreground hover:bg-muted rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRefreshing ? (
               <span className="flex items-center gap-2">
@@ -186,8 +186,8 @@ export default function DashboardPage() {
       {/* Error state */}
       {error && (
         <div className="p-4 bg-destructive/10 text-destructive rounded-lg border border-destructive/20">
-          <p className="text-sm font-medium">데이터를 불러올 수 없습니다</p>
-          <p className="text-xs text-destructive/80 mt-1">{error.message}</p>
+          <p className="text-base font-medium">데이터를 불러올 수 없습니다</p>
+          <p className="text-sm text-destructive/80 mt-1">{error.message}</p>
         </div>
       )}
 
@@ -219,17 +219,17 @@ export default function DashboardPage() {
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-purple-500/20 rounded-full blur-3xl"></div>
         <div className="relative">
-          <h2 className="text-xl font-bold mb-2 text-white">
+          <h2 className="text-2xl font-bold mb-2 text-white">
             ConexGrow Manager에 오신 것을 환영합니다! 🎉
           </h2>
-          <p className="text-sm text-primary-foreground/90 mb-6 max-w-2xl">
+          <p className="text-base text-primary-foreground/90 mb-6 max-w-2xl">
             멀티테넌트 플랫폼의 모든 것을 관리하세요. 테넌트 생성부터 인프라 모니터링까지, 강력한 관리 도구를 제공합니다.
           </p>
           <div className="flex gap-3">
-            <button className="px-5 py-2.5 bg-white dark:bg-gray-800 text-primary rounded-lg hover:bg-primary-foreground/90 transition-colors font-semibold text-sm shadow-lg">
+            <button className="px-5 py-2.5 bg-white dark:bg-gray-800 text-primary rounded-lg hover:bg-primary-foreground/90 transition-colors font-semibold text-base shadow-lg">
               시작 가이드 보기
             </button>
-            <button className="px-5 py-2.5 bg-primary-foreground/20 backdrop-blur-sm text-white rounded-lg hover:bg-primary-foreground/30 transition-colors font-semibold text-sm border border-white/20">
+            <button className="px-5 py-2.5 bg-primary-foreground/20 backdrop-blur-sm text-white rounded-lg hover:bg-primary-foreground/30 transition-colors font-semibold text-base border border-white/20">
               문서 보기
             </button>
           </div>

@@ -87,7 +87,7 @@ export const getTenantsColumns = ({
       const pageIndex = table.getState().pagination.pageIndex;
       const pageSize = table.getState().pagination.pageSize;
       return (
-        <div className="text-center text-sm text-muted-foreground">
+        <div className="text-center text-base text-muted-foreground">
           {pageIndex * pageSize + row.index + 1}
         </div>
       );
@@ -102,7 +102,7 @@ export const getTenantsColumns = ({
       <DataTableColumnHeader column={column} title="코드" />
     ),
     cell: ({ row }) => (
-      <code className="text-xs bg-muted px-2 py-1 rounded font-mono">
+      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
         {row.getValue("code")}
       </code>
     ),
@@ -115,7 +115,7 @@ export const getTenantsColumns = ({
       <DataTableColumnHeader column={column} title="테넌트명" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue("name")}</div>
+      <div className="font-light">{row.getValue("name")}</div>
     ),
   },
   // 상호 (사업자명)
@@ -125,7 +125,7 @@ export const getTenantsColumns = ({
       <DataTableColumnHeader column={column} title="상호" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-base text-muted-foreground">
         {row.getValue("biz_name") || "-"}
       </div>
     ),
@@ -170,12 +170,12 @@ export const getTenantsColumns = ({
       const isSuspended = row.original.is_suspended;
       const suspendedReason = row.original.suspended_reason;
       return isSuspended ? (
-        <div className="flex items-center gap-1 text-sm">
+        <div className="flex items-center gap-1 text-base">
           <AlertCircle className="h-4 w-4 text-yellow-600" title={suspendedReason} />
           <span className="text-yellow-600">예</span>
         </div>
       ) : (
-        <span className="text-xs text-muted-foreground">아니오</span>
+        <span className="text-sm text-muted-foreground">아니오</span>
       );
     },
     size: 80,
@@ -187,7 +187,7 @@ export const getTenantsColumns = ({
       <DataTableColumnHeader column={column} title="계약시작일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-base text-muted-foreground">
         {formatDate(row.getValue("start_date"))}
       </div>
     ),
@@ -201,7 +201,7 @@ export const getTenantsColumns = ({
     cell: ({ row }) => {
       const closeDate = row.getValue("close_date") as string | undefined;
       return (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-base text-muted-foreground">
           {closeDate ? formatDate(closeDate) : <Badge variant="outline">무기한</Badge>}
         </div>
       );
@@ -214,7 +214,7 @@ export const getTenantsColumns = ({
       <DataTableColumnHeader column={column} title="등록일" />
     ),
     cell: ({ row }) => (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-base text-muted-foreground">
         {formatDate(row.getValue("created_at"))}
       </div>
     ),
