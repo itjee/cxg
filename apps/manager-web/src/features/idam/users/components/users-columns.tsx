@@ -183,11 +183,13 @@ export const getUsersColumns = ({
       const lastLoginIp = row.original.lastLoginIp;
 
       if (!lastLoginAt) {
-        return <div className="text-muted-foreground">로그인 없음</div>;
+        return (
+          <div className="text-muted-foreground text-center">로그인 없음</div>
+        );
       }
 
       return (
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 text-center">
           <div className="font-light">{formatRelativeTime(lastLoginAt)}</div>
           {lastLoginIp && (
             <div className="text-muted-foreground" title={`IP: ${lastLoginIp}`}>
@@ -214,7 +216,7 @@ export const getUsersColumns = ({
       const locked = row.original.status === "LOCKED";
 
       return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 justify-end">
           {locked ? (
             <Lock className="h-4 w-4 text-red-600" />
           ) : attempts > 0 ? (
@@ -271,13 +273,13 @@ export const getUsersColumns = ({
       const forceChange = row.getValue("forcePasswordChange") as boolean;
 
       if (!forceChange) {
-        return <div className="text-muted-foreground">정상</div>;
+        return <div className="text-muted-foreground text-center">정상</div>;
       }
 
       return (
         <Badge
           variant="destructive"
-          className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+          className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 text-center"
         >
           ⚠️ 변경필요
         </Badge>
