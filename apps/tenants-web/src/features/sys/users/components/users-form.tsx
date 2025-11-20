@@ -126,7 +126,7 @@ export function UsersForm({
         password: "",
       });
     }
-  }, [initialData]);
+  }, [initialData, reset]);
 
   const selectedRole = watch("role_id");
 

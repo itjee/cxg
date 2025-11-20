@@ -1,101 +1,37 @@
 /**
  * @file executions.service.ts
- * @description Executions API 서비스
+ * @description 워크플로우 실행 관리 서비스 레이어 (GraphQL)
+ *
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
+ *
+ * @example
+ * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
+ * const executions = await executionsService.listExecutions({ page: 0, pageSize: 20 });
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: executionsResponse } = useExecutionsGQL({ page: 0, pageSize: 20 });
+ * ```
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
-import type {
-  Execution,
-  ExecutionsListResponse,
-  CreateExecutionRequest,
-  UpdateExecutionRequest,
-  ExecutionsQueryParams,
-} from "../types";
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-const ENDPOINT = "/api/v1/auto/executions";
+export {
+  useExecutionsGQL as listExecutions,
+  useExecutionGQL as getExecution,
+  useCreateExecutionGQL as createExecution,
+  useUpdateExecutionGQL as updateExecution,
+  useDeleteExecutionGQL as deleteExecution,
+  useRetryExecutionGQL as retryExecution,
+} from "../hooks/use-executions-graphql";
 
-export const executionsService = {
-  /**
-   * 목록 조회 (서버 사이드 페이징)
-   */
-  async listExecutions(
-    params?: ExecutionsQueryParams,
-    signal?: AbortSignal
-  ): Promise<ExecutionsListResponse> {
-    try {
-      const response = await api.get<{ data: ExecutionsListResponse }>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          status: params?.status,
-          trigger_source: params?.trigger_source,
-          workflow_id: params?.workflow_id,
-        },
-        signal,
-      });
-      return (
-        response.data.data || {
-          items: [],
-          total: 0,
-          page: 1,
-          page_size: 20,
-          total_pages: 0,
-        }
-      );
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "listExecutions");
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getExecution(id: string): Promise<Execution> {
-    try {
-      const response = await api.get(`${ENDPOINT}/${id}`);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getExecution(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   */
-  async createExecution(data: CreateExecutionRequest): Promise<Execution> {
-    try {
-      const response = await api.post(ENDPOINT, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createExecution");
-    }
-  },
-
-  /**
-   * 수정
-   */
-  async updateExecution(
-    id: string,
-    data: UpdateExecutionRequest
-  ): Promise<Execution> {
-    try {
-      const response = await api.put(`${ENDPOINT}/${id}`, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateExecution(${id})`);
-    }
-  },
-
-  /**
-   * 삭제
-   */
-  async deleteExecution(id: string): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteExecution(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/auto/executions/services/executions.service.ts

@@ -1,101 +1,36 @@
 /**
  * @file tenant-roles.service.ts
- * @description 테넌트 역할 관리 API 서비스
+ * @description 테넌트 역할 관리 서비스 레이어 (GraphQL)
+ *
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
+ *
+ * @example
+ * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
+ * const tenantRoles = await tenantRolesService.listTenantRoles({ page: 0, pageSize: 20 });
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: tenantRolesResponse } = useTenantRolesGQL({ page: 0, pageSize: 20 });
+ * ```
  */
 
-import { api } from '@/lib/api';
-import { ApiError } from '@/lib/errors';
-import type {
-  TenantRole,
-  TenantRoleListResponse,
-  CreateTenantRoleRequest,
-  UpdateTenantRoleRequest,
-  TenantRoleQueryParams,
-} from '../types';
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-const ENDPOINT = '/tenant-roles';
+export {
+  useTenantRolesGQL as listTenantRoles,
+  useTenantRoleGQL as getTenantRole,
+  useCreateTenantRoleGQL as createTenantRole,
+  useUpdateTenantRoleGQL as updateTenantRole,
+  useDeleteTenantRoleGQL as deleteTenantRole,
+} from "../hooks/use-tenant-roles-graphql";
 
-export const tenantRolesService = {
-  /**
-   * 목록 조회 (서버 사이드 페이징)
-   */
-  async listTenantRoles(
-    params?: TenantRoleQueryParams,
-    signal?: AbortSignal
-  ): Promise<TenantRoleListResponse> {
-    try {
-      const response = await api.get<{ data: TenantRoleListResponse }>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          tenant_id: params?.tenant_id,
-          status: params?.status,
-          is_system_role: params?.is_system_role,
-        },
-        signal,
-      });
-      return (
-        response.data.data || {
-          items: [],
-          total: 0,
-          page: 1,
-          page_size: 20,
-          total_pages: 0,
-        }
-      );
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, 'listTenantRoles');
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getTenantRole(id: string, signal?: AbortSignal): Promise<TenantRole> {
-    try {
-      const response = await api.get(`${ENDPOINT}/${id}`, { signal });
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getTenantRole(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   */
-  async createTenantRole(data: CreateTenantRoleRequest): Promise<TenantRole> {
-    try {
-      const response = await api.post(ENDPOINT, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, 'createTenantRole');
-    }
-  },
-
-  /**
-   * 수정
-   */
-  async updateTenantRole(
-    id: string,
-    data: UpdateTenantRoleRequest
-  ): Promise<TenantRole> {
-    try {
-      const response = await api.put(`${ENDPOINT}/${id}`, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateTenantRole(${id})`);
-    }
-  },
-
-  /**
-   * 삭제
-   */
-  async deleteTenantRole(id: string): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteTenantRole(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/tnnt/tenant-roles/services/tenant-roles.service.ts

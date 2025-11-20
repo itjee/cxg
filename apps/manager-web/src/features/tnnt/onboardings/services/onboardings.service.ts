@@ -1,113 +1,37 @@
 /**
  * @file onboardings.service.ts
- * @description 온보딩 프로세스 API 서비스
+ * @description 온보딩 프로세스 서비스 레이어 (GraphQL)
+ *
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
+ *
+ * @example
+ * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
+ * const onboardings = await onboardingsService.listOnboardings({ page: 0, pageSize: 20 });
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: onboardingsResponse } = useOnboardingsGQL({ page: 0, pageSize: 20 });
+ * ```
  */
 
-import { api } from '@/lib/api';
-import { ApiError } from '@/lib/errors';
-import type {
-  Onboarding,
-  OnboardingListResponse,
-  OnboardingDetailResponse,
-  CreateOnboardingRequest,
-  UpdateOnboardingRequest,
-  OnboardingQueryParams,
-} from '../types';
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-const ENDPOINT = '/manager/tnnt/onboardings';
+export {
+  useOnboardingsGQL as listOnboardings,
+  useOnboardingGQL as getOnboarding,
+  useCreateOnboardingGQL as createOnboarding,
+  useUpdateOnboardingGQL as updateOnboarding,
+  useDeleteOnboardingGQL as deleteOnboarding,
+  useRetryOnboardingStepGQL as retryOnboardingStep,
+} from "../hooks/use-onboardings-graphql";
 
-export const onboardingsService = {
-  /**
-   * 목록 조회 (서버 사이드 페이징)
-   */
-  async listOnboardings(
-    params?: OnboardingQueryParams,
-    signal?: AbortSignal
-  ): Promise<OnboardingListResponse> {
-    try {
-      const response = await api.get<OnboardingListResponse>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          tenant_id: params?.tenant_id,
-          step_name: params?.step_name,
-          step_status: params?.step_status,
-          status: params?.status,
-          is_deleted: params?.is_deleted,
-        },
-        signal,
-      });
-      return response.data || {
-        data: [],
-        total: 0,
-        page: 1,
-        pageSize: 20,
-      };
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, 'listOnboardings');
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getOnboarding(id: string, signal?: AbortSignal): Promise<Onboarding> {
-    try {
-      const response = await api.get<OnboardingDetailResponse>(`${ENDPOINT}/${id}`, { signal });
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getOnboarding(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   */
-  async createOnboarding(data: CreateOnboardingRequest): Promise<Onboarding> {
-    try {
-      const response = await api.post<OnboardingDetailResponse>(ENDPOINT, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, 'createOnboarding');
-    }
-  },
-
-  /**
-   * 수정
-   */
-  async updateOnboarding(
-    id: string,
-    data: UpdateOnboardingRequest
-  ): Promise<Onboarding> {
-    try {
-      const response = await api.put<OnboardingDetailResponse>(`${ENDPOINT}/${id}`, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateOnboarding(${id})`);
-    }
-  },
-
-  /**
-   * 삭제 (논리적 삭제)
-   */
-  async deleteOnboarding(id: string): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteOnboarding(${id})`);
-    }
-  },
-
-  /**
-   * 온보딩 단계 재시도
-   */
-  async retryOnboardingStep(id: string): Promise<Onboarding> {
-    try {
-      const response = await api.post<OnboardingDetailResponse>(`${ENDPOINT}/${id}/retry`);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `retryOnboardingStep(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/tnnt/onboardings/services/onboardings.service.ts

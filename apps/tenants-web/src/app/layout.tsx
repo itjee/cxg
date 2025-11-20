@@ -3,7 +3,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "pretendard/dist/web/variable/pretendardvariable.css";
 import "./globals.css";
-import { ThemeProvider, QueryClientProviderWrapper, AuthProvider } from "@/components/providers";
+import { ThemeProvider, QueryClientProviderWrapper, AuthProvider, ApolloProviderWrapper } from "@/components/providers";
 import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
@@ -43,10 +43,12 @@ export default function RootLayout({
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`} style={{ fontFamily: "'Pretendard Variable', var(--font-geist-sans), sans-serif" }}>
         <QueryClientProviderWrapper>
           <AuthProvider>
-            <ThemeProvider defaultTheme="dark" storageKey="conexgrow-theme">
-              {children}
-              <Toaster position="bottom-center" richColors />
-            </ThemeProvider>
+            <ApolloProviderWrapper>
+              <ThemeProvider defaultTheme="dark" storageKey="conexgrow-theme">
+                {children}
+                <Toaster position="bottom-center" richColors />
+              </ThemeProvider>
+            </ApolloProviderWrapper>
           </AuthProvider>
         </QueryClientProviderWrapper>
       </body>

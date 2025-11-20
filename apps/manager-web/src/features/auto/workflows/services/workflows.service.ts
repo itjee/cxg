@@ -1,125 +1,36 @@
 /**
  * @file workflows.service.ts
- * @description Workflows 서비스 레이어
+ * @description 워크플로우 관리 서비스 레이어 (GraphQL)
+ *
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
+ *
+ * @example
+ * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
+ * const workflows = await workflowsService.listWorkflows({ page: 0, pageSize: 20 });
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: workflowsResponse } = useWorkflowsGQL({ page: 0, pageSize: 20 });
+ * ```
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
-import type {
-  Workflows,
-  CreateWorkflowsRequest,
-  UpdateWorkflowsRequest,
-  WorkflowsListResponse,
-  WorkflowsQueryParams,
-} from "../types/workflows.types";
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-interface ApiResponse<T> {
-  data?: T;
-  error?: string;
-  message?: string;
-}
+export {
+  useWorkflowsGQL as listWorkflows,
+  useWorkflowGQL as getWorkflows,
+  useCreateWorkflowGQL as createWorkflows,
+  useUpdateWorkflowGQL as updateWorkflows,
+  useDeleteWorkflowGQL as deleteWorkflows,
+} from "../hooks/use-workflows-graphql";
 
-const ENDPOINT = "/api/v1/manager/auto/workflows";
-
-/**
- * Workflows 서비스 객체
- */
-export const workflowsService = {
-  /**
-   * 목록 조회
-   */
-  async listWorkflows(
-    params?: WorkflowsQueryParams,
-    signal?: AbortSignal
-  ): Promise<WorkflowsListResponse> {
-    try {
-      const response = await api.get<ApiResponse<WorkflowsListResponse>>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          active: params?.active,
-        },
-        signal,
-      });
-      
-      return response.data.data || { 
-        items: [], 
-        total: 0, 
-        page: 1, 
-        page_size: 10,
-        total_pages: 0
-      };
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "listWorkflows");
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getWorkflows(id: string, signal?: AbortSignal): Promise<Workflows> {
-    try {
-      const response = await api.get<ApiResponse<Workflows>>(
-        `${ENDPOINT}/${id}`,
-        { signal }
-      );
-      
-      if (!response.data.data) {
-        throw new Error('Workflows not found');
-      }
-      
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getWorkflows(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   */
-  async createWorkflows(
-    data: CreateWorkflowsRequest,
-    signal?: AbortSignal
-  ): Promise<Workflows> {
-    try {
-      const response = await api.post<ApiResponse<Workflows>>(ENDPOINT, data, {
-        signal,
-      });
-      return response.data.data || ({} as Workflows);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createWorkflows");
-    }
-  },
-
-  /**
-   * 수정
-   */
-  async updateWorkflows(
-    id: string,
-    data: UpdateWorkflowsRequest,
-    signal?: AbortSignal
-  ): Promise<Workflows> {
-    try {
-      const response = await api.put<ApiResponse<Workflows>>(
-        `${ENDPOINT}/${id}`,
-        data,
-        { signal }
-      );
-      return response.data.data || ({} as Workflows);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateWorkflows(${id})`);
-    }
-  },
-
-  /**
-   * 삭제
-   */
-  async deleteWorkflows(id: string, signal?: AbortSignal): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`, { signal });
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteWorkflows(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/auto/workflows/services/workflows.service.ts

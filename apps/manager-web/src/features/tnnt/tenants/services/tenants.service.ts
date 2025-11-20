@@ -1,135 +1,30 @@
 /**
  * @file tenants.service.ts
- * @description 테넌트 관리 서비스 레이어
+ * @description 테넌트 관리 서비스 레이어 (GraphQL)
  *
- * API 호출을 담당하는 서비스 계층
- * - 모든 HTTP 요청은 axios 인스턴스 사용
- * - 에러는 ApiError로 변환하여 throw
- * - AbortSignal 지원으로 요청 취소 가능
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
  *
  * @example
  * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
  * const tenants = await tenantService.listTenants({ page: 0, pageSize: 20 });
- * const tenant = await tenantService.getTenant('uuid');
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: tenantsResponse } = useTenantsGQL({ page: 0, pageSize: 20 });
  * ```
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
-import type {
-  Tenant,
-  CreateTenantRequest,
-  UpdateTenantRequest,
-  TenantListResponse,
-  TenantDetailResponse,
-  TenantQueryParams,
-} from "../types";
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-const ENDPOINT = "/manager/tnnt/tenants";
+export { useTenantsGQL as listTenants, useTenantGQL as getTenant, useCreateTenantGQL as createTenant, useUpdateTenantGQL as updateTenant, useDeleteTenantGQL as deleteTenant } from "../hooks/use-tenants-graphql";
 
-/**
- * 테넌트 서비스 객체
- */
-export const tenantService = {
-  /**
-   * 목록 조회
-   *
-   * @param params - 쿼리 파라미터 (페이징, 검색, 필터)
-   * @param signal - AbortSignal (요청 취소 가능)
-   * @returns TenantListResponse - 페이지네이션 포함 목록
-   */
-  async listTenants(
-    params?: TenantQueryParams,
-    signal?: AbortSignal
-  ): Promise<TenantListResponse> {
-    try {
-      const response = await api.get<TenantListResponse>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          status: params?.status,
-          type: params?.type,
-          is_suspended: params?.is_suspended,
-        },
-        signal,
-      });
-      return (
-        response.data || {
-          data: [],
-          total: 0,
-          page: 0,
-          pageSize: 20,
-        }
-      );
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "listTenants");
-    }
-  },
-
-  /**
-   * 상세 조회
-   *
-   * @param id - 테넌트 ID
-   * @param signal - AbortSignal
-   * @returns Tenant - 테넌트 상세 정보
-   */
-  async getTenant(id: string, signal?: AbortSignal): Promise<Tenant> {
-    try {
-      const response = await api.get<TenantDetailResponse>(
-        `${ENDPOINT}/${id}`,
-        { signal }
-      );
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getTenant(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   *
-   * @param data - 생성 요청 데이터
-   * @returns Tenant - 생성된 테넌트 정보
-   */
-  async createTenant(data: CreateTenantRequest): Promise<Tenant> {
-    try {
-      const response = await api.post<TenantDetailResponse>(ENDPOINT, data);
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createTenant");
-    }
-  },
-
-  /**
-   * 수정
-   *
-   * @param id - 테넌트 ID
-   * @param data - 수정 요청 데이터
-   * @returns Tenant - 수정된 테넌트 정보
-   */
-  async updateTenant(id: string, data: UpdateTenantRequest): Promise<Tenant> {
-    try {
-      const response = await api.put<TenantDetailResponse>(
-        `${ENDPOINT}/${id}`,
-        data
-      );
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateTenant(${id})`);
-    }
-  },
-
-  /**
-   * 삭제 (논리적 삭제)
-   *
-   * @param id - 테넌트 ID
-   */
-  async deleteTenant(id: string): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteTenant(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/tnnt/tenants/services/tenants.service.ts

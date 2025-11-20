@@ -144,7 +144,7 @@ export function DataTable<TData, TValue>({
       <div
         className={`rounded-lg border border-border overflow-hidden bg-card shadow-sm ${className}`}
       >
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto px-1 py-1">
           <Table>
             <TableHeader className="bg-muted/50 border-b border-border">
               {table.getHeaderGroups().map((headerGroup) => (

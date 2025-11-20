@@ -74,31 +74,32 @@ export default function UsersPage() {
   } = useUserStore();
 
   /**
-   * 서버 사이드 페이징 및 필터링으로 사용자 목록 조회
-   * 
-   * @hook useUsers
-   * @param page - 페이지 번호 (1-based, 서버 API 요구사항)
+   * GraphQL을 사용한 서버 사이드 페이징 및 필터링으로 사용자 목록 조회
+   *
+   * @hook useUsers (Apollo Client GraphQL)
+   * @param page - 페이지 번호 (1-based, GraphQL limit/offset으로 변환)
    * @param pageSize - 페이지당 항목 수
-   * @param search - 검색어 (username, email, full_name 검색)
-   * @param active - 활성 상태 필터 (true | false | undefined)
-   * @param roleId - 역할 ID 필터
-   * 
+   * @param search - 검색어 (현재 미지원, TODO: 백엔드 구현)
+   * @param active - 활성 상태 필터 (현재 미지원, TODO: 백엔드 구현)
+   * @param roleId - 역할 ID 필터 (현재 미지원, TODO: 백엔드 구현)
+   *
    * @returns
    * - data: 페이징된 사용자 목록 및 메타데이터
    * - isLoading: 로딩 상태
    * - error: 에러 객체
    * - refetch: 수동 재조회 함수
-   * 
-   * @cache
-   * - staleTime: 5분 (데이터 신선도 유지)
-   * - gcTime: 10분 (캐시 유지 시간)
+   *
+   * @note
+   * - GraphQL을 사용하므로 Apollo Client가 캐싱을 자동 관리합니다.
+   * - 현재 백엔드에서 검색, 필터링 기능이 구현되지 않았습니다.
+   * - 향후 백엔드 쿼리에 필터링 파라미터 추가 필요
    */
   const { data: usersResponse, isLoading, error, refetch } = useUsers({
     page: currentPage + 1, // 0-based → 1-based 변환
     pageSize: itemsPerPage,
-    search: globalFilter,
-    active: selectedStatus === 'active' ? true : selectedStatus === 'inactive' ? false : undefined,
-    roleId: selectedRole || undefined,
+    // search: globalFilter, // TODO: 백엔드 구현 필요
+    // active: selectedStatus === 'active' ? true : selectedStatus === 'inactive' ? false : undefined,
+    // roleId: selectedRole || undefined,
   });
 
   /**

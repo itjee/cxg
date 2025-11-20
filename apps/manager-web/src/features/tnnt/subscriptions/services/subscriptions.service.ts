@@ -1,122 +1,36 @@
 /**
  * @file subscriptions.service.ts
- * @description 구독 서비스 레이어
+ * @description 구독 관리 서비스 레이어 (GraphQL)
+ *
+ * Apollo Client를 사용한 GraphQL 기반 서비스
+ * 기존 REST API는 더 이상 사용되지 않습니다.
+ *
+ * @migration
+ * REST API 기반 서비스에서 GraphQL 기반 서비스로 마이그레이션 완료
+ * - 모든 HTTP 요청 → GraphQL 쿼리/뮤테이션
+ * - axios → Apollo Client
+ * - Optimistic Update 지원
+ *
+ * @example
+ * ```typescript
+ * // 기존 방식 (REST API) - 더 이상 사용 불가
+ * const subscriptions = await subscriptionsService.listSubscriptions({ page: 0, pageSize: 20 });
+ *
+ * // 새로운 방식 (GraphQL) - hooks 사용
+ * const { data: subscriptionsResponse } = useSubscriptionsGQL({ page: 0, pageSize: 20 });
+ * ```
  */
 
-import { api } from "@/lib/api";
-import { ApiError } from "@/lib/errors";
-import type {
-  Subscription,
-  CreateSubscriptionRequest,
-  UpdateSubscriptionRequest,
-  SubscriptionListResponse,
-  SubscriptionDetailResponse,
-  SubscriptionQueryParams,
-} from "../types/subscriptions.types";
+// GraphQL hooks를 통한 간접 호출만 지원합니다.
+// 직접 service를 호출하지 마세요. 대신 hooks를 사용하세요.
 
-const ENDPOINT = "/manager/tnnt/subscriptions";
+export {
+  useSubscriptionsGQL as listSubscriptions,
+  useSubscriptionGQL as getSubscription,
+  useCreateSubscriptionGQL as createSubscription,
+  useUpdateSubscriptionGQL as updateSubscription,
+  useDeleteSubscriptionGQL as deleteSubscription,
+} from "../hooks/use-subscriptions-graphql";
 
-/**
- * 구독 서비스 객체
- */
-export const subscriptionsService = {
-  /**
-   * 목록 조회
-   */
-  async listSubscriptions(
-    params?: SubscriptionQueryParams,
-    signal?: AbortSignal
-  ): Promise<SubscriptionListResponse> {
-    try {
-      const response = await api.get<SubscriptionListResponse>(ENDPOINT, {
-        params: {
-          page: params?.page,
-          page_size: params?.pageSize,
-          search: params?.search,
-          tenant_id: params?.tenant_id,
-          plan_id: params?.plan_id,
-          status: params?.status,
-          billing_cycle: params?.billing_cycle,
-          auto_renewal: params?.auto_renewal,
-          is_deleted: params?.is_deleted,
-        },
-        signal,
-      });
-
-      return (
-        response.data || {
-          data: [],
-          total: 0,
-          page: 1,
-          pageSize: 20,
-        }
-      );
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "listSubscriptions");
-    }
-  },
-
-  /**
-   * 상세 조회
-   */
-  async getSubscription(
-    id: string,
-    signal?: AbortSignal
-  ): Promise<Subscription> {
-    try {
-      const response = await api.get<SubscriptionDetailResponse>(
-        `${ENDPOINT}/${id}`,
-        { signal }
-      );
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `getSubscription(${id})`);
-    }
-  },
-
-  /**
-   * 생성
-   */
-  async createSubscription(
-    data: CreateSubscriptionRequest
-  ): Promise<Subscription> {
-    try {
-      const response = await api.post<SubscriptionDetailResponse>(
-        ENDPOINT,
-        data
-      );
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, "createSubscription");
-    }
-  },
-
-  /**
-   * 수정
-   */
-  async updateSubscription(
-    id: string,
-    data: UpdateSubscriptionRequest
-  ): Promise<Subscription> {
-    try {
-      const response = await api.put<SubscriptionDetailResponse>(
-        `${ENDPOINT}/${id}`,
-        data
-      );
-      return response.data.data;
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `updateSubscription(${id})`);
-    }
-  },
-
-  /**
-   * 삭제 (논리적 삭제)
-   */
-  async deleteSubscription(id: string): Promise<void> {
-    try {
-      await api.delete(`${ENDPOINT}/${id}`);
-    } catch (error) {
-      throw ApiError.fromAxiosError(error, `deleteSubscription(${id})`);
-    }
-  },
-};
+// 이전 코드를 참조하려면 git history를 확인하세요:
+// git show HEAD:src/features/tnnt/subscriptions/services/subscriptions.service.ts

@@ -133,13 +133,13 @@ export function UsersEdit({ users }: UsersEditProps) {
   
   /**
    * 수정할 사용자 데이터 조회
-   * 
+   *
    * @description
    * - editingId가 null이면 쿼리 비활성화 (enabled: false)
    * - editingId가 있으면 해당 사용자 상세 조회
    * - 조회된 데이터는 폼의 initialData로 전달됨
    */
-  const { data: editingUser } = useUser(editingId);
+  const { data: editingUser, isLoading: isUserLoading } = useUser(editingId);
 
   // ============================================================
   // 3. Mutation 설정 (생성/수정)
@@ -189,12 +189,13 @@ export function UsersEdit({ users }: UsersEditProps) {
   
   /**
    * 로딩 상태 통합
-   * 
+   *
    * @description
    * - 생성 또는 수정 중인지 확인
+   * - 데이터 로딩 중인지 확인 (수정 모드)
    * - 로딩 중일 때 폼 제출 버튼 비활성화
    */
-  const isLoading = createMutation.isPending || updateMutation.isPending;
+  const isLoading = createMutation.isPending || updateMutation.isPending || isUserLoading;
 
   // ============================================================
   // 4. 역할 목록 추출 (useMemo)

@@ -72,7 +72,7 @@ async def get_manager_db() -> AsyncGenerator[AsyncSession, None]:
 
 
 async def init_db():
-    """데이터베이스 연결 확인"""
+    """데이터베이스 연결 확인 및 스키마 초기화"""
     # 디버그 모드에서만 연결 테스트 수행
     if settings.debug:
         try:
@@ -94,6 +94,15 @@ async def init_db():
             print(f"⚠️ 관리자 데이터베이스 연결 실패: {e}")
             print(f"⚠️ 연결 정보: {manager_engine.url}")
             print("⚠️ 데이터베이스 서버가 실행 중인지, .env 파일의 연결 정보가 올바른지 확인하세요.")
+
+    # 데이터베이스 스키마 초기화
+    try:
+        from src.core.init_schemas import init_db_schemas
+        await init_db_schemas()
+    except Exception as e:
+        print(f"⚠️ 스키마 초기화 중 오류 발생: {e}")
+        if settings.debug:
+            raise
 
 
 async def close_db():
