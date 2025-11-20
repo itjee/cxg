@@ -93,7 +93,12 @@ export const getRolesColumns = ({
       <DataTableColumnHeader column={column} title="역할명" />
     ),
     cell: ({ row }) => (
-      <div className="font-light">{row.getValue("name")}</div>
+      <div>
+        <div className="font-medium">{row.getValue("name")}</div>
+        <div className="text-xs text-muted-foreground">
+          {row.original.code}
+        </div>
+      </div>
     ),
     meta: {
       filterable: true,
