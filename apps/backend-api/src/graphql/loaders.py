@@ -26,19 +26,9 @@ def create_loaders(manager_db: AsyncSession, tenant_db: AsyncSession | None) -> 
 
     loaders = {}
 
-    # Manager IDAM Loaders
-    try:
-        from src.graphql.manager.idam.roles.loaders import ManagerRoleLoader
-        loaders["manager.idam.role"] = ManagerRoleLoader(manager_db)
-
-        # roles_by_user_loader는 resolve_manager_user_roles에서 사용되므로
-        # 별도로 등록하지 않음 (resolvers.py에서 fallback 처리)
-    except ImportError:
-        pass
-
-    # TODO: Manager IDAM Users Loaders 구현
-    # from src.graphql.manager.idam.users.loaders import ManagerUserLoader
-    # loaders["manager.idam.user"] = ManagerUserLoader(manager_db)
+    # TODO: Manager IDAM Loaders 구현
+    # from src.graphql.manager.idam.users.loaders import UserLoader
+    # loaders["manager.idam.user"] = UserLoader(manager_db)
 
     # TODO: Tenants SYS Loaders 구현 (tenant_db가 있을 때만)
     if tenant_db:
