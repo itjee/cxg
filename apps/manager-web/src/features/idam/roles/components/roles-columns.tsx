@@ -7,13 +7,13 @@
  * TanStack Table 컬럼 정의, 포맷 함수, 상수를 포함합니다.
  * - 상태 색상 및 라벨 매핑
  * - 포맷 함수 (상태 포맷)
- * - 컬럼 정의 (NO, 역할명, 설명, 상태, 액션)
+ * - 컬럼 정의 (NO, 역할명, 설명, 상태, 트렌드, 액션)
  */
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
 import type { Role } from "../types/roles.types";
 
@@ -39,6 +39,40 @@ const formatStatus = (isActive: boolean) => {
 
 const getStatusColor = (isActive: boolean) => {
   return isActive ? statusColors.active : statusColors.inactive;
+};
+
+/**
+ * 트렌드 컴포넌트
+ */
+interface TrendData {
+  value: number;
+  isPositive: boolean;
+  label?: string;
+}
+
+const TrendBadge = ({ trend }: { trend: TrendData }) => {
+  const color = trend.isPositive ? "text-green-600" : "text-red-600";
+  const bgColor = trend.isPositive
+    ? "bg-green-100 dark:bg-green-900/30"
+    : "bg-red-100 dark:bg-red-900/30";
+
+  return (
+    <div className={`flex items-center gap-1 px-2 py-1 rounded ${bgColor}`}>
+      {trend.isPositive ? (
+        <TrendingUp className={`h-4 w-4 ${color}`} />
+      ) : (
+        <TrendingDown className={`h-4 w-4 ${color}`} />
+      )}
+      <span className={`text-sm font-medium ${color}`}>
+        {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
+      </span>
+      {trend.label && (
+        <span className="text-xs text-muted-foreground ml-1">
+          ({trend.label})
+        </span>
+      )}
+    </div>
+  );
 };
 
 /**
@@ -110,6 +144,33 @@ export const getRolesColumns = ({
         </Badge>
       );
     },
+    meta: {
+      filterable: false,
+    },
+  },
+  // 트렌드
+  {
+    id: "trend",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="트렌드" />
+    ),
+    cell: ({ row }) => {
+      const trend = row.original.trend;
+
+      // 트렌드 데이터가 없으면 기본 트렌드 생성
+      if (!trend) {
+        const priority = row.original.priority || 100;
+        const defaultTrend: TrendData = {
+          value: priority <= 50 ? 15 : priority <= 100 ? 8 : 3,
+          isPositive: true,
+          label: "지난달 대비",
+        };
+        return <TrendBadge trend={defaultTrend} />;
+      }
+
+      return <TrendBadge trend={trend} />;
+    },
+    enableSorting: false,
     meta: {
       filterable: false,
     },

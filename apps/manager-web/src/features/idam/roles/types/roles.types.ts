@@ -29,6 +29,12 @@ export interface Role {
   status: "ACTIVE" | "INACTIVE";
   createdAt: string;
   updatedAt?: string;
+  // 트렌드 데이터 (선택사항)
+  trend?: {
+    value: number;
+    isPositive: boolean;
+    label?: string;
+  };
 }
 
 // ===== Create/Update Input 타입 (단수) =====
