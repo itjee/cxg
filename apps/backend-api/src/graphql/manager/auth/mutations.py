@@ -551,9 +551,18 @@ class ManagerAuthMutations:
         """
         db = info.context.manager_db_session
         if not db:
-            raise Exception("Manager database session not available")
+            raise UnauthorizedError(message="Manager database session not available")
 
-        user_id = UUID(info.context.user_id)
+        # user_id 검증
+        user_id_str = info.context.user_id
+        if not user_id_str or not user_id_str.strip():
+            raise UnauthorizedError(message="유효하지 않은 사용자 ID입니다")
+
+        try:
+            user_id = UUID(user_id_str)
+        except (ValueError, TypeError) as e:
+            raise UnauthorizedError(message="유효하지 않은 사용자 ID 형식입니다") from e
+
         return await refresh_user_token(db, user_id)
 
     @strawberry.mutation(description="비밀번호 변경")
@@ -573,9 +582,17 @@ class ManagerAuthMutations:
         """
         db = info.context.manager_db_session
         if not db:
-            raise Exception("Manager database session not available")
+            raise UnauthorizedError(message="Manager database session not available")
 
-        user_id = UUID(info.context.user_id)
+        # user_id 검증
+        user_id_str = info.context.user_id
+        if not user_id_str or not user_id_str.strip():
+            raise UnauthorizedError(message="유효하지 않은 사용자 ID입니다")
+
+        try:
+            user_id = UUID(user_id_str)
+        except (ValueError, TypeError) as e:
+            raise UnauthorizedError(message="유효하지 않은 사용자 ID 형식입니다") from e
         await change_user_password(db, user_id, input)
         return MessageResponse(message="비밀번호가 변경되었습니다")
 
