@@ -56,7 +56,7 @@ const dashboardItems: NavItem[] = [
   {
     id: "dashboard",
     label: "대시보드",
-    href: "/dashboard",
+    href: "/core/dashboard",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
 ];
