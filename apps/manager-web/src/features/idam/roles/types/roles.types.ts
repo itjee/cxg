@@ -17,24 +17,28 @@
  * @singular 단일 조회, 단일 엔티티 타입
  */
 export interface Role {
+  // 기본 식별자 및 감사 필드
   id: string;
+  createdAt: string;
+  createdBy?: string; // 생성자 ID
+  updatedAt?: string;
+  updatedBy?: string; // 수정자 ID
+
+  // 역할 정보
   code: string;
   name: string;
   description?: string;
+
+  // 역할 속성
   category: string; // MANAGER_ADMIN, PLATFORM_SUPPORT, TENANT_ADMIN, TENANT_USER
   level: number;
   scope: string; // GLOBAL, TENANT
   isDefault: boolean;
   priority: number;
+
+  // 상태 관리
   status: "ACTIVE" | "INACTIVE";
-  createdAt: string;
-  updatedAt?: string;
-  // 트렌드 데이터 (선택사항)
-  trend?: {
-    value: number;
-    isPositive: boolean;
-    label?: string;
-  };
+  isDeleted: boolean; // 논리적 삭제 플래그
 }
 
 // ===== Create/Update Input 타입 (단수) =====

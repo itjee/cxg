@@ -6,16 +6,28 @@
  *
  * TanStack Table 컬럼 정의, 포맷 함수, 상수를 포함합니다.
  * - 상태 색상 및 라벨 매핑
- * - 포맷 함수 (상태 포맷)
- * - 컬럼 정의 (NO, 역할명, 설명, 상태, 트렌드, 액션)
+ * - 포맷 함수 (상태 포맷, 날짜 포맷)
+ * - 컬럼 정의 (NO, 역할명, 카테고리, 레벨, 상태, 생성일, 수정일, 액션)
  */
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
 import type { Role } from "../types/roles.types";
+
+/**
+ * 유틸리티 함수
+ */
+const formatDate = (date: string | undefined) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("ko-KR", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+};
 
 /**
  * 상수 정의 - 상태별 색상
@@ -39,40 +51,6 @@ const formatStatus = (isActive: boolean) => {
 
 const getStatusColor = (isActive: boolean) => {
   return isActive ? statusColors.active : statusColors.inactive;
-};
-
-/**
- * 트렌드 컴포넌트
- */
-interface TrendData {
-  value: number;
-  isPositive: boolean;
-  label?: string;
-}
-
-const TrendBadge = ({ trend }: { trend: TrendData }) => {
-  const color = trend.isPositive ? "text-green-600" : "text-red-600";
-  const bgColor = trend.isPositive
-    ? "bg-green-100 dark:bg-green-900/30"
-    : "bg-red-100 dark:bg-red-900/30";
-
-  return (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded ${bgColor}`}>
-      {trend.isPositive ? (
-        <TrendingUp className={`h-4 w-4 ${color}`} />
-      ) : (
-        <TrendingDown className={`h-4 w-4 ${color}`} />
-      )}
-      <span className={`text-sm font-medium ${color}`}>
-        {trend.isPositive ? "+" : "-"}{Math.abs(trend.value)}%
-      </span>
-      {trend.label && (
-        <span className="text-xs text-muted-foreground ml-1">
-          ({trend.label})
-        </span>
-      )}
-    </div>
-  );
 };
 
 /**
@@ -121,23 +99,65 @@ export const getRolesColumns = ({
       filterable: true,
     },
   },
-  // 설명
+  // 카테고리
   {
-    accessorKey: "description",
-    header: "설명",
-    cell: ({ row }) => <div>{row.getValue("description") || "-"}</div>,
+    accessorKey: "category",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="카테고리" />
+    ),
+    cell: ({ row }) => {
+      const category = row.getValue("category") as string;
+      const categoryLabels: Record<string, string> = {
+        MANAGER_ADMIN: "운영자",
+        PLATFORM_SUPPORT: "플랫폼지원",
+        TENANT_ADMIN: "테넌트관리자",
+        TENANT_USER: "테넌트사용자",
+      };
+      return (
+        <Badge variant="outline">
+          {categoryLabels[category] || category}
+        </Badge>
+      );
+    },
     meta: {
       filterable: true,
     },
   },
+  // 레벨
+  {
+    accessorKey: "level",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="레벨" />
+    ),
+    cell: ({ row }) => {
+      const level = row.getValue("level") as number;
+      const levelColor =
+        level <= 10
+          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+          : level <= 50
+          ? "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300"
+          : level <= 100
+          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+          : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300";
+      return (
+        <Badge className={levelColor} variant="outline">
+          Level {level}
+        </Badge>
+      );
+    },
+    meta: {
+      filterable: false,
+    },
+  },
   // 상태
   {
-    accessorKey: "is_active",
+    accessorKey: "status",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="상태" />
     ),
     cell: ({ row }) => {
-      const isActive = row.getValue("is_active") as boolean;
+      const status = row.getValue("status") as string;
+      const isActive = status === "ACTIVE";
       return (
         <Badge variant="outline" className={getStatusColor(isActive)}>
           {formatStatus(isActive)}
@@ -148,29 +168,30 @@ export const getRolesColumns = ({
       filterable: false,
     },
   },
-  // 트렌드
+  // 생성일
   {
-    id: "trend",
+    accessorKey: "createdAt",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="트렌드" />
+      <DataTableColumnHeader column={column} title="생성일" />
     ),
     cell: ({ row }) => {
-      const trend = row.original.trend;
-
-      // 트렌드 데이터가 없으면 기본 트렌드 생성
-      if (!trend) {
-        const priority = row.original.priority || 100;
-        const defaultTrend: TrendData = {
-          value: priority <= 50 ? 15 : priority <= 100 ? 8 : 3,
-          isPositive: true,
-          label: "지난달 대비",
-        };
-        return <TrendBadge trend={defaultTrend} />;
-      }
-
-      return <TrendBadge trend={trend} />;
+      const date = row.getValue("createdAt") as string;
+      return <div className="text-sm text-muted-foreground">{formatDate(date)}</div>;
     },
-    enableSorting: false,
+    meta: {
+      filterable: false,
+    },
+  },
+  // 수정일
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="수정일" />
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("updatedAt") as string;
+      return <div className="text-sm text-muted-foreground">{formatDate(date)}</div>;
+    },
     meta: {
       filterable: false,
     },
