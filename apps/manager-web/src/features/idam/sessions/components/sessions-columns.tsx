@@ -179,10 +179,10 @@ export const getSessionsColumns = ({
       filterable: true,
     },
   },
-  // User Agent (축약)
+  // Session Agent (축약)
   {
     accessorKey: "user_agent",
-    header: "User Agent",
+    header: "Session Agent",
     cell: ({ row }) => {
       const userAgent = row.getValue("user_agent") as string | undefined;
       if (!userAgent) return <span className="text-muted-foreground">-</span>;

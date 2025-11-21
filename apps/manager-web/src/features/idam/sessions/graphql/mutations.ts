@@ -15,7 +15,7 @@ import type {
   UpdateSessionVariables,
   DeleteSessionVariables,
   RevokeSessionVariables,
-  RevokeUserSessionsVariables,
+  RevokeSessionSessionsVariables,
 } from "../types/sessions.types";
 
 /**
@@ -103,8 +103,8 @@ export const REVOKE_SESSION = gql`
  * 사용자의 모든 세션 폐기 (단수 userId)
  */
 export const REVOKE_USER_SESSIONS = gql`
-  mutation RevokeUserSessions($userId: ID!) {
-    revokeUserSessions(userId: $userId) {
+  mutation RevokeSessionSessions($userId: ID!) {
+    revokeSessionSessions(userId: $userId) {
       message
     }
   }

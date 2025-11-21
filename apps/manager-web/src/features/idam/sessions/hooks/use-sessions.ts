@@ -29,7 +29,7 @@ import type {
   UpdateSessionVariables,
   DeleteSessionVariables,
   RevokeSessionVariables,
-  RevokeUserSessionsVariables,
+  RevokeSessionSessionsVariables,
 } from "../types/sessions.types";
 
 // ========== useQuery Hooks ==========
@@ -175,15 +175,15 @@ export function useRevokeSession() {
  * 사용자의 모든 세션 폐기
  *
  * @example
- * const [revokeUserSessions, { loading, error }] = useRevokeUserSessions();
- * await revokeUserSessions({
+ * const [revokeSessionSessions, { loading, error }] = useRevokeSessionSessions();
+ * await revokeSessionSessions({
  *   variables: { userId: "user-id" }
  * });
  */
-export function useRevokeUserSessions() {
+export function useRevokeSessionSessions() {
   return useMutation<
-    { revokeUserSessions: { message: string } },
-    RevokeUserSessionsVariables
+    { revokeSessionSessions: { message: string } },
+    RevokeSessionSessionsVariables
   >(REVOKE_USER_SESSIONS, {
     refetchQueries: [
       {

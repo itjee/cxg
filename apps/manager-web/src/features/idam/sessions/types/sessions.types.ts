@@ -154,7 +154,7 @@ export interface RevokeSessionVariables {
 /**
  * 사용자 세션 모두 폐기 뮤테이션 변수 (단수)
  */
-export interface RevokeUserSessionsVariables {
+export interface RevokeSessionSessionsVariables {
   userId: string;
 }
 
@@ -205,6 +205,21 @@ export interface RevokeSessionResponse {
 /**
  * 사용자 세션 모두 폐기 응답
  */
-export interface RevokeUserSessionsResponse {
-  revokeUserSessions: { message: string };
+export interface RevokeSessionSessionsResponse {
+  revokeSessionSessions: { message: string };
+}
+
+// ===== UI 필터 상태 타입 =====
+
+/**
+ * 세션 필터 상태 (UI 필터 팝업에서 사용)
+ *
+ * FilterPopup 컴포넌트에서 사용하는 필터 상태 타입 (멀티 선택)
+ * - 각 필터는 여러 값을 배열로 저장
+ * - null이면 필터가 선택되지 않은 상태
+ * - 날짜 범위 필터는 { type, value } 객체 형식
+ */
+export interface SessionsFilterState {
+  status: string[] | null; // ["ACTIVE", "EXPIRED"] 등 여러 상태 선택 가능
+  createdAt: { type: string; value: { from?: string; to?: string } } | null; // 생성일시 범위 필터
 }

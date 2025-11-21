@@ -28,13 +28,13 @@ import type {
   UpdateSessionResponse,
   DeleteSessionResponse,
   RevokeSessionResponse,
-  RevokeUserSessionsResponse,
+  RevokeSessionSessionsResponse,
   SessionsQueryVariables,
   CreateSessionVariables,
   UpdateSessionVariables,
   DeleteSessionVariables,
   RevokeSessionVariables,
-  RevokeUserSessionsVariables,
+  RevokeSessionSessionsVariables,
 } from "../types/sessions.types";
 
 /**
@@ -272,9 +272,9 @@ export const sessionsService = {
    * @param userId - 사용자 ID
    * @returns 폐기 결과 메시지
    */
-  async revokeUserSessions(userId: string): Promise<void> {
+  async revokeSessionSessions(userId: string): Promise<void> {
     try {
-      const { data } = await apolloClient.mutate<RevokeUserSessionsResponse>({
+      const { data } = await apolloClient.mutate<RevokeSessionSessionsResponse>({
         mutation: REVOKE_USER_SESSIONS,
         variables: { userId },
         refetchQueries: [
@@ -285,7 +285,7 @@ export const sessionsService = {
         ],
       });
 
-      if (!data?.revokeUserSessions) {
+      if (!data?.revokeSessionSessions) {
         throw new Error("사용자 세션 폐기에 실패했습니다");
       }
     } catch (error) {

@@ -64,13 +64,13 @@ const dashboardItems: NavItem[] = [
 // 메뉴 그룹 정의
 const navGroups: NavGroup[] = [
   {
-    id: "tenant-management",
+    id: "tnnt",
     label: "테넌트 관리",
     icon: <Building2 className="h-4 w-4" />,
     items: [
       {
         id: "tenants",
-        label: "테넌트 관리",
+        label: "테넌트",
         href: "/tnnt/tenants",
         icon: <Building2 className="h-5 w-5" />,
         badge: "12",
@@ -102,7 +102,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "billing",
+    id: "bill",
     label: "빌링",
     icon: <CreditCard className="h-4 w-4" />,
     items: [
@@ -114,14 +114,14 @@ const navGroups: NavGroup[] = [
       },
       {
         id: "payments",
-        label: "결제 내역",
+        label: "결제내역",
         href: "/bill/payments",
         icon: <CreditCard className="h-5 w-5" />,
       },
     ],
   },
   {
-    id: "infrastructure",
+    id: "ifra",
     label: "인프라",
     icon: <Server className="h-4 w-4" />,
     items: [
@@ -140,13 +140,13 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "monitoring",
+    id: "mntr",
     label: "모니터링",
     icon: <Activity className="h-4 w-4" />,
     items: [
       {
         id: "system-status",
-        label: "시스템 상태",
+        label: "시스템상태",
         href: "/mntr/status",
         icon: <Activity className="h-5 w-5" />,
       },
@@ -159,38 +159,50 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "security",
+    id: "idam",
     label: "보안",
     icon: <Shield className="h-4 w-4" />,
     items: [
       {
         id: "users",
-        label: "사용자 관리",
+        label: "사용자",
         href: "/idam/users",
         icon: <Users className="h-5 w-5" />,
       },
       {
         id: "roles",
-        label: "역할 관리",
+        label: "역할",
         href: "/idam/roles",
         icon: <Shield className="h-5 w-5" />,
       },
       {
         id: "permissions",
-        label: "권한 관리",
+        label: "권한",
         href: "/idam/permissions",
         icon: <KeyRound className="h-5 w-5" />,
       },
       {
-        id: "access-logs",
-        label: "접근 로그",
-        href: "/idam/access-logs",
+        id: "sessions",
+        label: "세션",
+        href: "/idam/sessions",
         icon: <Lock className="h-5 w-5" />,
+      },
+      {
+        id: "api-keys",
+        label: "API키",
+        href: "/idam/api-keys",
+        icon: <KeyRound className="h-5 w-5" />,
+      },
+      {
+        id: "login-logs",
+        label: "로그인로그",
+        href: "/idam/login-logs",
+        icon: <FileText className="h-5 w-5" />,
       },
     ],
   },
   {
-    id: "audit",
+    id: "audt",
     label: "감사",
     icon: <FileText className="h-4 w-4" />,
     items: [
@@ -209,7 +221,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "notifications",
+    id: "noti",
     label: "알림",
     icon: <Bell className="h-4 w-4" />,
     items: [
@@ -228,7 +240,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "support",
+    id: "supt",
     label: "고객 지원",
     icon: <Headphones className="h-4 w-4" />,
     items: [
@@ -247,7 +259,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "integrations",
+    id: "intg",
     label: "외부 연동",
     icon: <Plug className="h-4 w-4" />,
     items: [
@@ -266,7 +278,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "configuration",
+    id: "cnfg",
     label: "시스템 구성",
     icon: <Sliders className="h-4 w-4" />,
     items: [
@@ -285,7 +297,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "analytics",
+    id: "stat",
     label: "분석",
     icon: <BarChart3 className="h-4 w-4" />,
     items: [
@@ -304,7 +316,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "automation",
+    id: "auto",
     label: "자동화",
     icon: <Zap className="h-4 w-4" />,
     items: [
@@ -323,7 +335,7 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: "backup",
+    id: "bkup",
     label: "백업",
     icon: <Database className="h-4 w-4" />,
     items: [
@@ -385,19 +397,19 @@ export function MainSidebar({
     () => {
       const activeGroupId = getActiveGroupId();
       return {
-        "tenant-management": activeGroupId === "tenant-management",
-        billing: activeGroupId === "billing",
-        infrastructure: activeGroupId === "infrastructure",
-        monitoring: activeGroupId === "monitoring",
-        security: activeGroupId === "security",
-        audit: activeGroupId === "audit",
-        notifications: activeGroupId === "notifications",
-        support: activeGroupId === "support",
-        integrations: activeGroupId === "integrations",
-        configuration: activeGroupId === "configuration",
-        analytics: activeGroupId === "analytics",
-        automation: activeGroupId === "automation",
-        backup: activeGroupId === "backup",
+        tnnt: activeGroupId === "tnnt",
+        bill: activeGroupId === "bill",
+        ifra: activeGroupId === "ifra",
+        mntr: activeGroupId === "mntr",
+        idam: activeGroupId === "idam",
+        audt: activeGroupId === "audt",
+        noti: activeGroupId === "noti",
+        supt: activeGroupId === "supt",
+        intg: activeGroupId === "intg",
+        cnfg: activeGroupId === "cnfg",
+        stat: activeGroupId === "stat",
+        auto: activeGroupId === "auto",
+        bkup: activeGroupId === "bkup",
       };
     }
   );

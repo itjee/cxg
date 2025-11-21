@@ -1,169 +1,185 @@
-'use client';
+"use client";
 
 /**
- * @file page.tsx
- * @description 세션 관리 페이지
+ * Sessions List Page
+ *
+ * Manager Sessions 목록 페이지
  * Jira 스타일 필터링: 검색 + 필터 팝업
  *
  * 필터링 아키텍처:
  * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
  * - status → status 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
- * - sessionType → session_type 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
  * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-import { useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   SessionsHeader,
   SessionsStats,
   SessionsFilter,
   SessionsTable,
-  type SessionsFilterState,
-} from '@/features/idam/sessions';
-import {
+  SessionsEdit,
   useSessions,
-  useDeleteSession,
-  useRevokeSession,
-} from '@/features/idam/sessions/hooks';
-import { useSessionsStore } from '@/features/idam/sessions/stores';
-import type { Session } from '@/features/idam/sessions/types';
+  useUpdateSession,
+  useSessionsStore,
+  type SessionsFilterState,
+  type Session,
+} from "@/features/idam/sessions";
 
 export default function SessionsPage() {
+  // Store에서 UI 상태 가져오기
   const {
     currentPage,
     itemsPerPage,
     setSearchText,
     setSelectedStatus,
-    setSelectedSessionType,
+    setCurrentPage,
+    openForm,
+    setSelectedId,
   } = useSessionsStore();
 
-  // 로컬 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 확정)
-  const [localFilters, setLocalFilters] = useState<SessionsFilterState>({
+  // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
+  const [searchFilters, setSearchFilters] = useState<
+    Record<
+      string,
+      string[] | null | { type: string; value: { from?: string; to?: string } }
+    >
+  >({
     status: null,
-    sessionType: null,
-  });
-
-  // 서버에 전달할 필터 상태
-  const [appliedFilters, setAppliedFilters] = useState<SessionsFilterState>({
-    status: null,
-    sessionType: null,
+    createdAt: null,
   });
 
   const [searchText, setSearchTextLocal] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-  // 서버 사이드 페이징 조회
+  // 검색 텍스트 debounce (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+      setSearchText(searchText);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchText, setSearchText]);
+
+  // 생성일시 필터에서 from/to 날짜 추출
+  const getCreatedDateRange = (): {
+    createdAfter?: string;
+    createdBefore?: string;
+  } => {
+    const createdAtFilter = searchFilters.createdAt;
+    if (
+      !createdAtFilter ||
+      typeof createdAtFilter !== "object" ||
+      !("value" in createdAtFilter)
+    ) {
+      return {};
+    }
+
+    const { from, to } = (
+      createdAtFilter as { type: string; value: { from?: string; to?: string } }
+    ).value;
+    return {
+      createdAfter: from,
+      createdBefore: to,
+    };
+  };
+
+  const dateRange = getCreatedDateRange();
+
+  // GraphQL 쿼리 - Apollo Hooks 사용
   const {
     data: sessionsResponse,
-    isLoading,
-    error,
+    loading,
     refetch,
   } = useSessions({
-    page: currentPage + 1,
-    pageSize: itemsPerPage,
-    search: searchText,
-    status: appliedFilters.status || undefined,
-    session_type: appliedFilters.sessionType || undefined,
+    limit: itemsPerPage,
+    offset: currentPage * itemsPerPage,
+    status: Array.isArray(searchFilters.status)
+      ? searchFilters.status.join(",")
+      : undefined,
+    search: debouncedSearchText || undefined,
+    createdAfter: dateRange.createdAfter,
+    createdBefore: dateRange.createdBefore,
   });
 
-  // 삭제 mutation
-  const deleteSessionMutation = useDeleteSession();
-  
-  // 취소 mutation
-  const revokeSessionMutation = useRevokeSession();
+  // GraphQL 뮤테이션 - 수정
+  const [updateSession, { loading: updating }] = useUpdateSession();
 
-  const sessions = sessionsResponse?.data || [];
-  const totalItems = sessionsResponse?.total || 0;
+  // 세션 데이터
+  const sessions = sessionsResponse?.sessions || [];
 
-  const handleSearchChange = (text: string) => {
+  const handleSearchTextChange = (text: string) => {
     setSearchTextLocal(text);
-    setSearchText(text);
   };
 
-  const handleApplyFilters = () => {
-    setAppliedFilters(localFilters);
-    setSelectedStatus(localFilters.status || null);
-    setSelectedSessionType(localFilters.sessionType || null);
+  const handleApplySearch = () => {
+    // 필터 적용 시 필요한 추가 작업이 있으면 여기에 작성
+    // 현재는 searchFilters 상태 업데이트로 useSessions가 자동으로 refetch됨
   };
 
-  // 통계 계산
-  const stats = useMemo(() => {
-    const total = sessions.length;
-    const active = sessions.filter((s) => s.status === 'ACTIVE').length;
-    const expired = sessions.filter((s) => s.status === 'EXPIRED').length;
-    const revoked = sessions.filter((s) => s.status === 'REVOKED').length;
-    const mfaVerified = sessions.filter((s) => s.mfa_verified).length;
+  const handleClearAllSearchFilters = () => {
+    // 모든 필터 초기화
+    setSearchFilters({
+      status: null,
+      createdAt: null,
+    });
+    // 검색 텍스트도 초기화
+    setSearchText("");
+    setSearchTextLocal("");
+    setDebouncedSearchText("");
+    // 페이지 번호 초기화 (첫 페이지로)
+    setCurrentPage(0);
+  };
 
-    return { total, active, expired, revoked, mfaVerified };
-  }, [sessions]);
+  const handleEdit = (session: Session) => {
+    // 선택된 세션 ID를 store에 저장하고 폼 오픈
+    openForm(session.id);
+  };
 
-  // 세션 취소 핸들러
-  const handleRevoke = (session: Session) => {
-    if (window.confirm(`세션을 취소하시겠습니까?\n\nIP: ${session.ip_address}`)) {
-      revokeSessionMutation.mutate(session.id, {
-        onSuccess: () => {
-          toast.success('세션이 취소되었습니다');
-          refetch();
-        },
-        onError: (error: Error) => {
-          toast.error(error.message || '세션 취소 실패');
-        },
-      });
+  const handleDelete = async (session: any) => {
+    if (confirm(`세션 '${session.userId}' 을(를) 삭제하시겠습니까?`)) {
+      try {
+        await updateSession({
+          variables: {
+            id: session.id,
+            input: { status: "TERMINATED" },
+          },
+        });
+        toast.success("세션이 삭제되었습니다");
+        refetch();
+      } catch (error) {
+        toast.error("세션 삭제에 실패했습니다");
+        console.error("Failed to delete session:", error);
+      }
     }
   };
 
-  // 세션 삭제 핸들러
-  const handleDelete = (session: Session) => {
-    if (window.confirm(`세션을 삭제하시겠습니까?\n\nIP: ${session.ip_address}`)) {
-      deleteSessionMutation.mutate(session.id, {
-        onSuccess: () => {
-          toast.success('세션이 삭제되었습니다');
-          refetch();
-        },
-        onError: (error: Error) => {
-          toast.error(error.message || '세션 삭제 실패');
-        },
-      });
-    }
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-muted-foreground">로딩 중...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-destructive">에러: {(error as Error).message}</div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6">로딩 중...</div>;
 
   return (
     <div className="space-y-6">
       <SessionsHeader onRefresh={() => refetch()} />
-      <SessionsStats
-        total={stats.total}
-        active={stats.active}
-        expired={stats.expired}
-        revoked={stats.revoked}
-        mfaVerified={stats.mfaVerified}
-      />
+      <SessionsStats data={sessions} />
 
-      {/* Jira 스타일 검색 + 필터 */}
+      {/* Jira 스타일 검색 + 필터 팝업 */}
       <SessionsFilter
         searchText={searchText}
-        onSearchChange={handleSearchChange}
-        filters={localFilters}
-        onFiltersChange={setLocalFilters}
-        onApplyFilters={handleApplyFilters}
+        onSearchTextChange={handleSearchTextChange}
+        searchFilters={searchFilters}
+        onSearchFiltersChange={setSearchFilters}
+        onApplySearch={handleApplySearch}
+        onClearAllSearchFilters={handleClearAllSearchFilters}
       />
 
-      <SessionsTable data={sessions} onRevoke={handleRevoke} onDelete={handleDelete} />
+      <SessionsTable
+        data={sessions}
+        isLoading={updating}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
+      <SessionsEdit />
     </div>
   );
 }

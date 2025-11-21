@@ -208,7 +208,7 @@ export function SessionsForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="user_agent">User Agent</Label>
+        <Label htmlFor="user_agent">Session Agent</Label>
         <Input
           id="user_agent"
           {...register('user_agent')}
