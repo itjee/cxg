@@ -8,6 +8,7 @@
  * 공통 Form 컴포넌트를 사용하여 수정 기능을 처리합니다.
  */
 
+import React, { useEffect } from "react";
 import { toast } from "sonner";
 import { Form, FormDrawer } from "@/components/features";
 import { sessionFormConfig, type SessionFormData } from "../config/sessions-form-config";
@@ -26,15 +27,25 @@ export function SessionsEdit() {
   const { formOpen, selectedId, closeForm } = useSessionsStore();
 
   // 세션 데이터 조회 (수정 모드일 때만)
-  const { data: sessionResponse } = useSession(
+  const { data: sessionResponse, loading: sessionLoading, error: sessionError } = useSession(
     formOpen && selectedId ? selectedId : ""
   );
   const editingSession = sessionResponse?.session;
 
+  // 에러 발생 시 토스트 표시
+  useEffect(() => {
+    if (sessionError) {
+      const graphQLError = (sessionError as any)?.graphQLErrors?.[0];
+      const message = graphQLError?.message || "세션 정보를 불러올 수 없습니다";
+      console.error("[Sessions Edit Error]", message, sessionError);
+      toast.error(message);
+    }
+  }, [sessionError]);
+
   // GraphQL 뮤테이션 훅
   const [updateSession, { loading: updateLoading }] = useUpdateSession();
 
-  const isLoading = updateLoading;
+  const isLoading = updateLoading || sessionLoading;
   const isEditing = !!selectedId;
 
   /**
