@@ -50,18 +50,18 @@ export default function SessionsPage() {
     createdAt: null,
   });
 
-  const [searchText, setSearchTextLocal] = useState("");
+  const [searchTextLocal, setSearchTextLocal] = useState("");
   const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
   // 검색 텍스트 debounce (500ms)
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchText(searchText);
-      setSearchText(searchText);
+      setDebouncedSearchText(searchTextLocal);
+      setSearchText(searchTextLocal);
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchText, setSearchText, setDebouncedSearchText]);
+  }, [searchTextLocal, setSearchText]);
 
   // 생성일시 필터에서 from/to 날짜 추출
   const getCreatedDateRange = (): {

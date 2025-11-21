@@ -17,6 +17,7 @@ from .idam.role_permissions import (
     ManagerRolePermissionQueries,
 )
 from .idam.roles import ManagerRole, ManagerRoleMutations, ManagerRoleQueries
+from .idam.sessions import ManagerSession, ManagerSessionMutations, ManagerSessionQueries
 from .idam.user_roles import ManagerUserRole, ManagerUserRoleMutations, ManagerUserRoleQueries
 from .idam.users import ManagerUser, ManagerUserMutations, ManagerUserQueries
 
@@ -66,6 +67,22 @@ class ManagerQuery:
         search: str | None = None,
     ) -> "list[ManagerUser]":
         return await ManagerUserQueries.users(self, info, limit, offset, user_type, status, search)
+
+    # IDAM - Sessions
+    @strawberry.field(description="세션 조회 (ID)")
+    async def session(self, info, id: strawberry.ID) -> "ManagerSession | None":
+        return await ManagerSessionQueries.session(self, info, id)
+
+    @strawberry.field(description="세션 목록 조회")
+    async def sessions(
+        self,
+        info,
+        limit: int = 20,
+        offset: int = 0,
+        user_id: strawberry.ID | None = None,
+        status: str | None = None,
+    ) -> "list[ManagerSession]":
+        return await ManagerSessionQueries.sessions(self, info, limit, offset, user_id, status)
 
     # IDAM - Roles
     @strawberry.field(description="역할 조회 (ID)")
@@ -161,6 +178,11 @@ class ManagerMutation:
     def users(self) -> ManagerUserMutations:
         """사용자 관련 Mutation (생성, 수정 등)"""
         return ManagerUserMutations()
+
+    @strawberry.field(description="세션 관련 Mutation")
+    def sessions(self) -> ManagerSessionMutations:
+        """세션 관련 Mutation (수정, 폐기 등)"""
+        return ManagerSessionMutations()
 
     @strawberry.field(description="역할 관련 Mutation")
     def roles(self) -> ManagerRoleMutations:

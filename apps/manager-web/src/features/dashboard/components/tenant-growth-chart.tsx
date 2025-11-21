@@ -16,7 +16,7 @@ export function TenantGrowthChart() {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-5 w-5 text-primary" />
-          <CardTitle className="text-lg font-medium">
+          <CardTitle className="text-3xl font-extrabold">
             테넌트 증가 추이
           </CardTitle>
         </div>

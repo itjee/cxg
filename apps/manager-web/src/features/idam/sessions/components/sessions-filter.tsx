@@ -7,15 +7,24 @@
  * 공통 SearchFilter 컴포넌트를 사용하여 Sessions 모듈의 필터 기능을 구현합니다.
  */
 
-import { SearchFilter, type FilterItemConfig } from "@/components/filters";
-import type { SessionsFilterState } from "./sessions-filter-popup";
+import { SearchFilter } from "@/components/filters";
+import type { FilterItemConfig } from "@/components/filters";
 
 interface SessionsFilterProps {
   searchText: string;
-  onSearchChange: (text: string) => void;
-  filters: SessionsFilterState;
-  onFiltersChange: (filters: SessionsFilterState) => void;
-  onApplyFilters: () => void;
+  onSearchTextChange: (text: string) => void;
+  searchFilters: Record<
+    string,
+    string[] | null | { type: string; value: { from?: string; to?: string } }
+  >;
+  onSearchFiltersChange: (
+    filters: Record<
+      string,
+      string[] | null | { type: string; value: { from?: string; to?: string } }
+    >
+  ) => void;
+  onApplySearch: () => void;
+  onClearAllSearchFilters?: () => void;
 }
 
 const filterItems: FilterItemConfig[] = [
@@ -41,20 +50,22 @@ const filterItems: FilterItemConfig[] = [
 
 export function SessionsFilter({
   searchText,
-  onSearchChange,
-  filters,
-  onFiltersChange,
-  onApplyFilters,
+  onSearchTextChange,
+  searchFilters,
+  onSearchFiltersChange,
+  onApplySearch,
+  onClearAllSearchFilters,
 }: SessionsFilterProps) {
   return (
     <SearchFilter
       searchText={searchText}
-      onSearchChange={onSearchChange}
-      filters={filters}
-      onFiltersChange={onFiltersChange}
-      onApplyFilters={onApplyFilters}
+      onSearchTextChange={onSearchTextChange}
+      searchFilters={searchFilters}
+      onSearchFiltersChange={onSearchFiltersChange}
+      onApply={onApplySearch}
       filterItems={filterItems}
       searchPlaceholder="세션 검색..."
+      onClearAllSearchFilters={onClearAllSearchFilters}
     />
   );
 }

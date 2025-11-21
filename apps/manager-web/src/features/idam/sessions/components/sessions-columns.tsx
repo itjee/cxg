@@ -167,11 +167,14 @@ export const getSessionsColumns = ({
     header: "위치",
     cell: ({ row }) => {
       const city = row.original.city;
-      const countryCode = row.original.country_code;
-      if (!city && !countryCode) return <span className="text-muted-foreground">-</span>;
+      const countryCode = row.original.countryCode;
+      if (!city && !countryCode)
+        return <span className="text-muted-foreground">-</span>;
       return (
         <div className="text-base">
-          {city && countryCode ? `${city}, ${countryCode}` : city || countryCode}
+          {city && countryCode
+            ? `${city}, ${countryCode}`
+            : city || countryCode}
         </div>
       );
     },
@@ -186,9 +189,13 @@ export const getSessionsColumns = ({
     cell: ({ row }) => {
       const userAgent = row.getValue("user_agent") as string | undefined;
       if (!userAgent) return <span className="text-muted-foreground">-</span>;
-      const truncated = userAgent.length > 30 ? userAgent.slice(0, 30) + "..." : userAgent;
+      const truncated =
+        userAgent.length > 30 ? userAgent.slice(0, 30) + "..." : userAgent;
       return (
-        <div className="text-sm text-muted-foreground max-w-[200px] truncate" title={userAgent}>
+        <div
+          className="text-sm text-muted-foreground max-w-[200px] truncate"
+          title={userAgent}
+        >
           {truncated}
         </div>
       );
@@ -258,7 +265,9 @@ export const getSessionsColumns = ({
       const expiresAt = row.getValue("expires_at") as string;
       const isExpired = new Date(expiresAt) < new Date();
       return (
-        <div className={isExpired ? "text-destructive" : "text-muted-foreground"}>
+        <div
+          className={isExpired ? "text-destructive" : "text-muted-foreground"}
+        >
           {formatDateTime(expiresAt)}
         </div>
       );
