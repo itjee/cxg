@@ -29,15 +29,26 @@ import {
 /**
  * 필터 값 타입
  */
-type FilterValue = string[] | null | { type: string; value: { from?: string; to?: string } };
+type FilterValue =
+  | string[]
+  | null
+  | { type: string; value: { from?: string; to?: string } };
 
 export default function RolesPage() {
   // Store에서 UI 상태 가져오기
-  const { currentPage, itemsPerPage, setSearchText, setCurrentPage, openForm, setSelectedId } =
-    useRolesStore();
+  const {
+    currentPage,
+    itemsPerPage,
+    setSearchText,
+    setCurrentPage,
+    openForm,
+    setSelectedId,
+  } = useRolesStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
-  const [searchFilters, setSearchFilters] = useState<Record<string, FilterValue>>({
+  const [searchFilters, setSearchFilters] = useState<
+    Record<string, FilterValue>
+  >({
     status: null,
     category: null,
   });
@@ -63,8 +74,12 @@ export default function RolesPage() {
   } = useRoles({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-    category: searchFilters.category ? searchFilters.category.join(",") : undefined,
-    status: searchFilters.status ? searchFilters.status.join(",") : undefined,
+    category: Array.isArray(searchFilters.category)
+      ? searchFilters.category.join(",")
+      : undefined,
+    status: Array.isArray(searchFilters.status)
+      ? searchFilters.status.join(",")
+      : undefined,
     search: debouncedSearchText || undefined,
   });
 
@@ -98,10 +113,8 @@ export default function RolesPage() {
   };
 
   const handleEdit = (role: Role) => {
-    // 선택된 역할 ID를 store에 저장
-    setSelectedId(role.id);
-    // 수정 폼 오픈
-    openForm();
+    // 선택된 역할 ID를 store에 저장하고 폼 오픈
+    openForm(role.id);
   };
 
   const handleDelete = async (role: Role) => {
@@ -139,7 +152,12 @@ export default function RolesPage() {
         onClearAllSearchFilters={handleClearAllSearchFilters}
       />
 
-      <RolesTable data={roles} isLoading={updating} onEdit={handleEdit} onDelete={handleDelete} />
+      <RolesTable
+        data={roles}
+        isLoading={updating}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+      />
       <RolesEdit />
     </div>
   );

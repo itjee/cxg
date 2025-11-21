@@ -95,12 +95,8 @@ export function useCreateRole() {
     { createRole: Role },
     CreateRoleVariables
   >(CREATE_ROLE, {
-    refetchQueries: [
-      {
-        query: GET_ROLES,
-        variables: { limit: 20, offset: 0 },
-      },
-    ],
+    refetchQueries: [{ query: GET_ROLES }],
+    awaitRefetchQueries: false,
   });
 }
 
@@ -123,11 +119,7 @@ export function useUpdateRole() {
     { updateRole: Role },
     UpdateRoleVariables
   >(UPDATE_ROLE, {
-    refetchQueries: [
-      {
-        query: GET_ROLES,
-        variables: { limit: 20, offset: 0 },
-      },
-    ],
+    refetchQueries: [{ query: GET_ROLES }],
+    awaitRefetchQueries: false,
   });
 }

@@ -3,13 +3,13 @@
 import { DataTable } from "@/components/data-table";
 import { usePermissionsStore } from "../stores/permissions.store";
 import { getPermissionsColumns } from "./permissions-columns";
-import type { Permissions } from "../types/permissions.types";
+import type { Permission } from "../types/permissions.types";
 
 interface PermissionsTableProps {
-  data: Permissions[];
+  data: Permission[];
   isLoading?: boolean;
-  onEdit: (permission: Permissions) => void;
-  onDelete: (permission: Permissions) => void;
+  onEdit: (permission: Permission) => void;
+  onDelete: (permission: Permission) => void;
 }
 
 export function PermissionsTable({

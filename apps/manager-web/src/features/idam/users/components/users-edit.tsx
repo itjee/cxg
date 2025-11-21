@@ -1,87 +1,132 @@
 "use client";
 
 /**
- * Users Edit Dialog
+ * @file users-edit.tsx
+ * @description 사용자 생성/수정 Dialog
  *
- * 사용자 생성/수정 Dialog 컴포넌트
- * Apollo GraphQL Hooks를 사용합니다.
+ * 사용자 관리를 위한 통합 Dialog 컴포넌트
+ * 공통 Form 컴포넌트를 사용하여 생성 및 수정 기능을 처리합니다.
  */
 
 import { toast } from "sonner";
-import { EntityDrawer } from "@/components/features";
-import { UsersForm } from "./users-form";
+import { Form, FormDrawer } from "@/components/features";
+import { userFormConfig, type UserFormData } from "../config/users-form-config";
 import { useUsersStore } from "../stores/users.store";
-import {
-  useUser,
-  useCreateUser,
-  useUpdateUser,
-} from "../hooks";
+import { useUser, useCreateUser, useUpdateUser } from "../hooks";
 
+/**
+ * 사용자 생성/수정 Dialog 컴포넌트
+ *
+ * 기능:
+ * - 사용자 생성: 새로운 사용자 데이터를 입력받아 생성
+ * - 사용자 수정: 기존 사용자 데이터를 로드하여 수정
+ * - 폼 유효성 검증: Zod 스키마 기반 자동 검증
+ * - 에러 처리: GraphQL 에러 메시지 표시
+ */
 export function UsersEdit() {
   const { formOpen, selectedId, closeForm } = useUsersStore();
 
-  // 수정 모드: 선택된 사용자 조회 (단수)
-  const { data: userResponse } = useUser(selectedId || "");
+  // 사용자 데이터 조회 (수정 모드일 때만)
+  const { data: userResponse } = useUser(
+    formOpen && selectedId ? selectedId : ""
+  );
   const editingUser = userResponse?.user;
 
-  // Apollo Mutation Hooks (튜플 반환)
+  // GraphQL 뮤테이션 훅
   const [createUser, { loading: createLoading }] = useCreateUser();
   const [updateUser, { loading: updateLoading }] = useUpdateUser();
 
   const isLoading = createLoading || updateLoading;
+  const isEditing = !!selectedId;
 
-  const handleSubmit = async (formData: any) => {
+  /**
+   * 폼 제출 핸들러
+   * 생성/수정 여부에 따라 적절한 뮤테이션 실행
+   *
+   * 주의: 비밀번호는 폼에서 입력받지 않음
+   * - 생성 모드: 백엔드에서 임시 비밀번호 자동 생성 후 이메일로 전송
+   * - 수정 모드: 비밀번호 변경 불가
+   */
+  const handleSubmit = async (formData: UserFormData) => {
     try {
-      if (selectedId) {
-        // 수정 모드: password 제외
-        const { password, ...updateData } = formData;
+      if (isEditing) {
+        // 수정 모드: username만 제외, 나머지 필드 전송
+        // 백엔드에서 빈 문자열을 null로 변환함
+        const { username, ...updateInput } = formData;
+
+        console.log("[DEBUG] Sending update request:", {
+          id: selectedId,
+          input: updateInput,
+        });
+
         await updateUser({
           variables: {
             id: selectedId,
-            input: updateData,
+            input: updateInput,
           },
         });
-
         toast.success("사용자가 수정되었습니다");
-        closeForm();
       } else {
-        // 생성 모드: 전체 데이터 전송 (camelCase 유지)
+        // 생성 모드: 기본 정보 전송 (백엔드에서 임시 비밀번호 생성)
         await createUser({
           variables: {
             input: formData,
           },
         });
-
-        toast.success("사용자가 생성되었습니다");
-        closeForm();
+        toast.success(
+          "사용자가 생성되었습니다. 임시 비밀번호가 이메일로 전송되었습니다."
+        );
       }
+      closeForm();
     } catch (error) {
-      const message = error instanceof Error ? error.message : "작업 실패";
+      console.error("Form submission error:", error);
+
+      // GraphQL 에러 추출
+      const graphQLError = (error as any)?.graphQLErrors?.[0];
+      const message = graphQLError?.message ||
+                     (error instanceof Error ? error.message : "작업 실패");
+
       toast.error(
-        selectedId ? "사용자 수정 실패: " + message : "사용자 생성 실패: " + message
+        isEditing
+          ? "사용자 수정 실패: " + message
+          : "사용자 생성 실패: " + message
       );
-      console.error("Failed to save user:", error);
     }
   };
 
   return (
-    <EntityDrawer
+    <FormDrawer
       open={formOpen}
       onOpenChange={closeForm}
-      title={selectedId ? "사용자 수정" : "사용자 등록"}
+      title={isEditing ? "사용자 수정" : "사용자 등록"}
       description={
-        selectedId
+        isEditing
           ? "사용자 정보를 수정하세요."
           : "새로운 사용자 정보를 입력하세요."
       }
       width="md"
     >
-      <UsersForm
-        initialData={editingUser}
+      <Form
+        config={userFormConfig}
+        initialData={
+          editingUser
+            ? {
+                username: editingUser.username,
+                email: editingUser.email,
+                fullName: editingUser.fullName,
+                userType: editingUser.userType,
+                phone: editingUser.phone,
+                department: editingUser.department,
+                position: editingUser.position,
+                status: editingUser.status,
+              }
+            : undefined
+        }
         onSubmit={handleSubmit}
         onCancel={closeForm}
         isLoading={isLoading}
+        submitText={isEditing ? "수정" : "등록"}
       />
-    </EntityDrawer>
+    </FormDrawer>
   );
 }

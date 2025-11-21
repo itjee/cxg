@@ -41,6 +41,7 @@ class Permission(BaseModel):
 
     # 메타데이터
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    is_hidden: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="ACTIVE", index=True)
 
     def __repr__(self) -> str:

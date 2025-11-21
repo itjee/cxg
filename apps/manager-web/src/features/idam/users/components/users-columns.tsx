@@ -94,6 +94,34 @@ export const getUsersColumns = ({
     },
   },
 
+  // 사용자 유형
+  {
+    accessorKey: "userType",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="사용자유형" />
+    ),
+    cell: ({ row }) => {
+      const userType = row.getValue("userType") as string;
+      const userTypeLabels: Record<string, { label: string; color: string }> = {
+        MASTER: { label: "최고관리자", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300" },
+        TENANT: { label: "테넌트 관리자", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300" },
+        SYSTEM: { label: "시스템 사용자", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" },
+      };
+
+      const info = userTypeLabels[userType] || { label: userType, color: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300" };
+
+      return (
+        <Badge variant="outline" className={info.color}>
+          {info.label}
+        </Badge>
+      );
+    },
+    enableSorting: true,
+    meta: {
+      filterable: true,
+    },
+  },
+
   // MFA 상태
   {
     accessorKey: "mfaEnabled",

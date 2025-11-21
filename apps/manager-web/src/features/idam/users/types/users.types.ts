@@ -18,7 +18,14 @@
  */
 export interface User {
   id: string;
-  userType: string; // MASTER, TENANT, SYSTEM
+  userType:
+    | "ADMIN"
+    | "MANAGER"
+    | "USER"
+    | "MASTER"
+    | "TENANT"
+    | "SYSTEM"
+    | string; // MASTER, TENANT, SYSTEM, ADMIN, MANAGER, USER 등
   fullName: string;
   email: string;
   phone?: string;
@@ -44,27 +51,30 @@ export interface User {
 
 /**
  * 사용자 생성 입력
+ *
+ * 주의: password 필드 없음
+ * - 백엔드에서 임시 비밀번호를 자동 생성하고 이메일로 전송합니다
  */
 export interface CreateUserInput {
   userType: string;
   fullName: string;
   email: string;
   username: string;
-  password: string;
-  phone?: string;
-  department?: string;
-  position?: string;
+  phone?: string | null;
+  department?: string | null;
+  position?: string | null;
 }
 
 /**
  * 사용자 수정 입력
  */
 export interface UpdateUserInput {
+  userType?: string;
   fullName?: string;
   email?: string;
-  phone?: string;
-  department?: string;
-  position?: string;
+  phone?: string | null;
+  department?: string | null;
+  position?: string | null;
   status?: string;
   mfaEnabled?: boolean;
 }
@@ -153,9 +163,9 @@ export interface UpdateUserResponse {
  * - 날짜 범위 필터는 { type, value } 객체 형식
  */
 export interface UsersFilterState {
-  status: string[] | null;      // ["ACTIVE", "LOCKED"] 등 여러 상태 선택 가능
-  userType: string[] | null;    // ["MASTER", "ADMIN"] 등 여러 타입 선택 가능
-  mfaEnabled: string[] | null;  // ["true", "false"] 등 MFA 상태 선택 가능
+  status: string[] | null; // ["ACTIVE", "LOCKED"] 등 여러 상태 선택 가능
+  userType: string[] | null; // ["MASTER", "ADMIN"] 등 여러 타입 선택 가능
+  mfaEnabled: string[] | null; // ["true", "false"] 등 MFA 상태 선택 가능
   forcePasswordChange: string[] | null; // ["true", "false"] 등 비밀번호 상태 선택 가능
   createdAt: { type: string; value: { from?: string; to?: string } } | null; // 생성일시 범위 필터
 }

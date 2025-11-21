@@ -64,6 +64,7 @@ export function usePermission(id: string) {
     {
       variables: { id },
       skip: !id, // id가 없으면 쿼리 실행 안 함
+      fetchPolicy: "network-only", // 항상 네트워크에서 최신 데이터 조회
     }
   );
 }

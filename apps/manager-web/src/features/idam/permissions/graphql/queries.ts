@@ -26,6 +26,7 @@ export const GET_PERMISSIONS = gql`
     $resource: String
     $action: String
     $scope: String
+    $isSystem: Boolean
   ) {
     permissions(
       limit: $limit
@@ -36,6 +37,7 @@ export const GET_PERMISSIONS = gql`
       resource: $resource
       action: $action
       scope: $scope
+      isSystem: $isSystem
     ) {
       id
       code
@@ -45,13 +47,12 @@ export const GET_PERMISSIONS = gql`
       resource
       action
       scope
-      appliesToAppliesTo
+      appliesTo
       isSystem
+      isHidden
       status
       createdAt
       updatedAt
-      createdBy
-      updatedBy
     }
   }
 `;
@@ -70,13 +71,12 @@ export const GET_PERMISSION = gql`
       resource
       action
       scope
-      appliesToAppliesTo
+      appliesTo
       isSystem
+      isHidden
       status
       createdAt
       updatedAt
-      createdBy
-      updatedBy
     }
   }
 `;

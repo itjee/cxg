@@ -180,10 +180,8 @@ export default function UsersPage() {
   };
 
   const handleEdit = (user: User) => {
-    // 선택된 사용자 ID를 store에 저장
-    setSelectedId(user.id);
-    // 수정 폼 오픈
-    openForm();
+    // 선택된 사용자 ID를 store에 저장하고 폼 오픈
+    openForm(user.id);
   };
 
   const handleDelete = async (user: any) => {

@@ -69,6 +69,9 @@ class ManagerPermission(Node):
     is_system: bool = strawberry.field(
         description="시스템 권한 여부 (True: 시스템 예약 권한으로 수정/삭제 불가)"
     )
+    is_hidden: bool = strawberry.field(
+        description="권한이 숨김 상태인지 여부 (True: 숨김, False: 표시)"
+    )
     status: str = strawberry.field(description="권한 상태 (ACTIVE: 활성, INACTIVE: 비활성)")
 
     # 시스템 필드
@@ -124,14 +127,19 @@ class ManagerPermissionUpdateInput:
     Manager 권한 수정 입력 타입
 
     기존 권한의 정보를 수정합니다.
-    모든 필드는 선택적이며, 제공된 필드만 업데이트됩니다.
 
     제약사항:
-        - code, resource, action은 변경할 수 없습니다
+        - code는 변경할 수 없습니다
         - is_system=True인 권한은 수정할 수 없습니다
         - 이미 사용 중인 권한의 scope나 applies_to 변경 시 주의 필요
     """
 
-    name: str | None = None
+    name: str = strawberry.field(description="권한 이름 (예: '사용자 생성')")
     description: str | None = None
+    category: str = strawberry.field(description="권한 카테고리 (예: '사용자 관리')")
+    resource: str = strawberry.field(description="리소스 (예: 'users')")
+    action: str = strawberry.field(description="액션 (CREATE, READ, UPDATE, DELETE, LIST, MANAGE)")
+    scope: str | None = None
+    applies_to: str | None = None
+    is_system: bool | None = None
     status: str | None = None

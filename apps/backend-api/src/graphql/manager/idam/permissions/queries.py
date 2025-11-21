@@ -36,6 +36,7 @@ def manager_permission_to_graphql(permission: PermissionModel) -> "ManagerPermis
         scope=permission.scope,
         applies_to=permission.applies_to,
         is_system=permission.is_system,
+        is_hidden=permission.is_hidden,
         status=permission.status,
         created_at=permission.created_at,
         updated_at=permission.updated_at,
@@ -67,23 +68,31 @@ async def get_manager_permissions(
     db: AsyncSession,
     limit: int = 50,
     offset: int = 0,
+    search: str | None = None,
     category: str | None = None,
     resource: str | None = None,
+    action: str | None = None,
+    scope: str | None = None,
     status: str | None = None,
+    is_system: bool | None = None,
 ) -> "list[ManagerPermission]":
     """
     Manager 권한 목록 조회
 
-    카테고리, 리소스, 상태별로 필터링하여 권한을 조회합니다.
+    검색 및 필터링하여 권한을 조회합니다.
     RBAC 시스템 구성 시 사용 가능한 권한 목록을 확인하는데 사용됩니다.
 
     Args:
         db: 데이터베이스 세션
         limit: 조회 개수 제한 (기본값: 50)
         offset: 건너뛸 개수 (페이징용)
+        search: 검색 텍스트 (코드, 이름, 설명에서 검색)
         category: 카테고리 필터 (예: "사용자 관리", "시스템 설정")
         resource: 리소스 필터 (예: "users", "tenants")
+        action: 액션 필터 (CREATE, READ, UPDATE, DELETE, LIST, MANAGE)
+        scope: 범위 필터 (GLOBAL, TENANT)
         status: 상태 필터 (ACTIVE, INACTIVE)
+        is_system: 시스템 권한 필터
 
     Returns:
         list[Permission]: 권한 객체 리스트
@@ -101,12 +110,21 @@ async def get_manager_permissions(
     """
     # 필터 조건 구성
     filters = {}
+    if search:
+        # 검색 조건 (코드, 이름, 설명에서 검색) - 백엔드에서 구현
+        filters["search"] = search
     if category:
         filters["category"] = category
     if resource:
         filters["resource"] = resource
+    if action:
+        filters["action"] = action
+    if scope:
+        filters["scope"] = scope
     if status:
         filters["status"] = status
+    if is_system is not None:
+        filters["is_system"] = is_system
 
     return await get_list(
         db=db,
@@ -151,9 +169,13 @@ class ManagerPermissionQueries:
         info,
         limit: int = 50,
         offset: int = 0,
+        search: str | None = None,
         category: str | None = None,
         resource: str | None = None,
+        action: str | None = None,
+        scope: str | None = None,
         status: str | None = None,
+        is_system: bool | None = None,
     ) -> "list[ManagerPermission]":
         """
         권한 목록 조회 (페이징 및 필터링 지원)
@@ -163,9 +185,13 @@ class ManagerPermissionQueries:
         Args:
             limit: 조회 개수 (기본값: 50)
             offset: 건너뛸 개수
+            search: 검색 텍스트 (선택)
             category: 카테고리 필터 (선택)
             resource: 리소스 필터 (선택)
+            action: 액션 필터 (선택)
+            scope: 범위 필터 (선택)
             status: 상태 필터 (선택)
+            is_system: 시스템 권한 필터 (선택)
 
         Returns:
             list[Permission]: 권한 객체 리스트
@@ -173,18 +199,19 @@ class ManagerPermissionQueries:
         사용 예:
             # 모든 활성 권한 조회
             query {
-              managerPermissions(status: "ACTIVE") {
+              permissions(status: "ACTIVE") {
                 id code name category resource action
               }
             }
 
             # 사용자 관리 권한만 조회
             query {
-              managerPermissions(category: "사용자 관리") {
+              permissions(category: "사용자 관리") {
                 id code name action
-                roles { id name }
               }
             }
         """
         db = info.context.manager_db_session
-        return await get_manager_permissions(db, limit, offset, category, resource, status)
+        return await get_manager_permissions(
+            db, limit, offset, search, category, resource, action, scope, status, is_system
+        )

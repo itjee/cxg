@@ -95,11 +95,16 @@ class ManagerQuery:
         info,
         limit: int = 20,
         offset: int = 0,
+        search: str | None = None,
         category: str | None = None,
         resource: str | None = None,
+        action: str | None = None,
+        scope: str | None = None,
+        status: str | None = None,
+        is_system: bool | None = None,
     ) -> "list[ManagerPermission]":
         return await ManagerPermissionQueries.permissions(
-            self, info, limit, offset, category, resource
+            self, info, limit, offset, search, category, resource, action, scope, status, is_system
         )
 
     # IDAM - Role Permissions

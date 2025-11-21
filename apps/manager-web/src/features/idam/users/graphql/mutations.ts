@@ -20,27 +20,29 @@ import type {
  */
 export const CREATE_USER = gql`
   mutation CreateUser($input: CreateUserInput!) {
-    createUser(input: $input) {
-      id
-      userType
-      fullName
-      email
-      phone
-      username
-      ssoProvider
-      ssoSubject
-      mfaEnabled
-      status
-      lastLoginAt
-      lastLoginIp
-      failedLoginAttempts
-      forcePasswordChange
-      timezone
-      locale
-      department
-      position
-      createdAt
-      updatedAt
+    users {
+      createUser(input: $input) {
+        id
+        userType
+        fullName
+        email
+        phone
+        username
+        ssoProvider
+        ssoSubject
+        mfaEnabled
+        status
+        lastLoginAt
+        lastLoginIp
+        failedLoginAttempts
+        forcePasswordChange
+        timezone
+        locale
+        department
+        position
+        createdAt
+        updatedAt
+      }
     }
   }
 `;
@@ -50,27 +52,29 @@ export const CREATE_USER = gql`
  */
 export const UPDATE_USER = gql`
   mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
-    updateUser(id: $id, input: $input) {
-      id
-      userType
-      fullName
-      email
-      phone
-      username
-      ssoProvider
-      ssoSubject
-      mfaEnabled
-      status
-      lastLoginAt
-      lastLoginIp
-      failedLoginAttempts
-      forcePasswordChange
-      timezone
-      locale
-      department
-      position
-      createdAt
-      updatedAt
+    users {
+      updateUser(id: $id, input: $input) {
+        id
+        userType
+        fullName
+        email
+        phone
+        username
+        ssoProvider
+        ssoSubject
+        mfaEnabled
+        status
+        lastLoginAt
+        lastLoginIp
+        failedLoginAttempts
+        forcePasswordChange
+        timezone
+        locale
+        department
+        position
+        createdAt
+        updatedAt
+      }
     }
   }
 `;

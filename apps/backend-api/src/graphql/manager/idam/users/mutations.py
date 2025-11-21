@@ -84,13 +84,36 @@ async def update_manager_user(
     Returns:
         User: 수정된 사용자 객체 또는 None
     """
-    return await update_entity(
+    import sys
+    print(f"[DEBUG] update_manager_user called with:", file=sys.stderr)
+    print(f"  user_id: {user_id}", file=sys.stderr)
+    print(f"  input_data: {input_data.__dict__}", file=sys.stderr)
+
+    # 빈 문자열을 None으로 변환 (선택적 문자열 필드)
+    clean_data = ManagerUserUpdateInput(
+        user_type=input_data.user_type if input_data.user_type else None,
+        full_name=input_data.full_name if input_data.full_name else None,
+        email=input_data.email if input_data.email else None,
+        phone=input_data.phone if input_data.phone else None,
+        department=input_data.department if input_data.department else None,
+        position=input_data.position if input_data.position else None,
+        status=input_data.status if input_data.status else None,
+        mfa_enabled=input_data.mfa_enabled,
+    )
+
+    print(f"  clean_data: {clean_data.__dict__}", file=sys.stderr)
+
+    result = await update_entity(
         db=db,
         model_class=UserModel,
         entity_id=user_id,
-        input_data=input_data,
+        input_data=clean_data,
         to_graphql=manager_user_to_graphql,
     )
+
+    print(f"[DEBUG] update_manager_user result user_type: {result.user_type if result else 'None'}", file=sys.stderr)
+
+    return result
 
 
 @strawberry.type

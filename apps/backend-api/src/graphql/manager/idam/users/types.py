@@ -124,6 +124,7 @@ class ManagerUserUpdateInput:
     비밀번호는 별도의 Mutation을 통해 변경해야 합니다.
     """
 
+    user_type: str | None = None
     full_name: str | None = None
     email: str | None = None
     phone: str | None = None

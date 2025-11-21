@@ -24,6 +24,7 @@ interface PermissionsStore {
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
   setSearchText: (filter: Updater<string>) => void;
+  setSelectedId: (id: string | null) => void;
   openForm: (id?: string) => void;
   closeForm: () => void;
   setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
@@ -50,6 +51,7 @@ export const usePermissionsStore = create<PermissionsStore>((set) => ({
       searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
       currentPage: 0,
     })),
+  setSelectedId: (id) => set({ selectedId: id }),
   openForm: (id) => set({ formOpen: true, selectedId: id || null }),
   closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>

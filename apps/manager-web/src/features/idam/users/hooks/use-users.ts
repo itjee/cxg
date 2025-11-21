@@ -92,7 +92,7 @@ export function useUser(id: string) {
  */
 export function useCreateUser() {
   return useMutation<
-    { createUser: User },
+    { users: { createUser: User } },
     CreateUserVariables
   >(CREATE_USER, {
     refetchQueries: [
@@ -120,7 +120,7 @@ export function useCreateUser() {
  */
 export function useUpdateUser() {
   return useMutation<
-    { updateUser: User },
+    { users: { updateUser: User } },
     UpdateUserVariables
   >(UPDATE_USER, {
     refetchQueries: [

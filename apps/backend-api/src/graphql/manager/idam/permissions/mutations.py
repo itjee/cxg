@@ -66,7 +66,7 @@ async def update_manager_permission(
 
     제약사항:
         - is_system=True인 권한은 수정할 수 없습니다
-        - code, resource, action은 변경할 수 없습니다 (데이터 일관성 유지)
+        - code는 변경할 수 없습니다 (데이터 일관성 유지)
         - status를 INACTIVE로 변경하면 해당 권한을 가진 사용자의 접근이 제한됩니다
 
     Note:

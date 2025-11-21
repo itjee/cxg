@@ -5,6 +5,9 @@
 // Components
 export * from "./components";
 
+// Config
+export * from "./config";
+
 // Hooks
 export * from "./hooks/use-permissions";
 

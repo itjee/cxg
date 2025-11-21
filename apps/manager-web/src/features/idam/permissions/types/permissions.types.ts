@@ -35,11 +35,14 @@ export interface Permission {
 
   // 권한 범위 및 적용 대상
   scope: string; // GLOBAL, TENANT
-  appliesToAppliesTo: string; // ALL, MASTER, TENANT, SYSTEM
+  appliesTo: string; // ALL, MASTER, TENANT, SYSTEM
 
   // 메타데이터
   isSystem: boolean;
-  status: string; // ACTIVE, INACTIVE
+  isHidden: boolean;
+
+  status: "ACTIVE" | "INACTIVE"; // ACTIVE, INACTIVE
+  isDeleted: boolean;
 }
 
 // ===== Create/Update Input 타입 (단수) =====
@@ -55,8 +58,10 @@ export interface CreatePermissionInput {
   resource: string;
   action: string;
   scope?: string;
-  appliesToAppliesTo?: string;
+  appliesTo?: string;
   isSystem?: boolean;
+  isHidden?: boolean;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 /**
@@ -65,7 +70,14 @@ export interface CreatePermissionInput {
 export interface UpdatePermissionInput {
   name: string;
   description?: string;
-  status: string;
+  category: string;
+  resource: string;
+  action: string;
+  scope?: string;
+  appliesTo?: string;
+  isSystem?: boolean;
+  isHidden?: boolean;
+  status: "ACTIVE" | "INACTIVE";
 }
 
 // ===== 목록 조회 파라미터 (복수) =====
@@ -84,6 +96,7 @@ export interface PermissionsQueryVariables {
   resource?: string;
   action?: string;
   scope?: string;
+  isSystem?: boolean;
 }
 
 /**

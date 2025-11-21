@@ -61,7 +61,7 @@ export default function SessionsPage() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [searchText, setSearchText]);
+  }, [searchText, setSearchText, setDebouncedSearchText]);
 
   // 생성일시 필터에서 from/to 날짜 추출
   const getCreatedDateRange = (): {
@@ -165,7 +165,7 @@ export default function SessionsPage() {
 
       {/* Jira 스타일 검색 + 필터 팝업 */}
       <SessionsFilter
-        searchText={searchText}
+        searchText={searchTextLocal}
         onSearchTextChange={handleSearchTextChange}
         searchFilters={searchFilters}
         onSearchFiltersChange={setSearchFilters}

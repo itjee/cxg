@@ -1,81 +1,108 @@
-'use client';
+"use client";
 
 /**
  * @file sessions-edit.tsx
- * @description 세션 수정 모달 컴포넌트
+ * @description 세션 수정 Dialog
+ *
+ * 세션 관리를 위한 통합 Dialog 컴포넌트
+ * 공통 Form 컴포넌트를 사용하여 수정 기능을 처리합니다.
  */
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { useSessionsStore } from '../stores';
-import { useSession, useUpdateSession } from '../hooks';
-import { SessionsForm } from './sessions-form';
-import { toast } from 'sonner';
+import { toast } from "sonner";
+import { Form, FormDrawer } from "@/components/features";
+import { sessionFormConfig, type SessionFormData } from "../config/sessions-form-config";
+import { useSessionsStore } from "../stores/sessions.store";
+import { useSession, useUpdateSession } from "../hooks";
 
+/**
+ * 세션 수정 Dialog 컴포넌트
+ *
+ * 기능:
+ * - 세션 수정: 기존 세션 데이터를 로드하여 수정
+ * - 폼 유효성 검증: Zod 스키마 기반 자동 검증
+ * - 에러 처리: GraphQL 에러 메시지 표시
+ */
 export function SessionsEdit() {
-  const { selectedId, closeForm } = useSessionsStore();
-  const { data: sessionResponse, isLoading } = useSession(selectedId);
+  const { formOpen, selectedId, closeForm } = useSessionsStore();
 
-  const updateMutation = useUpdateSession();
+  // 세션 데이터 조회 (수정 모드일 때만)
+  const { data: sessionResponse } = useSession(
+    formOpen && selectedId ? selectedId : ""
+  );
+  const editingSession = sessionResponse?.session;
 
-  if (!selectedId) return null;
+  // GraphQL 뮤테이션 훅
+  const [updateSession, { loading: updateLoading }] = useUpdateSession();
 
-  const session = sessionResponse?.data;
+  const isLoading = updateLoading;
+  const isEditing = !!selectedId;
 
-  if (isLoading) {
-    return (
-      <Dialog open={!!selectedId} onOpenChange={closeForm}>
-        <DialogContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="text-muted-foreground">로딩 중...</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  /**
+   * 폼 제출 핸들러
+   * 세션 상태 수정
+   */
+  const handleSubmit = async (formData: SessionFormData) => {
+    try {
+      if (isEditing) {
+        // 수정 모드: 상태만 전송
+        const updateInput = {
+          status: formData.status,
+          mfaVerified: formData.mfaVerified,
+        };
 
-  if (!session) {
-    return (
-      <Dialog open={!!selectedId} onOpenChange={closeForm}>
-        <DialogContent>
-          <div className="flex items-center justify-center p-8">
-            <div className="text-destructive">세션을 찾을 수 없습니다</div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+        console.log("[DEBUG] Sending session update request:", {
+          id: selectedId,
+          input: updateInput,
+        });
+
+        await updateSession({
+          variables: {
+            id: selectedId,
+            input: updateInput,
+          },
+        });
+        toast.success("세션이 수정되었습니다");
+      }
+      closeForm();
+    } catch (error) {
+      console.error("Form submission error:", error);
+
+      // GraphQL 에러 추출
+      const graphQLError = (error as any)?.graphQLErrors?.[0];
+      const message = graphQLError?.message ||
+                     (error instanceof Error ? error.message : "작업 실패");
+
+      toast.error("세션 수정 실패: " + message);
+    }
+  };
 
   return (
-    <Dialog open={!!selectedId} onOpenChange={closeForm}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>세션 수정</DialogTitle>
-        </DialogHeader>
-        <SessionsForm
-          initialData={session}
-          onSubmit={(data) => {
-            updateMutation.mutate(
-              { id: selectedId, data },
-              {
-                onSuccess: () => {
-                  toast.success('세션이 수정되었습니다');
-                  closeForm();
-                },
-                onError: (error) => {
-                  toast.error(error.message || '세션 수정 실패');
-                },
+    <FormDrawer
+      open={formOpen}
+      onOpenChange={closeForm}
+      title="세션 수정"
+      description="세션 정보를 수정하세요."
+      width="md"
+    >
+      <Form
+        config={sessionFormConfig}
+        initialData={
+          editingSession
+            ? {
+                sessionId: editingSession.sessionId,
+                userId: editingSession.userId,
+                ipAddress: editingSession.ipAddress,
+                sessionType: editingSession.sessionType,
+                status: editingSession.status,
+                mfaVerified: editingSession.mfaVerified,
               }
-            );
-          }}
-          onCancel={closeForm}
-          isLoading={updateMutation.isPending}
-        />
-      </DialogContent>
-    </Dialog>
+            : undefined
+        }
+        onSubmit={handleSubmit}
+        onCancel={closeForm}
+        isLoading={isLoading}
+        submitText="수정"
+      />
+    </FormDrawer>
   );
 }

@@ -20,7 +20,11 @@ export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <BreadcrumbProvider>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar collapsed={collapsed} mobileOpen={false} onMobileClose={() => {}} />
+        <Sidebar
+          collapsed={collapsed}
+          mobileOpen={false}
+          onMobileClose={() => {}}
+        />
         <div
           className={cn(
             "flex flex-1 flex-col overflow-hidden transition-all duration-200",
@@ -29,7 +33,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         >
           <Header onToggleSidebar={handleToggleSidebar} />
           <main className="flex-1 overflow-y-auto bg-muted/10">
-            <div className="max-w-[1600px] mx-auto p-4 lg:p-6">{children}</div>
+            <div className="max-w-full mx-auto p-4 lg:p-6">{children}</div>
           </main>
         </div>
       </div>
