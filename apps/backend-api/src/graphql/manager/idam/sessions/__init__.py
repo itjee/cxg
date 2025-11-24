@@ -9,11 +9,12 @@
 from .mutations import ManagerSessionMutations
 from .queries import ManagerSessionQueries
 from .resolvers import resolve_manager_session_user
-from .types import ManagerSession
+from .types import ManagerSession, ManagerSessionList
 
 
 __all__ = [
     "ManagerSession",
+    "ManagerSessionList",
     "ManagerSessionQueries",
     "ManagerSessionMutations",
     "resolve_manager_session_user",

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 /**
  * @file tenants-table.tsx
@@ -10,18 +10,24 @@
  * - 검색 설정
  */
 
-import { DataTable } from '@/components/data-table';
-import { useTenantsStore } from '../stores';
-import { getTenantsColumns } from './tenants-columns';
-import type { Tenant } from '../types';
+import { DataTable } from "@/components/data-table";
+import { useTenantsStore } from "../stores";
+import { getTenantsColumns } from "./tenants-columns";
+import type { Tenant } from "../types";
 
 interface TenantsTableProps {
   data: Tenant[];
+  isLoading?: boolean;
   onEdit: (tenant: Tenant) => void;
   onDelete: (tenant: Tenant) => void;
 }
 
-export function TenantsTable({ data, onEdit, onDelete }: TenantsTableProps) {
+export function TenantsTable({
+  data,
+  isLoading,
+  onEdit,
+  onDelete,
+}: TenantsTableProps) {
   const { sorting, setSorting } = useTenantsStore();
   const columns = getTenantsColumns({ onEdit, onDelete });
 
@@ -29,12 +35,11 @@ export function TenantsTable({ data, onEdit, onDelete }: TenantsTableProps) {
     <DataTable
       columns={columns}
       data={data}
-      searchKey="code"
-      searchPlaceholder="코드, 이름으로 검색..."
-      showPagination={true}
-      pageSize={20}
+      isLoading={isLoading}
       sorting={sorting}
       onSortingChange={setSorting}
+      showPagination={true}
+      pageSize={20}
     />
   );
 }

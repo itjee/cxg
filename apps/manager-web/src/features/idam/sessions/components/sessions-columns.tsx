@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Ban, Trash2, Shield, CheckCircle } from "lucide-react";
 import { DataTableColumnHeader } from "@/components/data-table";
-import type { Session, SessionStatus, SessionType } from "../types";
+import type { Session, SessionStatus, SessionType } from "../types/sessions.types";
 
 /**
  * 상수 정의 - 상태별 색상
@@ -73,6 +73,8 @@ const formatDate = (dateString?: string) => {
 interface GetColumnsParams {
   onRevoke?: (session: Session) => void;
   onDelete?: (session: Session) => void;
+  currentPage?: number;
+  itemsPerPage?: number;
 }
 
 /**
@@ -81,17 +83,17 @@ interface GetColumnsParams {
 export const getSessionsColumns = ({
   onRevoke,
   onDelete,
+  currentPage = 0,
+  itemsPerPage = 20,
 }: GetColumnsParams = {}): ColumnDef<Session>[] => [
   // NO 컬럼
   {
     id: "rowNumber",
     header: () => <div className="text-center">NO</div>,
-    cell: ({ row, table }) => {
-      const pageIndex = table.getState().pagination.pageIndex;
-      const pageSize = table.getState().pagination.pageSize;
+    cell: ({ row }) => {
       return (
         <div className="text-center">
-          {pageIndex * pageSize + row.index + 1}
+          {currentPage * itemsPerPage + row.index + 1}
         </div>
       );
     },
@@ -102,42 +104,50 @@ export const getSessionsColumns = ({
   },
   // 세션 ID (짧게)
   {
-    accessorKey: "session_id",
+    accessorKey: "sessionId",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="세션 ID" />
     ),
-    cell: ({ row }) => (
-      <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
-        {(row.getValue("session_id") as string).slice(0, 16)}...
-      </code>
-    ),
+    cell: ({ row }) => {
+      const sessionId = row.getValue("sessionId") as string | undefined;
+      if (!sessionId) return <span className="text-muted-foreground">-</span>;
+      return (
+        <code className="text-sm bg-muted px-2 py-1 rounded font-mono">
+          {sessionId.slice(0, 16)}...
+        </code>
+      );
+    },
     meta: {
       filterable: false,
     },
   },
-  // 사용자 ID (짧게)
+  // 사용자명
   {
-    accessorKey: "user_id",
+    accessorKey: "username",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="사용자 ID" />
+      <DataTableColumnHeader column={column} title="사용자명" />
     ),
-    cell: ({ row }) => (
-      <div className="text-muted-foreground text-sm font-mono">
-        {(row.getValue("user_id") as string).slice(0, 8)}...
-      </div>
-    ),
+    cell: ({ row }) => {
+      const username = row.getValue("username") as string | undefined;
+      if (!username) return <span className="text-muted-foreground">-</span>;
+      return (
+        <div className="font-medium text-sm">
+          {username}
+        </div>
+      );
+    },
     meta: {
-      filterable: false,
+      filterable: true,
     },
   },
   // 세션 타입
   {
-    accessorKey: "session_type",
+    accessorKey: "sessionType",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="타입" />
     ),
     cell: ({ row }) => {
-      const type = row.getValue("session_type") as SessionType;
+      const type = row.getValue("sessionType") as SessionType;
       return (
         <Badge variant="outline" className={getSessionTypeColor(type)}>
           {formatSessionType(type)}
@@ -150,12 +160,12 @@ export const getSessionsColumns = ({
   },
   // IP 주소
   {
-    accessorKey: "ip_address",
+    accessorKey: "ipAddress",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="IP 주소" />
     ),
     cell: ({ row }) => (
-      <div className="font-mono text-base">{row.getValue("ip_address")}</div>
+      <div className="font-mono text-base">{row.getValue("ipAddress")}</div>
     ),
     meta: {
       filterable: true,
@@ -178,16 +188,17 @@ export const getSessionsColumns = ({
         </div>
       );
     },
+    enableSorting: false,
     meta: {
       filterable: true,
     },
   },
   // Session Agent (축약)
   {
-    accessorKey: "user_agent",
+    accessorKey: "userAgent",
     header: "Session Agent",
     cell: ({ row }) => {
-      const userAgent = row.getValue("user_agent") as string | undefined;
+      const userAgent = row.getValue("userAgent") as string | undefined;
       if (!userAgent) return <span className="text-muted-foreground">-</span>;
       const truncated =
         userAgent.length > 30 ? userAgent.slice(0, 30) + "..." : userAgent;
@@ -200,24 +211,26 @@ export const getSessionsColumns = ({
         </div>
       );
     },
+    enableSorting: false,
     meta: {
       filterable: true,
     },
   },
   // MFA 인증
   {
-    accessorKey: "mfa_verified",
+    accessorKey: "mfaVerified",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="MFA" />
     ),
     cell: ({ row }) => {
-      const verified = row.getValue("mfa_verified") as boolean;
+      const verified = row.getValue("mfaVerified") as boolean;
       return verified ? (
         <Shield className="h-4 w-4 text-green-600" />
       ) : (
         <span className="text-muted-foreground">-</span>
       );
     },
+    enableSorting: false,
     meta: {
       filterable: false,
     },
@@ -242,13 +255,13 @@ export const getSessionsColumns = ({
   },
   // 마지막 활동
   {
-    accessorKey: "last_activity_at",
+    accessorKey: "lastActivityAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="마지막 활동" />
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground text-base">
-        {formatDateTime(row.getValue("last_activity_at"))}
+        {formatDateTime(row.getValue("lastActivityAt") as string | undefined)}
       </div>
     ),
     meta: {
@@ -257,12 +270,13 @@ export const getSessionsColumns = ({
   },
   // 만료일
   {
-    accessorKey: "expires_at",
+    accessorKey: "expiresAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="만료일" />
     ),
     cell: ({ row }) => {
-      const expiresAt = row.getValue("expires_at") as string;
+      const expiresAt = row.getValue("expiresAt") as string | undefined;
+      if (!expiresAt) return <span className="text-muted-foreground">-</span>;
       const isExpired = new Date(expiresAt) < new Date();
       return (
         <div
@@ -278,13 +292,13 @@ export const getSessionsColumns = ({
   },
   // 등록일
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="등록일" />
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground">
-        {formatDate(row.getValue("created_at"))}
+        {formatDate(row.getValue("createdAt") as string | undefined)}
       </div>
     ),
     meta: {

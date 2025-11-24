@@ -26,18 +26,27 @@ import type {
   DeleteLoginLogVariables,
 } from "../types/login-logs.types";
 
+export interface LoginLogsConnection {
+  items: LoginLog[];
+  total: number;
+}
+
 // ========== useQuery Hooks ==========
 
 /**
- * 로그인 이력 목록 조회 (복수)
+ * 로그인 이력 목록 조회 (페이지네이션 포함)
  *
  * @param variables 목록 조회 파라미터 (LoginLogsQueryVariables)
  * @example
- * const { data, loading, error, refetch } = useLoginLogs({ limit: 20, offset: 0 });
+ * const { data, loading, error, refetch } = useLoginLogs({
+ *   limit: 20,
+ *   offset: 0,
+ *   search: "username"
+ * });
  */
 export function useLoginLogs(variables?: LoginLogsQueryVariables) {
   return useQuery<
-    { loginLogs: LoginLog[] },
+    { loginLogsConnection: LoginLogsConnection },
     LoginLogsQueryVariables
   >(GET_LOGIN_LOGS, {
     variables: {

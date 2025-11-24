@@ -1,6 +1,6 @@
 "use client";
 
-import { EntityDrawer } from "@/components/features";
+import { FormDrawer } from "@/components/features";
 import { InvoiceForm } from "./invoice-form";
 import { useInvoiceStore } from "../stores";
 import { useInvoice, useCreateInvoice, useUpdateInvoice } from "../hooks";
@@ -10,7 +10,7 @@ export function InvoiceEdit() {
   const { data: invoice } = useInvoice(editingId);
   const createMutation = useCreateInvoice();
   const updateMutation = useUpdateInvoice(editingId || '');
-  
+
   const isLoading = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = (formData: any) => {
@@ -26,7 +26,7 @@ export function InvoiceEdit() {
   };
 
   return (
-    <EntityDrawer
+    <FormDrawer
       open={formOpen}
       onOpenChange={closeForm}
       title={editingId ? '청구서 수정' : '청구서 생성'}
@@ -41,6 +41,6 @@ export function InvoiceEdit() {
         onCancel={closeForm}
         isLoading={isLoading}
       />
-    </EntityDrawer>
+    </FormDrawer>
   );
 }

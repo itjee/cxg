@@ -14,7 +14,7 @@ import type {
 } from "../types/login-logs.types";
 
 /**
- * 로그인 이력 목록 조회 (복수)
+ * 로그인 이력 목록 조회 (페이지네이션 포함)
  */
 export const GET_LOGIN_LOGS = gql`
   query GetLoginLogs(
@@ -24,48 +24,38 @@ export const GET_LOGIN_LOGS = gql`
     $attemptType: String
     $success: Boolean
     $userId: ID
-    $userType: String
-    $tenantContext: ID
-    $failureReason: String
-    $mfaUsed: Boolean
-    $ipAddress: String
     $startDate: String
     $endDate: String
   ) {
-    loginLogs(
+    loginLogsConnection(
       limit: $limit
       offset: $offset
       search: $search
       attemptType: $attemptType
       success: $success
       userId: $userId
-      userType: $userType
-      tenantContext: $tenantContext
-      failureReason: $failureReason
-      mfaUsed: $mfaUsed
-      ipAddress: $ipAddress
       startDate: $startDate
       endDate: $endDate
     ) {
-      id
-      userId
-      userType
-      tenantContext
-      username
-      attemptType
-      success
-      failureReason
-      sessionId
-      ipAddress
-      userAgent
-      countryCode
-      city
-      mfaUsed
-      mfaMethod
-      createdAt
-      updatedAt
-      createdBy
-      updatedBy
+      total
+      items {
+        id
+        userId
+        userType
+        tenantContext
+        username
+        attemptType
+        success
+        failureReason
+        sessionId
+        ipAddress
+        userAgent
+        countryCode
+        city
+        mfaUsed
+        mfaMethod
+        createdAt
+      }
     }
   }
 `;
@@ -92,9 +82,6 @@ export const GET_LOGIN_LOG = gql`
       mfaUsed
       mfaMethod
       createdAt
-      updatedAt
-      createdBy
-      updatedBy
     }
   }
 `;

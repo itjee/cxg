@@ -1,136 +1,154 @@
+"use client";
+
 /**
- * @file page.tsx
- * @description 테넌트 관리 페이지
+ * Tenants List Page
  *
- * Feature-Driven Architecture 패턴 적용
- * - Page Component: 데이터 로딩 및 상태 관리
- * - Feature Components: UI 렌더링
- * - Hooks: 서버 상태 (TanStack Query) & UI 상태 (Zustand)
- * - Services: API 호출
+ * Manager Tenants 목록 페이지
+ * Jira 스타일 필터링: 검색 + 필터 팝업
+ *
+ * 필터링 아키텍처:
+ * - searchText → search 파라미터로 백엔드 GraphQL 쿼리에 전송 (전체 필드 검색)
+ * - status → status 파라미터로 백엔드 GraphQL 쿼리에 전송 (필터)
+ * - 적용 버튼 클릭 시만 서버 쿼리 실행
  */
 
-'use client';
-
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 import {
   TenantsHeader,
   TenantsStats,
-  TenantsFilters,
+  TenantsFilter,
   TenantsTable,
   TenantsEdit,
   useTenants,
   useDeleteTenant,
   useTenantsStore,
-} from '@/features/tnnt/tenants';
-import type { Tenant } from '@/features/tnnt/tenants/types';
+  type Tenant,
+} from "@/features/tnnt/tenants";
 
 export default function TenantsPage() {
-  // UI 상태 (필터, 페이징, 모달)
+  // Store에서 UI 상태 가져오기
   const {
-    searchText,
-    selectedStatus,
-    selectedType,
-    selectedIsSuspended,
     currentPage,
     itemsPerPage,
+    setSearchText,
+    setCurrentPage,
     openForm,
   } = useTenantsStore();
 
-  // 서버 상태 (테넌트 목록) - TanStack Query
-  const {
-    data: tenantsResponse,
-    isLoading,
-    error,
-    refetch,
-  } = useTenants({
-    page: currentPage + 1, // 0-based to 1-based pagination conversion
-    pageSize: itemsPerPage,
-    search: searchText,
-    status: selectedStatus || undefined,
-    type: selectedType || undefined,
+  // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
+  const [searchFilters, setSearchFilters] = useState<
+    Record<
+      string,
+      string[] | null | { type: string; value: { from?: string; to?: string } }
+    >
+  >({
+    status: null,
   });
 
-  // 삭제 mutation
-  const deleteMutation = useDeleteTenant();
+  const [searchText, setSearchTextLocal] = useState("");
+  const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-  // 테넌트 목록 추출
-  const tenants = tenantsResponse?.items || [];
+  // 검색 텍스트 debounce (500ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchText(searchText);
+      setSearchText(searchText);
+    }, 500);
 
-  /**
-   * 테넌트 수정 핸들러
-   */
+    return () => clearTimeout(timer);
+  }, [searchText, setSearchText]);
+
+  // GraphQL 쿼리 - Apollo Hooks 사용
+  const {
+    data: tenantsResponse,
+    loading,
+    refetch,
+  } = useTenants({
+    limit: itemsPerPage,
+    offset: currentPage * itemsPerPage,
+    status: Array.isArray(searchFilters.status)
+      ? (searchFilters.status[0] as any)
+      : undefined,
+    search: debouncedSearchText || undefined,
+  });
+
+  // GraphQL 뮤테이션 - 삭제
+  const [deleteTenant] = useDeleteTenant();
+
+  // 테넌트 데이터
+  const tenants = tenantsResponse?.tenants || [];
+
+  const handleSearchTextChange = (text: string) => {
+    setSearchTextLocal(text);
+  };
+
+  const handleApplySearch = () => {
+    // 필터 적용 시 필요한 추가 작업이 있으면 여기에 작성
+    // 현재는 searchFilters 상태 업데이트로 useTenants가 자동으로 refetch됨
+  };
+
+  const handleClearAllSearchFilters = () => {
+    // 모든 필터 초기화
+    setSearchFilters({
+      status: null,
+    });
+    // 검색 텍스트도 초기화
+    setSearchText("");
+    setSearchTextLocal("");
+    setDebouncedSearchText("");
+    // 페이지 번호 초기화 (첫 페이지로)
+    setCurrentPage(0);
+  };
+
   const handleEdit = (tenant: Tenant) => {
+    // 선택된 테넌트 ID를 store에 저장하고 폼 오픈
     openForm(tenant.id);
   };
 
-  /**
-   * 테넌트 삭제 핸들러
-   */
-  const handleDelete = (tenant: Tenant) => {
-    if (confirm(`테넌트 "${tenant.name}"를 정말 삭제하시겠습니까?`)) {
-      deleteMutation.mutate(tenant.id, {
-        onSuccess: () => {
-          toast.success('테넌트가 삭제되었습니다');
-          refetch();
-        },
-        onError: (error) => {
-          toast.error(error.message || '테넌트 삭제에 실패했습니다');
-        },
-      });
+  const handleDelete = async (tenant: Tenant) => {
+    if (confirm(`테넌트 "${tenant.name}"를 삭제하시겠습니까?`)) {
+      const loadingToast = toast.loading("테넌트를 삭제 중입니다...");
+      try {
+        await deleteTenant({
+          variables: {
+            id: tenant.id,
+          },
+        });
+        toast.dismiss(loadingToast);
+        toast.success("테넌트가 삭제되었습니다");
+        refetch();
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        toast.error("테넌트 삭제에 실패했습니다");
+        console.error("Failed to delete tenant:", error);
+      }
     }
   };
 
-  // 로딩 상태
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4" />
-          <p className="text-muted-foreground">테넌트 목록을 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // 에러 상태
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <p className="text-destructive mb-4">
-            오류가 발생했습니다: {error.message}
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="text-primary hover:underline"
-          >
-            다시 시도
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6">로딩 중...</div>;
 
   return (
     <div className="space-y-6">
-      {/* 페이지 헤더 */}
-      <TenantsHeader onRefresh={() => refetch()} />
-
-      {/* 통계 카드 */}
+      <TenantsHeader onRefresh={refetch} />
       <TenantsStats data={tenants} />
 
-      {/* 검색 및 필터 */}
-      <TenantsFilters data={tenants} />
+      {/* Jira 스타일 검색 + 필터 팝업 */}
+      <TenantsFilter
+        searchText={searchText}
+        onSearchTextChange={handleSearchTextChange}
+        searchFilters={searchFilters}
+        onSearchFiltersChange={setSearchFilters}
+        onApplySearch={handleApplySearch}
+        onClearAllSearchFilters={handleClearAllSearchFilters}
+      />
 
-      {/* 데이터 테이블 */}
       <TenantsTable
         data={tenants}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
-
-      {/* 생성/수정 Drawer */}
-      <TenantsEdit />
+      <TenantsEdit onSuccess={() => refetch()} />
     </div>
   );
 }

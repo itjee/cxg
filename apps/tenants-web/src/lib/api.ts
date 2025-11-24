@@ -32,7 +32,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // 동적 import로 circular dependency 방지
       if (typeof window !== "undefined") {
-        const { useAuthStore } = await import("@/stores/auth.store");
+        const { useAuthStore } = await import("@/shared/stores/auth/auth.store");
         useAuthStore.getState().clearAuth();
         window.location.href = "/signin";
       }

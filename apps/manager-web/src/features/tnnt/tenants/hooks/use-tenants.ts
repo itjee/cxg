@@ -1,177 +1,159 @@
 /**
  * @file use-tenants.ts
- * @description 테넌트 관리 React Query hooks
- * 
- * 서버 상태를 관리하는 TanStack Query 훅 컬렉션
- * - useTenants: 목록 조회
- * - useTenant: 상세 조회
- * - useCreateTenant: 생성
- * - useUpdateTenant: 수정
- * - useDeleteTenant: 삭제
- * 
- * @example
- * ```typescript
- * const { data, isLoading } = useTenants({ page: 0, pageSize: 20 });
- * const createMutation = useCreateTenant();
- * createMutation.mutate({ name: '테넌트명' });
- * ```
+ * @description 테넌트 GraphQL Hooks
+ *
+ * Apollo Client를 사용한 GraphQL Hooks
+ * 타입 명명 규칙:
+ * - 단일 조회 Hook: useTenant(singular)
+ * - 목록 조회 Hook: useTenants(plural)
+ * - 생성/수정 Hook: useCreateTenant, useUpdateTenant (singular)
  */
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { tenantService } from "../services";
+import { useQuery, useMutation } from "@apollo/client";
+import {
+  GET_TENANTS,
+  GET_TENANT,
+  CREATE_TENANT,
+  UPDATE_TENANT,
+  DELETE_TENANT,
+} from "../graphql";
 import type {
   Tenant,
-  CreateTenantRequest,
-  UpdateTenantRequest,
-  TenantQueryParams,
-} from "../types";
+  TenantsQueryVariables,
+  TenantQueryVariables,
+  CreateTenantVariables,
+  UpdateTenantVariables,
+} from "../types/tenants.types";
+
+// ========== useQuery Hooks (조회) ==========
 
 /**
- * Query Key Factory
- */
-export const tenantsKeys = {
-  all: ["tenants"] as const,
-  lists: () => [...tenantsKeys.all, "list"] as const,
-  list: (params?: TenantQueryParams) => [...tenantsKeys.lists(), params] as const,
-  detail: (id: string) => [...tenantsKeys.all, "detail", id] as const,
-};
-
-/**
- * 목록 조회 훅
- * 
- * @param params - 쿼리 파라미터 (페이징, 검색, 필터)
- * @returns useQuery result
- * 
+ * 테넌트 목록 조회 (복수)
+ *
+ * @param variables - 목록 조회 파라미터 (limit, offset)
+ * @returns useQuery 결과 (data.tenants 배열)
+ *
  * @example
- * ```typescript
- * const { data, isLoading, error } = useTenants({ 
- *   page: 0, 
- *   pageSize: 20,
- *   search: '검색어',
- *   active: true
+ * const { data, loading, error, refetch } = useTenants({
+ *   limit: 20,
+ *   offset: 0
  * });
- * ```
+ * // data.tenants는 Tenant[] 배열
  */
-export function useTenants(params?: TenantQueryParams) {
-  return useQuery({
-    queryKey: tenantsKeys.list(params),
-    queryFn: () => tenantService.listTenants(params),
-    staleTime: 5 * 60 * 1000, // 5분
-    gcTime: 10 * 60 * 1000, // 10분
+export function useTenants(variables?: TenantsQueryVariables) {
+  return useQuery<
+    { tenants: Tenant[] },
+    TenantsQueryVariables
+  >(GET_TENANTS, {
+    variables: {
+      limit: 20,
+      offset: 0,
+      ...variables,
+    },
+    fetchPolicy: "cache-and-network",
   });
 }
 
 /**
- * 상세 조회 훅
- * 
- * @param id - 테넌트 ID
- * @returns useQuery result
- * 
+ * 테넌트 상세 조회 (단수)
+ *
+ * @param id - 조회할 테넌트 ID
+ * @returns useQuery 결과 (data.tenant 단일 객체)
+ *
  * @example
- * ```typescript
- * const { data, isLoading } = useTenant('uuid');
- * const tenant = data?.data;
- * ```
+ * const { data, loading, error } = useTenant("tenant-id");
+ * // data.tenant는 Tenant 단일 객체
  */
-export function useTenant(id: string | null | undefined) {
-  return useQuery({
-    queryKey: tenantsKeys.detail(id!),
-    queryFn: () => tenantService.getTenant(id!),
-    enabled: !!id,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+export function useTenant(id: string) {
+  return useQuery<{ tenant: Tenant }, TenantQueryVariables>(
+    GET_TENANT,
+    {
+      variables: { id },
+      skip: !id,
+    }
+  );
 }
 
+// ========== useMutation Hooks (변경) ==========
+
 /**
- * 생성 훅
- * 
- * @returns useMutation result
- * 
+ * 테넌트 생성 (단수)
+ *
+ * @returns useMutation 튜플 [mutation 함수, result 객체]
+ *
  * @example
- * ```typescript
- * const createMutation = useCreateTenant();
- * 
- * createMutation.mutate({
- *   name: '테넌트명',
- *   description: '설명'
- * }, {
- *   onSuccess: () => console.log('생성 성공'),
- *   onError: (error) => console.error('생성 실패', error)
+ * const [createTenant, { loading }] = useCreateTenant();
+ * await createTenant({
+ *   variables: {
+ *     input: { code, name, domain, email, ... }
+ *   }
  * });
- * ```
  */
 export function useCreateTenant() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: CreateTenantRequest) => tenantService.createTenant(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error("Failed to create tenant:", error);
-    },
+  return useMutation<
+    { tenants: { createTenant: Tenant } },
+    CreateTenantVariables
+  >(CREATE_TENANT, {
+    refetchQueries: [
+      {
+        query: GET_TENANTS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 수정 훅
- * 
- * @param id - 테넌트 ID
- * @returns useMutation result
- * 
+ * 테넌트 수정 (단수)
+ *
+ * @returns useMutation 튜플 [mutation 함수, result 객체]
+ *
  * @example
- * ```typescript
- * const updateMutation = useUpdateTenant('uuid');
- * 
- * updateMutation.mutate({
- *   name: '변경된 이름'
- * }, {
- *   onSuccess: () => console.log('수정 성공')
+ * const [updateTenant, { loading }] = useUpdateTenant();
+ * await updateTenant({
+ *   variables: {
+ *     id: "tenant-id",
+ *     input: { name, email, status, ... }
+ *   }
  * });
- * ```
  */
-export function useUpdateTenant(id: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: UpdateTenantRequest) => tenantService.updateTenant(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantsKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: tenantsKeys.detail(id) });
-    },
-    onError: (error) => {
-      console.error(`Failed to update tenant ${id}:`, error);
-    },
+export function useUpdateTenant() {
+  return useMutation<
+    { tenants: { updateTenant: Tenant } },
+    UpdateTenantVariables
+  >(UPDATE_TENANT, {
+    refetchQueries: [
+      {
+        query: GET_TENANTS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }
 
 /**
- * 삭제 훅
- * 
- * @param id - 테넌트 ID
- * @returns useMutation result
- * 
+ * 테넌트 삭제 (단수)
+ *
+ * @returns useMutation 튜플 [mutation 함수, result 객체]
+ *
  * @example
- * ```typescript
- * const deleteMutation = useDeleteTenant('uuid');
- * 
- * deleteMutation.mutate(undefined, {
- *   onSuccess: () => console.log('삭제 성공')
+ * const [deleteTenant, { loading }] = useDeleteTenant();
+ * await deleteTenant({
+ *   variables: {
+ *     id: "tenant-id"
+ *   }
  * });
- * ```
  */
-export function useDeleteTenant(id: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => tenantService.deleteTenant(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: tenantsKeys.lists() });
-    },
-    onError: (error) => {
-      console.error(`Failed to delete tenant ${id}:`, error);
-    },
+export function useDeleteTenant() {
+  return useMutation<
+    { tenants: { deleteTenant: { success: boolean; message: string } } },
+    { id: string }
+  >(DELETE_TENANT, {
+    refetchQueries: [
+      {
+        query: GET_TENANTS,
+        variables: { limit: 20, offset: 0 },
+      },
+    ],
   });
 }

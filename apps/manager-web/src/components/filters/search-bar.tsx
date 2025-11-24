@@ -14,7 +14,7 @@
  * - 둘 다 서버로 전송되는 "검색 조건"
  */
 
-import { useCallback, ReactNode, useMemo } from "react";
+import { useCallback, ReactNode, useMemo, useState } from "react";
 import { Search, Filter, MoreHorizontal, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,9 @@ import { Badge } from "@/components/ui/badge";
  * - createdAt: { type: "range", value: { from: "2025-01-01" } } → 1개
  * - 총: 4개
  */
-function countActiveSearchFilters(searchFilters: Record<string, any>): number {
+function countActiveSearchFilters(searchFilters: Record<string, any> | null | undefined): number {
+  if (!searchFilters) return 0;
+
   return Object.values(searchFilters).reduce((total, value) => {
     if (Array.isArray(value) && value.length > 0) {
       return total + value.length;
@@ -98,6 +100,9 @@ export function SearchBar({
   searchInputClassName = "w-80",
   customButtons,
 }: SearchBarProps) {
+  // 로컬 입력값 상태 (Enter 키 또는 확정 버튼으로만 부모에 전달)
+  const [localInputValue, setLocalInputValue] = useState(searchText);
+
   // 활성화된 검색 필터 개수 계산 (메모이제이션)
   const activeSearchFilterCount = useMemo(
     () => countActiveSearchFilters(searchFilters),
@@ -106,8 +111,24 @@ export function SearchBar({
 
   // 검색 텍스트 초기화
   const handleClearSearchText = useCallback(() => {
+    setLocalInputValue("");
     onSearchTextChange("");
   }, [onSearchTextChange]);
+
+  // Enter 키로 검색 실행
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "Enter") {
+        onSearchTextChange(localInputValue);
+      }
+    },
+    [localInputValue, onSearchTextChange]
+  );
+
+  // 입력값 변경 (부모로 전달하지 않음)
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalInputValue(e.target.value);
+  }, []);
 
   return (
     <div className="flex items-center gap-2">
@@ -117,12 +138,13 @@ export function SearchBar({
         <Input
           type="text"
           placeholder={searchPlaceholder}
-          value={searchText}
-          onChange={(e) => onSearchTextChange(e.target.value)}
+          value={localInputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
           className="pl-10 rounded-md"
         />
         {/* 검색 텍스트 초기화 버튼 */}
-        {searchText && (
+        {localInputValue && (
           <button
             onClick={handleClearSearchText}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"

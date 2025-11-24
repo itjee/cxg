@@ -14,6 +14,8 @@ Query = ManagerQuery
 Mutation = ManagerMutation
 
 # Manager 시스템 전용 스키마
+# Strawberry의 기본값(auto_camel_case=True)을 사용하여
+# Python의 snake_case를 GraphQL의 camelCase로 자동 변환
 manager_schema = strawberry.Schema(
     query=Query,
     mutation=Mutation,

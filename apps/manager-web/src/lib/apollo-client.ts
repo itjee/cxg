@@ -16,11 +16,13 @@ const GRAPHQL_ENDPOINT = process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://localhos
  */
 const REFRESH_TOKEN_MUTATION = gql`
   mutation RefreshToken($input: RefreshTokenInput!) {
-    refreshToken(input: $input) {
-      accessToken
-      refreshToken
-      tokenType
-      expiresIn
+    auth {
+      refreshToken(input: $input) {
+        accessToken
+        refreshToken
+        tokenType
+        expiresIn
+      }
     }
   }
 `;
@@ -71,6 +73,8 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
     if (typeof window === 'undefined') return null;
 
     const refreshToken = localStorage.getItem('refresh_token');
+    const currentAccessToken = localStorage.getItem('access_token');
+
     if (!refreshToken) {
       console.warn('No refresh token available');
       return null;
@@ -80,15 +84,18 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': currentAccessToken ? `Bearer ${currentAccessToken}` : '',
       },
       body: JSON.stringify({
         query: `
           mutation RefreshToken($input: RefreshTokenInput!) {
-            refreshToken(input: $input) {
-              accessToken
-              refreshToken
-              tokenType
-              expiresIn
+            auth {
+              refreshToken(input: $input) {
+                accessToken
+                refreshToken
+                tokenType
+                expiresIn
+              }
             }
           }
         `,
@@ -105,7 +112,7 @@ async function refreshAccessToken(): Promise<{ accessToken: string; refreshToken
       return null;
     }
 
-    const { accessToken, refreshToken: newRefreshToken } = data.data.refreshToken;
+    const { accessToken, refreshToken: newRefreshToken } = data.data.auth.refreshToken;
 
     // 새 토큰 저장 (localStorage + Cookie)
     localStorage.setItem('access_token', accessToken);

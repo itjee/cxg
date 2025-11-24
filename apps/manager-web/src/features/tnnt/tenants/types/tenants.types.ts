@@ -28,25 +28,36 @@ export type BizType = "C" | "S"; // C: 법인, S: 개인
 
 /**
  * 테넌트 정보 (DB 스키마 기반: tnnt.tenants)
+ *
+ * GraphQL API는 camelCase를 반환하며, 기존 코드와의 호환성을 위해
+ * snake_case와 camelCase 두 형식의 필드를 모두 지원합니다.
  */
 export interface Tenant {
   // 기본 식별자 및 감사 필드
   id: string;
-  created_at: string;
-  created_by?: string;
-  updated_at?: string;
-  updated_by?: string;
+  created_at?: string; // snake_case (legacy)
+  createdAt?: string; // camelCase (GraphQL)
+  created_by?: string; // snake_case (legacy)
+  createdBy?: string; // camelCase (GraphQL)
+  updated_at?: string; // snake_case (legacy)
+  updatedAt?: string; // camelCase (GraphQL)
+  updated_by?: string; // snake_case (legacy)
+  updatedBy?: string; // camelCase (GraphQL)
 
   // 테넌트 기본 정보
   code: string; // 테넌트 식별 코드 (영문+숫자 조합)
   name: string; // 테넌트(회사)명
   type: TenantType; // 테넌트 유형
 
-  // 사업자 등록 정보
-  biz_no?: string; // 사업자등록번호
-  biz_name?: string; // 상호(법인명)
-  biz_type?: BizType; // 사업자구분 (C: 법인, S: 개인)
-  ceo_name?: string; // 대표자명
+  // 사업자 등록 정보 (camelCase: GraphQL, snake_case: legacy)
+  biz_no?: string; // snake_case (legacy)
+  bizNo?: string; // camelCase (GraphQL)
+  biz_name?: string; // snake_case (legacy)
+  bizName?: string; // camelCase (GraphQL)
+  biz_type?: BizType; // snake_case (legacy)
+  bizType?: BizType; // camelCase (GraphQL)
+  ceo_name?: string; // snake_case (legacy)
+  ceoName?: string; // camelCase (GraphQL)
   biz_kind?: string; // 업태
   biz_item?: string; // 종목
 
@@ -54,12 +65,16 @@ export interface Tenant {
   postcode?: string; // 우편번호
   address1?: string; // 주소1 (기본주소)
   address2?: string; // 주소2 (상세주소)
-  phone_no?: string; // 대표 전화번호
-  employee_count?: number; // 직원 수
+  phone_no?: string; // snake_case (legacy)
+  phoneNo?: string; // camelCase (GraphQL)
+  employee_count?: number; // snake_case (legacy)
+  employeeCount?: number; // camelCase (GraphQL)
 
-  // 계약 정보
-  start_date: string; // 계약 시작일
-  close_date?: string; // 계약 종료일 (NULL: 무기한)
+  // 계약 정보 (camelCase: GraphQL, snake_case: legacy)
+  start_date?: string; // snake_case (legacy)
+  startDate?: string; // camelCase (GraphQL)
+  close_date?: string; // snake_case (legacy)
+  closeDate?: string; // camelCase (GraphQL)
 
   // 지역화 설정
   timezone?: string; // 시간대
@@ -69,12 +84,14 @@ export interface Tenant {
   // 메타데이터
   extra_data?: Record<string, unknown>; // JSON 형태의 추가 메타정보
 
-  // 상태 관리
+  // 상태 관리 (camelCase: GraphQL, snake_case: legacy)
   status: TenantStatus; // 테넌트 상태
-  is_suspended: boolean; // 일시 중단 여부
-  suspended_reason?: string; // 중단 사유
+  is_suspended?: boolean; // snake_case (legacy)
+  isSuspended?: boolean; // camelCase (GraphQL)
+  suspended_reason?: string; // snake_case (legacy)
+  suspendedReason?: string; // camelCase (GraphQL)
   suspended_date?: string; // 중단 일시
-  is_deleted: boolean; // 논리적 삭제 플래그
+  is_deleted?: boolean; // 논리적 삭제 플래그
 }
 
 /**
@@ -169,4 +186,42 @@ export interface TenantQueryParams {
   status?: TenantStatus;
   type?: TenantType;
   is_suspended?: boolean;
+}
+
+// ===== GraphQL 타입 (Apollo Client 용) =====
+
+/**
+ * 테넌트 GraphQL 쿼리 변수 (복수)
+ * @plural 목록 조회 파라미터
+ */
+export interface TenantsQueryVariables {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  status?: TenantStatus;
+  type?: TenantType;
+  is_suspended?: boolean;
+}
+
+/**
+ * 테넌트 GraphQL 쿼리 변수 (단수)
+ * @singular 단수 조회 파라미터
+ */
+export interface TenantQueryVariables {
+  id: string;
+}
+
+/**
+ * 테넌트 생성 뮤테이션 변수 (단수)
+ */
+export interface CreateTenantVariables {
+  input: CreateTenantRequest;
+}
+
+/**
+ * 테넌트 수정 뮤테이션 변수 (단수)
+ */
+export interface UpdateTenantVariables {
+  id: string;
+  input: UpdateTenantRequest;
 }

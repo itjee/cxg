@@ -24,7 +24,8 @@ export type FieldInputType =
   | "textarea"
   | "select"
   | "checkbox"
-  | "radio";
+  | "radio"
+  | "date";
 
 /**
  * 선택 필드의 옵션

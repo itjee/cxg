@@ -6,6 +6,7 @@ from .auth.mutations import ManagerAuthMutations
 from .auth.queries import ManagerAuthQueries
 from .auth.types import ManagerAuthUser
 from .dashboard import Activity, DashboardQueries, DashboardStats, TenantGrowthData
+from .idam.login_logs import ManagerLoginLog, ManagerLoginLogsConnection, ManagerLoginLogQueries
 from .idam.permissions import (
     ManagerPermission,
     ManagerPermissionMutations,
@@ -17,9 +18,10 @@ from .idam.role_permissions import (
     ManagerRolePermissionQueries,
 )
 from .idam.roles import ManagerRole, ManagerRoleMutations, ManagerRoleQueries
-from .idam.sessions import ManagerSession, ManagerSessionMutations, ManagerSessionQueries
+from .idam.sessions import ManagerSession, ManagerSessionList, ManagerSessionMutations, ManagerSessionQueries
 from .idam.user_roles import ManagerUserRole, ManagerUserRoleMutations, ManagerUserRoleQueries
 from .idam.users import ManagerUser, ManagerUserMutations, ManagerUserQueries
+from .tnnt.tenants import ManagerTenant, ManagerTenantMutations, ManagerTenantQueries
 
 
 # NOTE: ManagerRoleMutations, ManagerPermissionMutations, ManagerRolePermissionMutations, and UserRoleMutations
@@ -81,8 +83,48 @@ class ManagerQuery:
         offset: int = 0,
         user_id: strawberry.ID | None = None,
         status: str | None = None,
-    ) -> "list[ManagerSession]":
-        return await ManagerSessionQueries.sessions(self, info, limit, offset, user_id, status)
+        session_type: str | None = None,
+    ) -> ManagerSessionList:
+        return await ManagerSessionQueries.sessions(self, info, limit, offset, user_id, status, session_type)
+
+    # IDAM - Login Logs
+    @strawberry.field(description="로그인 이력 조회 (ID)")
+    async def login_log(self, info, id: strawberry.ID) -> "ManagerLoginLog | None":
+        return await ManagerLoginLogQueries().login_log(info, id)
+
+    @strawberry.field(description="로그인 이력 목록 조회 (페이지네이션 포함)")
+    async def login_logs_connection(
+        self,
+        info,
+        limit: int = 50,
+        offset: int = 0,
+        search: str | None = None,
+        user_id: strawberry.ID | None = None,
+        attempt_type: str | None = None,
+        success: bool | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> ManagerLoginLogsConnection:
+        return await ManagerLoginLogQueries().login_logs_connection(
+            info, limit, offset, search, user_id, attempt_type, success, start_date, end_date
+        )
+
+    @strawberry.field(description="로그인 이력 목록 조회 (레거시)")
+    async def login_logs(
+        self,
+        info,
+        limit: int = 50,
+        offset: int = 0,
+        search: str | None = None,
+        user_id: strawberry.ID | None = None,
+        attempt_type: str | None = None,
+        success: bool | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> "list[ManagerLoginLog]":
+        return await ManagerLoginLogQueries().login_logs(
+            info, limit, offset, search, user_id, attempt_type, success, start_date, end_date
+        )
 
     # IDAM - Roles
     @strawberry.field(description="역할 조회 (ID)")
@@ -160,6 +202,26 @@ class ManagerQuery:
     async def users_by_role(self, info, role_id: strawberry.ID) -> "list[ManagerUser]":
         return await ManagerUserRoleQueries.users_by_role(self, info, role_id)
 
+    # TNNT - Tenants
+    @strawberry.field(description="테넌트 조회 (ID)")
+    async def tenant(self, info, id: strawberry.ID) -> "ManagerTenant | None":
+        return await ManagerTenantQueries().tenant(info, id)
+
+    @strawberry.field(description="테넌트 목록 조회")
+    async def tenants(
+        self,
+        info,
+        limit: int = 20,
+        offset: int = 0,
+        search: str | None = None,
+        status: str | None = None,
+        type: str | None = None,
+        is_suspended: bool | None = None,
+    ) -> "list[ManagerTenant]":
+        return await ManagerTenantQueries().tenants(
+            info, limit, offset, search, status, type, is_suspended
+        )
+
 
 @strawberry.type(description="Manager 시스템 Mutation")
 class ManagerMutation:
@@ -203,6 +265,11 @@ class ManagerMutation:
     def user_roles(self) -> ManagerUserRoleMutations:
         """사용자-역할 관련 Mutation (할당, 제거 등)"""
         return ManagerUserRoleMutations()
+
+    @strawberry.field(description="테넌트 관련 Mutation")
+    def tenants(self) -> ManagerTenantMutations:
+        """테넌트 관련 Mutation (생성, 수정 등)"""
+        return ManagerTenantMutations()
 
 
 __all__ = ["ManagerQuery", "ManagerMutation"]

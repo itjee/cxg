@@ -7,6 +7,7 @@ UUID, DateTime, Decimal 등 Python 타입을 GraphQL 스칼라로 변환합니�
 from datetime import datetime
 from decimal import Decimal
 from uuid import UUID
+import json
 
 import strawberry
 
@@ -111,3 +112,31 @@ class DecimalScalar:
     """
 
     __annotations__ = {"__origin__": Decimal}
+
+
+@strawberry.scalar(
+    serialize=lambda v: v if isinstance(v, dict) else json.loads(v) if isinstance(v, str) else v,
+    parse_value=lambda v: v if isinstance(v, dict) else json.loads(v) if isinstance(v, str) else v,
+    description="JSON 스칼라 타입",
+)
+class JSONScalar:
+    """
+    JSON 스칼라 타입
+
+    Python의 dict, list 등을 JSON으로 직렬화할 수 있습니다.
+
+    특징:
+        - 직렬화: dict/list -> JSON 객체/배열
+        - 파싱: JSON -> dict/list
+        - 유연한 데이터 구조 지원
+
+    사용 예:
+        @strawberry.type
+        class Config:
+            metadata: JSONScalar | None
+
+    Note:
+        - JSON 직렬화 가능한 모든 Python 객체 지원
+    """
+
+    __annotations__ = {"__origin__": dict}

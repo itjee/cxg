@@ -7,28 +7,36 @@
 from uuid import UUID
 
 import strawberry
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.graphql.common import get_by_id, get_list
 from src.models.manager.idam.session import Session as SessionModel
+from src.models.manager.idam.user import User as UserModel
 
-from .types import ManagerSession
+from .types import ManagerSession, ManagerSessionList
 
 
-def manager_session_to_graphql(session: SessionModel) -> "ManagerSession":
+async def manager_session_to_graphql(session: SessionModel, db: AsyncSession) -> "ManagerSession":
     """
     SessionModel(DB 모델)을 ManagerSession(GraphQL 타입)으로 변환
 
     Args:
         session: 데이터베이스 세션 모델
+        db: 데이터베이스 세션 (username 조회용)
 
     Returns:
         ManagerSession: GraphQL 세션 타입
     """
+    # 사용자명 조회
+    username = ""
+    result = await db.execute(select(UserModel.username).where(UserModel.id == session.user_id))
+    username = result.scalar_one_or_none() or ""
+
     return ManagerSession(
         id=strawberry.ID(str(session.id)),
         session_id=session.session_id,
         user_id=session.user_id,
+        username=username,
         tenant_context=session.tenant_context,
         session_type=session.session_type,
         fingerprint=session.fingerprint,
@@ -57,12 +65,13 @@ async def get_manager_session_by_id(db: AsyncSession, session_id: UUID) -> "Mana
     Returns:
         ManagerSession: 세션 객체 또는 None
     """
-    return await get_by_id(
-        db=db,
-        model_class=SessionModel,
-        id_=session_id,
-        to_graphql=manager_session_to_graphql,
-    )
+    result = await db.execute(select(SessionModel).where(SessionModel.id == session_id))
+    session = result.scalar_one_or_none()
+
+    if not session:
+        return None
+
+    return await manager_session_to_graphql(session, db)
 
 
 async def get_manager_sessions(
@@ -71,9 +80,10 @@ async def get_manager_sessions(
     offset: int = 0,
     user_id: UUID | None = None,
     status: str | None = None,
-) -> "list[ManagerSession]":
+    session_type: str | None = None,
+) -> "tuple[list[ManagerSession], int]":
     """
-    Manager 세션 목록 조회
+    Manager 세션 목록 조회 (전체 개수 포함)
 
     Args:
         db: 데이터베이스 세션
@@ -81,27 +91,41 @@ async def get_manager_sessions(
         offset: 건너뛸 개수 (페이징용)
         user_id: 사용자 ID 필터 (선택)
         status: 상태 필터 (선택)
+        session_type: 세션 타입 필터 (선택)
 
     Returns:
-        list[ManagerSession]: 세션 객체 리스트
+        tuple: (세션 객체 리스트, 전체 세션 개수)
     """
     # 필터 조건 구성
-    filters = {}
+    base_query = select(SessionModel)
     if user_id:
-        filters["user_id"] = user_id
+        base_query = base_query.where(SessionModel.user_id == user_id)
     if status:
-        filters["status"] = status
+        base_query = base_query.where(SessionModel.status == status)
+    if session_type:
+        base_query = base_query.where(SessionModel.session_type == session_type)
 
-    # 공통 모듈을 사용한 리스트 조회
-    return await get_list(
-        db=db,
-        model_class=SessionModel,
-        to_graphql=manager_session_to_graphql,
-        limit=limit,
-        offset=offset,
-        order_by=SessionModel.created_at.desc(),  # 최신 순으로 정렬
-        **filters,
-    )
+    # 1. 전체 개수 조회
+    count_query = select(func.count(SessionModel.id)).select_from(SessionModel)
+    if user_id:
+        count_query = count_query.where(SessionModel.user_id == user_id)
+    if status:
+        count_query = count_query.where(SessionModel.status == status)
+    if session_type:
+        count_query = count_query.where(SessionModel.session_type == session_type)
+
+    count_result = await db.execute(count_query)
+    total_count = count_result.scalar() or 0
+
+    # 2. 페이징된 데이터 조회
+    query = base_query.order_by(SessionModel.created_at.desc()).limit(limit).offset(offset)
+    result = await db.execute(query)
+    sessions = result.scalars().all()
+
+    # 3. 각 세션을 GraphQL 타입으로 변환 (username 포함)
+    graphql_sessions = [await manager_session_to_graphql(session, db) for session in sessions]
+
+    return graphql_sessions, total_count
 
 
 @strawberry.type
@@ -134,7 +158,8 @@ class ManagerSessionQueries:
         offset: int = 0,
         user_id: strawberry.ID | None = None,
         status: str | None = None,
-    ) -> "list[ManagerSession]":
+        session_type: str | None = None,
+    ) -> "ManagerSessionList":
         """
         세션 목록 조회 (페이징 및 필터링 지원)
 
@@ -143,10 +168,14 @@ class ManagerSessionQueries:
             offset: 건너뛸 개수
             user_id: 사용자 ID 필터
             status: 상태 필터
+            session_type: 세션 타입 필터 (WEB, API, MOBILE)
 
         Returns:
-            list[ManagerSession]: 세션 객체 리스트
+            ManagerSessionList: 세션 목록과 전체 개수
         """
         db = info.context.manager_db_session
         user_uuid = UUID(user_id) if user_id else None
-        return await get_manager_sessions(db, limit, offset, user_uuid, status)
+        sessions, total = await get_manager_sessions(
+            db, limit, offset, user_uuid, status, session_type
+        )
+        return ManagerSessionList(items=sessions, total=total)

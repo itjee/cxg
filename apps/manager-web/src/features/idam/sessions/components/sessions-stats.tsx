@@ -8,13 +8,7 @@
  */
 
 import { useMemo } from "react";
-import {
-  Activity,
-  CheckCircle,
-  Clock,
-  XCircle,
-  Shield,
-} from "lucide-react";
+import { Activity, CheckCircle, Clock, XCircle, Shield } from "lucide-react";
 import { StatsCards } from "@/components/stats/stats-cards";
 import type { Session } from "../types/sessions.types";
 
@@ -48,8 +42,6 @@ export function SessionsStats({ data }: SessionsStatsProps) {
       total > 0 ? ((active / total) * 100).toFixed(1) : "0.0";
     const expiredPercentage =
       total > 0 ? ((expired / total) * 100).toFixed(1) : "0.0";
-    const revokedPercentage =
-      total > 0 ? ((revoked / total) * 100).toFixed(1) : "0.0";
     const mfaVerifiedPercentage =
       total > 0 ? ((mfaVerified / total) * 100).toFixed(1) : "0.0";
 
@@ -74,13 +66,6 @@ export function SessionsStats({ data }: SessionsStatsProps) {
         description: `전체의 ${expiredPercentage}%`,
         icon: <Clock className="h-5 w-5" />,
         color: "default" as const,
-      },
-      {
-        title: "취소됨",
-        value: revoked.toString(),
-        description: `전체의 ${revokedPercentage}%`,
-        icon: <XCircle className="h-5 w-5" />,
-        color: "danger" as const,
       },
       {
         title: "MFA 인증",

@@ -14,27 +14,29 @@ import type { SessionsQueryVariables, SessionQueryVariables } from "../types/ses
  * 세션 목록 조회 (복수)
  */
 export const GET_SESSIONS = gql`
-  query GetSessions($limit: Int, $offset: Int, $status: String, $search: String, $userId: ID, $sessionType: String, $tenantContext: ID, $fingerprint: String, $ipAddress: String, $mfaVerified: Boolean) {
-    sessions(limit: $limit, offset: $offset, status: $status, search: $search, userId: $userId, sessionType: $sessionType, tenantContext: $tenantContext, fingerprint: $fingerprint, ipAddress: $ipAddress, mfaVerified: $mfaVerified) {
-      id
-      sessionId
-      userId
-      tenantContext
-      sessionType
-      fingerprint
-      userAgent
-      ipAddress
-      countryCode
-      city
-      status
-      expiresAt
-      lastActivityAt
-      mfaVerified
-      mfaVerifiedAt
-      createdAt
-      updatedAt
-      createdBy
-      updatedBy
+  query GetSessions($limit: Int, $offset: Int, $status: String, $userId: ID, $sessionType: String) {
+    sessions(limit: $limit, offset: $offset, status: $status, userId: $userId, sessionType: $sessionType) {
+      total
+      items {
+        id
+        sessionId
+        userId
+        username
+        tenantContext
+        sessionType
+        fingerprint
+        userAgent
+        ipAddress
+        countryCode
+        city
+        status
+        expiresAt
+        lastActivityAt
+        mfaVerified
+        mfaVerifiedAt
+        createdAt
+        updatedAt
+      }
     }
   }
 `;
@@ -48,6 +50,7 @@ export const GET_SESSION = gql`
       id
       sessionId
       userId
+      username
       tenantContext
       sessionType
       fingerprint
@@ -62,8 +65,6 @@ export const GET_SESSION = gql`
       mfaVerifiedAt
       createdAt
       updatedAt
-      createdBy
-      updatedBy
     }
   }
 `;

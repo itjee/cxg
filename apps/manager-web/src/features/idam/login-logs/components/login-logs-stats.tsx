@@ -1,106 +1,103 @@
-'use client';
+"use client";
 
 /**
  * @file login-logs-stats.tsx
  * @description 로그인 이력 통계 카드 컴포넌트
+ *
+ * StatsCards 컴포넌트를 사용하여 주요 지표 표시
  */
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, CheckCircle, XCircle, Shield, Users, Lock } from 'lucide-react';
+import { useMemo } from "react";
+import { Activity, CheckCircle, XCircle, Lock, Shield, Users } from "lucide-react";
+import { StatsCards } from "@/components/stats/stats-cards";
+import type { LoginLog } from "../types/login-logs.types";
 
-interface LoginLogsStatsProps {
-  total: number;
-  successCount: number;
-  failedCount: number;
-  mfaUsedCount: number;
-  lockedCount: number;
-  uniqueUsers: number;
+interface StatCardData {
+  title: string;
+  value: string | number;
+  description?: string;
+  icon?: React.ReactNode;
+  trend?: {
+    value: number;
+    isPositive: boolean;
+    label?: string;
+  };
+  color?: "default" | "primary" | "success" | "warning" | "danger";
 }
 
-export function LoginLogsStats({ 
-  total, 
-  successCount, 
-  failedCount, 
-  mfaUsedCount,
-  lockedCount,
-  uniqueUsers,
-}: LoginLogsStatsProps) {
-  return (
-    <div className="grid gap-4 md:grid-cols-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">전체 이력</CardTitle>
-          <Activity className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{total}</div>
-        </CardContent>
-      </Card>
+interface LoginLogsStatsProps {
+  data: LoginLog[];
+}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">성공</CardTitle>
-          <CheckCircle className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{successCount}</div>
-          <p className="text-sm text-muted-foreground">
-            {total > 0 ? ((successCount / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+export function LoginLogsStats({ data }: LoginLogsStatsProps) {
+  const stats: StatCardData[] = useMemo(() => {
+    const total = data.length;
+    const successCount = data.filter((log) => log.success).length;
+    const failedCount = data.filter((log) => !log.success).length;
+    const mfaUsedCount = data.filter((log) => log.mfaUsed).length;
+    const lockedCount = data.filter((log) => log.attemptType === "LOCKED").length;
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">실패</CardTitle>
-          <XCircle className="h-4 w-4 text-red-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{failedCount}</div>
-          <p className="text-sm text-muted-foreground">
-            {total > 0 ? ((failedCount / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+    // 고유 사용자 수 계산
+    const uniqueUserIds = new Set(
+      data.filter((log) => log.userId).map((log) => log.userId)
+    );
+    const uniqueUsers = uniqueUserIds.size;
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">MFA 사용</CardTitle>
-          <Shield className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{mfaUsedCount}</div>
-          <p className="text-sm text-muted-foreground">
-            {total > 0 ? ((mfaUsedCount / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+    // 각 항목의 비율 계산
+    const successPercentage =
+      total > 0 ? ((successCount / total) * 100).toFixed(1) : "0.0";
+    const failedPercentage =
+      total > 0 ? ((failedCount / total) * 100).toFixed(1) : "0.0";
+    const mfaUsedPercentage =
+      total > 0 ? ((mfaUsedCount / total) * 100).toFixed(1) : "0.0";
+    const lockedPercentage =
+      total > 0 ? ((lockedCount / total) * 100).toFixed(1) : "0.0";
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">계정 잠김</CardTitle>
-          <Lock className="h-4 w-4 text-orange-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{lockedCount}</div>
-          <p className="text-sm text-muted-foreground">
-            {total > 0 ? ((lockedCount / total) * 100).toFixed(1) : 0}%
-          </p>
-        </CardContent>
-      </Card>
+    return [
+      {
+        title: "전체 이력",
+        value: total.toString(),
+        description: "총 로그인 이력 수",
+        icon: <Activity className="h-5 w-5" />,
+        color: "primary" as const,
+      },
+      {
+        title: "성공",
+        value: successCount.toString(),
+        description: `전체의 ${successPercentage}%`,
+        icon: <CheckCircle className="h-5 w-5" />,
+        color: "success" as const,
+      },
+      {
+        title: "실패",
+        value: failedCount.toString(),
+        description: `전체의 ${failedPercentage}%`,
+        icon: <XCircle className="h-5 w-5" />,
+        color: "danger" as const,
+      },
+      {
+        title: "계정 잠김",
+        value: lockedCount.toString(),
+        description: `전체의 ${lockedPercentage}%`,
+        icon: <Lock className="h-5 w-5" />,
+        color: "warning" as const,
+      },
+      {
+        title: "MFA 사용",
+        value: mfaUsedCount.toString(),
+        description: `전체의 ${mfaUsedPercentage}%`,
+        icon: <Shield className="h-5 w-5" />,
+        color: "default" as const,
+      },
+      {
+        title: "고유 사용자",
+        value: uniqueUsers.toString(),
+        description: "서로 다른 사용자 수",
+        icon: <Users className="h-5 w-5" />,
+        color: "default" as const,
+      },
+    ];
+  }, [data]);
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-base font-medium">사용자 수</CardTitle>
-          <Users className="h-4 w-4 text-purple-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{uniqueUsers}</div>
-          <p className="text-sm text-muted-foreground">
-            고유 사용자
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <StatsCards cards={stats} columns={3} />;
 }

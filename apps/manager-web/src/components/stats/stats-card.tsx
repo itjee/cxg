@@ -13,6 +13,7 @@ interface StatCardProps {
     label?: string;
   };
   color?: "default" | "primary" | "success" | "warning" | "danger";
+  valueSize?: "sm" | "md" | "lg" | "xl";
   className?: string;
 }
 
@@ -40,6 +41,13 @@ const gradientClasses = {
   danger: "from-destructive/10 via-destructive/5 to-transparent",
 };
 
+const valueSizeClasses = {
+  sm: "text-2xl",
+  md: "text-3xl",
+  lg: "text-4xl",
+  xl: "text-5xl",
+};
+
 export function StatCard({
   title,
   value,
@@ -47,6 +55,7 @@ export function StatCard({
   icon,
   trend,
   color = "default",
+  valueSize = "lg",
   className,
 }: StatCardProps) {
   return (
@@ -91,7 +100,10 @@ export function StatCard({
         </p>
 
         {/* 중간: 메인 값 */}
-        <p className="text-4xl font-extrabold letter-spacing-tight text-foreground transition-all duration-300 group-hover:scale-105">
+        <p className={cn(
+          "font-extrabold letter-spacing-tight text-foreground transition-all duration-300 group-hover:scale-105",
+          valueSizeClasses[valueSize]
+        )}>
           {value}
         </p>
 

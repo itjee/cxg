@@ -8,6 +8,8 @@ import strawberry
 from typing import List, Optional
 from datetime import datetime
 
+from src.graphql.common.scalars import JSONScalar
+
 
 @strawberry.type(name="CodeHelpResult", description="코드 헬프 검색 결과")
 class CodeHelpResult:
@@ -17,7 +19,7 @@ class CodeHelpResult:
     code: str                                  # 코드 (거래처코드, 제품코드 등)
     name: str                                  # 이름 (거래처명, 제품명 등)
     description: Optional[str] = None          # 추가 설명
-    metadata: Optional[strawberry.JSON] = None # 추가 메타데이터 (JSON)
+    metadata: Optional[JSONScalar] = None      # 추가 메타데이터 (JSON)
     status: str = "ACTIVE"                     # 상태 (ACTIVE, INACTIVE, DELETED)
     created_at: Optional[datetime] = None      # 생성일시
     updated_at: Optional[datetime] = None      # 수정일시

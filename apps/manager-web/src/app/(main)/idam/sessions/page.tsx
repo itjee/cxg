@@ -23,21 +23,14 @@ import {
   useSessions,
   useUpdateSession,
   useSessionsStore,
-  type SessionsFilterState,
   type Session,
 } from "@/features/idam/sessions";
+import { useUsers } from "@/features/idam/users";
 
 export default function SessionsPage() {
   // Store에서 UI 상태 가져오기
-  const {
-    currentPage,
-    itemsPerPage,
-    setSearchText,
-    setSelectedStatus,
-    setCurrentPage,
-    openForm,
-    setSelectedId,
-  } = useSessionsStore();
+  const { currentPage, itemsPerPage, setSearchText, setCurrentPage } =
+    useSessionsStore();
 
   // 검색 필터 상태 (팝업에서 수정, 적용 버튼 클릭 시 GraphQL 쿼리 실행)
   const [searchFilters, setSearchFilters] = useState<
@@ -46,47 +39,30 @@ export default function SessionsPage() {
       string[] | null | { type: string; value: { from?: string; to?: string } }
     >
   >({
+    username: null,
+    sessionType: null,
     status: null,
-    createdAt: null,
   });
 
   const [searchTextLocal, setSearchTextLocal] = useState("");
-  const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
   // 검색 텍스트 debounce (500ms)
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchText(searchTextLocal);
       setSearchText(searchTextLocal);
     }, 500);
 
     return () => clearTimeout(timer);
   }, [searchTextLocal, setSearchText]);
 
-  // 생성일시 필터에서 from/to 날짜 추출
-  const getCreatedDateRange = (): {
-    createdAfter?: string;
-    createdBefore?: string;
-  } => {
-    const createdAtFilter = searchFilters.createdAt;
-    if (
-      !createdAtFilter ||
-      typeof createdAtFilter !== "object" ||
-      !("value" in createdAtFilter)
-    ) {
-      return {};
-    }
+  // 사용자 목록 조회 (필터용)
+  const { data: usersResponse } = useUsers({
+    limit: 1000, // 필터용이므로 충분한 개수
+    offset: 0,
+    status: "ACTIVE", // 활성 사용자만
+  });
 
-    const { from, to } = (
-      createdAtFilter as { type: string; value: { from?: string; to?: string } }
-    ).value;
-    return {
-      createdAfter: from,
-      createdBefore: to,
-    };
-  };
-
-  const dateRange = getCreatedDateRange();
+  const usersList = usersResponse?.users || [];
 
   // GraphQL 쿼리 - Apollo Hooks 사용
   const {
@@ -96,21 +72,26 @@ export default function SessionsPage() {
   } = useSessions({
     limit: itemsPerPage,
     offset: currentPage * itemsPerPage,
-    status: Array.isArray(searchFilters.status)
-      ? searchFilters.status.join(",")
+    userId: Array.isArray(searchFilters.username)
+      ? searchFilters.username[0] // username 필터에서 첫 번째 선택 사용자의 ID
       : undefined,
-    search: debouncedSearchText || undefined,
-    createdAfter: dateRange.createdAfter,
-    createdBefore: dateRange.createdBefore,
+    sessionType: Array.isArray(searchFilters.sessionType)
+      ? (searchFilters.sessionType[0] as any)
+      : undefined,
+    status: Array.isArray(searchFilters.status)
+      ? (searchFilters.status[0] as any)
+      : undefined,
   });
 
   // GraphQL 뮤테이션 - 수정
   const [updateSession, { loading: updating }] = useUpdateSession();
 
   // 세션 데이터
-  const sessions = sessionsResponse?.sessions || [];
+  const sessions = sessionsResponse?.sessions?.items || [];
+  const totalSessions = sessionsResponse?.sessions?.total || 0;
 
   const handleSearchTextChange = (text: string) => {
+    // 검색 텍스트는 현재 백엔드에서 지원하지 않아 저장만 함
     setSearchTextLocal(text);
   };
 
@@ -122,35 +103,32 @@ export default function SessionsPage() {
   const handleClearAllSearchFilters = () => {
     // 모든 필터 초기화
     setSearchFilters({
+      username: null,
+      sessionType: null,
       status: null,
-      createdAt: null,
     });
     // 검색 텍스트도 초기화
     setSearchText("");
     setSearchTextLocal("");
-    setDebouncedSearchText("");
     // 페이지 번호 초기화 (첫 페이지로)
     setCurrentPage(0);
   };
 
-  const handleEdit = (session: Session) => {
-    // 선택된 세션 ID를 store에 저장하고 폼 오픈
-    openForm(session.id);
-  };
-
-  const handleDelete = async (session: any) => {
+  const handleDelete = async (session: Session) => {
     if (confirm(`세션 '${session.userId}' 을(를) 삭제하시겠습니까?`)) {
       try {
         await updateSession({
           variables: {
             id: session.id,
-            input: { status: "TERMINATED" },
+            input: { status: "REVOKED" },
           },
         });
         toast.success("세션이 삭제되었습니다");
         refetch();
       } catch (error) {
-        toast.error("세션 삭제에 실패했습니다");
+        const message =
+          error instanceof Error ? error.message : "알 수 없는 오류";
+        toast.error(`세션 삭제 실패: ${message}`);
         console.error("Failed to delete session:", error);
       }
     }
@@ -171,12 +149,14 @@ export default function SessionsPage() {
         onSearchFiltersChange={setSearchFilters}
         onApplySearch={handleApplySearch}
         onClearAllSearchFilters={handleClearAllSearchFilters}
+        usersList={usersList}
       />
 
       <SessionsTable
         data={sessions}
         isLoading={updating}
-        onEdit={handleEdit}
+        totalItems={totalSessions}
+        onRevoke={(session) => console.log("Revoke:", session)}
         onDelete={handleDelete}
       />
       <SessionsEdit />

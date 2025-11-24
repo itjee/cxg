@@ -4,6 +4,7 @@
 공통 모듈을 사용한 표준화된 조회 로직
 """
 
+from datetime import UTC
 from uuid import UUID
 
 import strawberry
@@ -100,6 +101,7 @@ async def get_manager_users(
         list[User]: 사용자 객체 리스트
     """
     from datetime import datetime
+
     from sqlalchemy import or_
 
     # 필터 조건 구성
@@ -131,8 +133,7 @@ async def get_manager_users(
     if created_after:
         try:
             # YYYY-MM-DD 형식을 datetime으로 변환하여 00:00:00으로 설정
-            from datetime import timezone
-            created_after_dt = datetime.strptime(created_after, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            created_after_dt = datetime.strptime(created_after, "%Y-%m-%d").replace(tzinfo=UTC)
             extra_conditions.append(UserModel.created_at >= created_after_dt)
         except (ValueError, AttributeError):
             pass
@@ -140,9 +141,8 @@ async def get_manager_users(
     if created_before:
         try:
             # YYYY-MM-DD 형식을 datetime으로 변환하여 23:59:59로 설정
-            from datetime import timezone, timedelta
             created_before_dt = datetime.strptime(created_before, "%Y-%m-%d").replace(
-                hour=23, minute=59, second=59, tzinfo=timezone.utc
+                hour=23, minute=59, second=59, tzinfo=UTC
             )
             extra_conditions.append(UserModel.created_at <= created_before_dt)
         except (ValueError, AttributeError):

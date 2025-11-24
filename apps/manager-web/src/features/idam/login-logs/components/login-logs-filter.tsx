@@ -7,55 +7,67 @@
  * 공통 SearchFilter 컴포넌트를 사용하여 Login Logs 모듈의 필터 기능을 구현합니다.
  */
 
-import { SearchFilter, type FilterItemConfig } from "@/components/filters";
-import type { LoginLogsFilterState } from "./login-logs-filter-popup";
+import { SearchFilter } from "@/components/filters";
+import type { FilterItemConfig } from "@/components/filters";
 
 interface LoginLogsFilterProps {
   searchText: string;
-  onSearchChange: (text: string) => void;
-  filters: LoginLogsFilterState;
-  onFiltersChange: (filters: LoginLogsFilterState) => void;
-  onApplyFilters: () => void;
+  onSearchTextChange: (text: string) => void;
+  searchFilters: Record<
+    string,
+    string[] | null | { type: string; value: { from?: string; to?: string } }
+  >;
+  onSearchFiltersChange: (
+    filters: Record<
+      string,
+      string[] | null | { type: string; value: { from?: string; to?: string } }
+    >
+  ) => void;
+  onApplySearch: () => void;
+  onClearAllSearchFilters?: () => void;
 }
-
-const filterItems: FilterItemConfig[] = [
-  {
-    key: "success",
-    label: "결과",
-    options: [
-      { value: "true", label: "성공" },
-      { value: "false", label: "실패" },
-    ],
-  },
-  {
-    key: "attemptType",
-    label: "시도 타입",
-    options: [
-      { value: "LOGIN", label: "로그인" },
-      { value: "LOGOUT", label: "로그아웃" },
-      { value: "FAILED_LOGIN", label: "로그인 실패" },
-      { value: "LOCKED", label: "계정 잠김" },
-      { value: "PASSWORD_RESET", label: "비밀번호 재설정" },
-    ],
-  },
-];
 
 export function LoginLogsFilter({
   searchText,
-  onSearchChange,
-  filters,
-  onFiltersChange,
-  onApplyFilters,
+  onSearchTextChange,
+  searchFilters,
+  onSearchFiltersChange,
+  onApplySearch,
+  onClearAllSearchFilters,
 }: LoginLogsFilterProps) {
+  // 필터 아이템 정의
+  const filterItems: FilterItemConfig[] = [
+    {
+      key: "success",
+      label: "결과",
+      options: [
+        { value: "true", label: "성공" },
+        { value: "false", label: "실패" },
+      ],
+    },
+    {
+      key: "attemptType",
+      label: "시도 타입",
+      options: [
+        { value: "LOGIN", label: "로그인" },
+        { value: "LOGOUT", label: "로그아웃" },
+        { value: "FAILED_LOGIN", label: "로그인 실패" },
+        { value: "LOCKED", label: "계정 잠김" },
+        { value: "PASSWORD_RESET", label: "비밀번호 재설정" },
+      ],
+    },
+  ];
+
   return (
     <SearchFilter
       searchText={searchText}
-      onSearchChange={onSearchChange}
-      filters={filters}
-      onFiltersChange={onFiltersChange}
-      onApplyFilters={onApplyFilters}
+      onSearchTextChange={onSearchTextChange}
+      searchFilters={searchFilters}
+      onSearchFiltersChange={onSearchFiltersChange}
+      onApply={onApplySearch}
       filterItems={filterItems}
       searchPlaceholder="사용자명, IP 주소 검색..."
+      onClearAllSearchFilters={onClearAllSearchFilters}
     />
   );
 }

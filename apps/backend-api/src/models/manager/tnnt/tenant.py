@@ -1,8 +1,8 @@
 """테넌트 모델"""
 
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import CHAR, Boolean, CheckConstraint, Date, Integer, String
+from sqlalchemy import CHAR, Boolean, CheckConstraint, Date, DateTime, Integer, String
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -65,6 +65,13 @@ class Tenant(BaseModel):
 
     # 상태 관리
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="ACTIVE", index=True)
+
+    # 중단 관리
+    is_suspended: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    suspended_reason: Mapped[str | None] = mapped_column(String, nullable=True)
+    suspended_date: Mapped[datetime | None] = mapped_column(nullable=True)
+
+    # 삭제 관리
     is_deleted: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
     def __repr__(self) -> str:

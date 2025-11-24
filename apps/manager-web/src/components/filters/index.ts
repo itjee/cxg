@@ -23,6 +23,9 @@ export { SearchFilterPopup } from "./search-filter-popup";
 // === 내부 컴포넌트 ===
 export { CheckboxGroup } from "./search-checkbox-group";
 
+// === 도메인 특화 모달 ===
+export { TenantSearchModal } from "./tenant-search-modal";
+
 // === 기본 필터 컴포넌트 (Expanded 필터 UI) - 삭제됨 ===
 // Filters 컴포넌트는 SearchFilterPopup으로 통일되었습니다.
 

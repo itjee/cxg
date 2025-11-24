@@ -19,6 +19,18 @@ if TYPE_CHECKING:
     pass
 
 
+@strawberry.type(description="Manager 세션 목록 응답")
+class ManagerSessionList:
+    """
+    세션 목록 조회 응답
+
+    페이징 정보와 함께 세션 목록을 반환합니다.
+    """
+
+    items: list["ManagerSession"] = strawberry.field(description="세션 목록")
+    total: int = strawberry.field(description="전체 세션 개수")
+
+
 @strawberry.type(description="Manager 세션")
 class ManagerSession(Node):
     """
@@ -33,6 +45,7 @@ class ManagerSession(Node):
     # 세션 기본 정보
     session_id: str = strawberry.field(description="세션 ID (고유 식별자)")
     user_id: UUID = strawberry.field(description="사용자 ID")
+    username: str = strawberry.field(description="사용자명")
 
     # 세션 컨텍스트
     tenant_context: UUID | None = strawberry.field(

@@ -35,13 +35,12 @@ export interface Session {
   // 기본 식별자 및 감사 필드
   id: string;
   createdAt: string;
-  createdBy?: string;
   updatedAt?: string;
-  updatedBy?: string;
 
   // 세션 정보
   sessionId: string;
   userId: string;
+  username: string;
 
   // 세션 컨텍스트
   tenantContext?: string;
@@ -101,14 +100,9 @@ export interface UpdateSessionInput {
 export interface SessionsQueryVariables {
   limit?: number;
   offset?: number;
-  search?: string;
   status?: SessionStatus;
   userId?: string;
   sessionType?: SessionType;
-  tenantContext?: string;
-  fingerprint?: string;
-  ipAddress?: string;
-  mfaVerified?: boolean;
 }
 
 /**
@@ -164,7 +158,10 @@ export interface RevokeSessionSessionsVariables {
  * 세션 목록 조회 응답
  */
 export interface GetSessionsResponse {
-  sessions: Session[];
+  sessions: {
+    items: Session[];
+    total: number;
+  };
 }
 
 /**

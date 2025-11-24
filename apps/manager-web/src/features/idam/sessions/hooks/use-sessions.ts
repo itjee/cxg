@@ -43,7 +43,7 @@ import type {
  */
 export function useSessions(variables?: SessionsQueryVariables) {
   return useQuery<
-    { sessions: Session[] },
+    { sessions: { items: Session[]; total: number } },
     SessionsQueryVariables
   >(GET_SESSIONS, {
     variables: {

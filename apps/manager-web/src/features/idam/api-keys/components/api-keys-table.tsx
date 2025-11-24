@@ -11,13 +11,15 @@
  */
 
 import { DataTable } from "@/components/data-table";
-import { useApiKeysStore } from "../stores/api-keys.store";
+import { Pagination } from "@/components/pagination/pagination";
+import { useApiKeysStore } from "../stores";
 import { getApiKeysColumns } from "./api-keys-columns";
-import type { ApiKey } from "../types/api-keys.types";
+import type { ApiKey } from "../types";
 
 interface ApiKeysTableProps {
   data: ApiKey[];
   isLoading?: boolean;
+  totalItems?: number;
   onEdit: (apiKey: ApiKey) => void;
   onDelete: (apiKey: ApiKey) => void;
   onToggleStatus: (apiKey: ApiKey) => void;
@@ -26,22 +28,50 @@ interface ApiKeysTableProps {
 export function ApiKeysTable({
   data,
   isLoading,
+  totalItems = 0,
   onEdit,
   onDelete,
   onToggleStatus,
 }: ApiKeysTableProps) {
-  const { sorting, setSorting } = useApiKeysStore();
-  const columns = getApiKeysColumns({ onEdit, onDelete, onToggleStatus });
+  const {
+    sorting,
+    setSorting,
+    currentPage,
+    setCurrentPage,
+    itemsPerPage,
+    setItemsPerPage,
+  } = useApiKeysStore();
+  const columns = getApiKeysColumns({
+    onEdit,
+    onDelete,
+    onToggleStatus,
+    currentPage,
+    itemsPerPage,
+  });
+
+  // 서버 사이드 페이지네이션: 클라이언트 페이징 비활성화
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
   return (
-    <DataTable
-      columns={columns}
-      data={data}
-      isLoading={isLoading}
-      showPagination={true}
-      pageSize={20}
-      sorting={sorting}
-      onSortingChange={setSorting}
-    />
+    <div className="space-y-4">
+      <DataTable
+        columns={columns}
+        data={data}
+        isLoading={isLoading}
+        showPagination={false}
+        sorting={sorting}
+        onSortingChange={setSorting}
+      />
+
+      {/* 서버 사이드 페이지네이션 */}
+      <Pagination
+        totalItems={totalItems}
+        currentPage={currentPage}
+        onPageChange={setCurrentPage}
+        itemsPerPage={itemsPerPage}
+        onItemsPerPageChange={setItemsPerPage}
+        showInfo={true}
+      />
+    </div>
   );
 }

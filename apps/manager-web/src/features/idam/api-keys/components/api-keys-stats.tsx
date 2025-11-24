@@ -67,13 +67,6 @@ export function ApiKeysStats({ data }: ApiKeysStatsProps) {
         color: "default" as const,
       },
       {
-        title: "취소됨",
-        value: revoked.toString(),
-        description: `전체의 ${revokedPercentage}%`,
-        icon: <Ban className="h-5 w-5" />,
-        color: "danger" as const,
-      },
-      {
         title: "총 사용 횟수",
         value: totalUsage.toLocaleString(),
         description: `평균 ${

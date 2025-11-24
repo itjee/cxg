@@ -83,6 +83,8 @@ interface GetColumnsParams {
   onEdit?: (apiKey: ApiKey) => void;
   onDelete?: (apiKey: ApiKey) => void;
   onToggleStatus?: (apiKey: ApiKey) => void;
+  currentPage?: number;
+  itemsPerPage?: number;
 }
 
 /**
@@ -92,17 +94,17 @@ export const getApiKeysColumns = ({
   onEdit,
   onDelete,
   onToggleStatus,
+  currentPage = 0,
+  itemsPerPage = 20,
 }: GetColumnsParams = {}): ColumnDef<ApiKey>[] => [
   // NO 컬럼
   {
     id: "rowNumber",
     header: () => <div className="text-center">NO</div>,
-    cell: ({ row, table }) => {
-      const pageIndex = table.getState().pagination.pageIndex;
-      const pageSize = table.getState().pagination.pageSize;
+    cell: ({ row }) => {
       return (
         <div className="text-center">
-          {pageIndex * pageSize + row.index + 1}
+          {currentPage * itemsPerPage + row.index + 1}
         </div>
       );
     },

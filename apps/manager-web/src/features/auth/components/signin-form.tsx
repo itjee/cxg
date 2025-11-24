@@ -68,6 +68,7 @@ export function SigninForm() {
             }
             required
             disabled={isLoading}
+            autoComplete="username"
           />
         </div>
       </div>
@@ -98,6 +99,7 @@ export function SigninForm() {
             }
             required
             disabled={isLoading}
+            autoComplete="current-password"
           />
           <button
             type="button"

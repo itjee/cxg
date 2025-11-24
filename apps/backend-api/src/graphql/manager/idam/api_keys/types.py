@@ -5,7 +5,6 @@ API 키 생성, 조회, 관리를 위한 타입들을 정의합니다.
 """
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 import strawberry
@@ -15,9 +14,6 @@ from src.graphql.common import Node
 # Import at module level for Strawberry to resolve type hints
 # These need to be available in globals() for get_type_hints() to work
 from ..users.types import ManagerUser
-
-if TYPE_CHECKING:
-    pass
 
 
 @strawberry.type(description="Manager API 키")

@@ -95,6 +95,18 @@ class ManagerLoginLog(Node):
     created_at: datetime = strawberry.field(description="기록 생성일시 (로그인 시도 시각)")
 
 
+@strawberry.type(description="Manager 로그인 이력 목록 응답")
+class ManagerLoginLogsConnection:
+    """
+    Manager 로그인 이력 목록과 전체 개수를 포함하는 응답 타입
+
+    페이지네이션을 위해 현재 페이지의 데이터와 전체 개수를 함께 반환합니다.
+    """
+
+    items: list[ManagerLoginLog] = strawberry.field(description="로그인 이력 목록")
+    total: int = strawberry.field(description="전체 로그인 이력 개수 (필터 조건 기반)")
+
+
 @strawberry.input(description="Manager 로그인 이력 생성 입력")
 class ManagerLoginLogCreateInput:
     """

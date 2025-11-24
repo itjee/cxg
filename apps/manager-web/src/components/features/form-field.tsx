@@ -5,6 +5,7 @@
  * 필드 설정에 따라 적절한 입력 컴포넌트를 렌더링
  */
 
+import * as React from "react";
 import { Controller, Control, FieldValues, FieldPath } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,6 +16,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
+import { ko } from "date-fns/locale";
 import { FormHintIcon } from "./form-hint-icon";
 import type { FormFieldConfig } from "./form-field-config";
 
@@ -157,6 +168,66 @@ export function FormField<
                   ))}
                 </div>
               );
+
+            case "date": {
+              const [popoverOpen, setPopoverOpen] = React.useState(false);
+
+              return (
+                <div className="flex gap-2">
+                  <Input
+                    {...field}
+                    id={config.name}
+                    type="text"
+                    placeholder={config.placeholder || "YYYY-MM-DD"}
+                    disabled={isLoading || config.disabled}
+                    value={field.value || ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      // YYYY-MM-DD 형식 검증
+                      if (
+                        value === "" ||
+                        /^\d{4}-\d{2}-\d{2}$/.test(value)
+                      ) {
+                        field.onChange(value);
+                      }
+                    }}
+                  />
+                  <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        disabled={isLoading || config.disabled}
+                        className="flex-shrink-0"
+                      >
+                        <CalendarIcon className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="end">
+                      <Calendar
+                        mode="single"
+                        selected={
+                          field.value
+                            ? typeof field.value === "string"
+                              ? parse(field.value, "yyyy-MM-dd", new Date())
+                              : field.value
+                            : undefined
+                        }
+                        onSelect={(date) => {
+                          if (date) {
+                            field.onChange(format(date, "yyyy-MM-dd"));
+                            setPopoverOpen(false);
+                          }
+                        }}
+                        disabled={isLoading || config.disabled}
+                        locale={ko}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              );
+            }
 
             default:
               return <></>;

@@ -15,7 +15,7 @@
 'use client';
 
 import { toast } from 'sonner';
-import { EntityDrawer } from '@/components/features';
+import { FormDrawer } from '@/components/features';
 import { PlansForm } from './plans-form';
 import { usePlansStore } from '../stores';
 import { usePlan, useCreatePlan, useUpdatePlan } from '../hooks';
@@ -78,7 +78,7 @@ export function PlansEdit() {
   };
 
   return (
-    <EntityDrawer
+    <FormDrawer
       open={isEditModalOpen}
       onOpenChange={closeEditModal}
       title={selectedPlan?.id ? '요금제 수정' : '요금제 등록'}
@@ -95,6 +95,6 @@ export function PlansEdit() {
         onCancel={closeEditModal}
         isLoading={isLoading}
       />
-    </EntityDrawer>
+    </FormDrawer>
   );
 }

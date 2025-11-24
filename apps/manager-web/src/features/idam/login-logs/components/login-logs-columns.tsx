@@ -87,6 +87,8 @@ const formatDateTime = (dateString?: string) => {
 interface GetColumnsParams {
   onViewDetail?: (log: LoginLog) => void;
   onDelete?: (log: LoginLog) => void;
+  currentPage?: number;
+  itemsPerPage?: number;
 }
 
 /**
@@ -95,17 +97,17 @@ interface GetColumnsParams {
 export const getLoginLogsColumns = ({
   onViewDetail,
   onDelete,
+  currentPage = 0,
+  itemsPerPage = 20,
 }: GetColumnsParams = {}): ColumnDef<LoginLog>[] => [
   // NO 컬럼
   {
     id: "rowNumber",
     header: () => <div className="text-center">NO</div>,
-    cell: ({ row, table }) => {
-      const pageIndex = table.getState().pagination.pageIndex;
-      const pageSize = table.getState().pagination.pageSize;
+    cell: ({ row }) => {
       return (
         <div className="text-center">
-          {pageIndex * pageSize + row.index + 1}
+          {currentPage * itemsPerPage + row.index + 1}
         </div>
       );
     },
@@ -116,12 +118,12 @@ export const getLoginLogsColumns = ({
   },
   // 시도 타입
   {
-    accessorKey: "attempt_type",
+    accessorKey: "attemptType",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="시도 타입" />
     ),
     cell: ({ row }) => {
-      const type = row.getValue("attempt_type") as AttemptType;
+      const type = row.getValue("attemptType") as AttemptType;
       const Icon = getAttemptTypeIcon(type);
       return (
         <div className="flex items-center gap-2">
@@ -176,10 +178,10 @@ export const getLoginLogsColumns = ({
   },
   // 사용자 타입
   {
-    accessorKey: "user_type",
+    accessorKey: "userType",
     header: "타입",
     cell: ({ row }) => {
-      const userType = row.getValue("user_type") as UserType | undefined;
+      const userType = row.getValue("userType") as UserType | undefined;
       if (!userType) return <span className="text-muted-foreground">-</span>;
       return <Badge variant="secondary">{userTypeLabels[userType]}</Badge>;
     },
@@ -189,12 +191,12 @@ export const getLoginLogsColumns = ({
   },
   // IP 주소
   {
-    accessorKey: "ip_address",
+    accessorKey: "ipAddress",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="IP 주소" />
     ),
     cell: ({ row }) => (
-      <div className="font-mono text-base">{row.getValue("ip_address")}</div>
+      <div className="font-mono text-base">{row.getValue("ipAddress")}</div>
     ),
     meta: {
       filterable: true,
@@ -223,12 +225,12 @@ export const getLoginLogsColumns = ({
   },
   // MFA 사용
   {
-    accessorKey: "mfa_used",
+    accessorKey: "mfaUsed",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="MFA" />
     ),
     cell: ({ row }) => {
-      const mfaUsed = row.getValue("mfa_used") as boolean;
+      const mfaUsed = row.getValue("mfaUsed") as boolean;
       const mfaMethod = row.original.mfaMethod;
       if (!mfaUsed) return <span className="text-muted-foreground">-</span>;
       return (
@@ -246,10 +248,10 @@ export const getLoginLogsColumns = ({
   },
   // 실패 사유
   {
-    accessorKey: "failure_reason",
+    accessorKey: "failureReason",
     header: "실패 사유",
     cell: ({ row }) => {
-      const reason = row.getValue("failure_reason") as string | undefined;
+      const reason = row.getValue("failureReason") as string | undefined;
       if (!reason) return <span className="text-muted-foreground">-</span>;
       return (
         <Badge variant="outline" className="bg-red-50 text-red-800">
@@ -263,13 +265,13 @@ export const getLoginLogsColumns = ({
   },
   // 일시
   {
-    accessorKey: "created_at",
+    accessorKey: "createdAt",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="일시" />
     ),
     cell: ({ row }) => (
       <div className="text-muted-foreground text-base">
-        {formatDateTime(row.getValue("created_at"))}
+        {formatDateTime(row.getValue("createdAt"))}
       </div>
     ),
     meta: {

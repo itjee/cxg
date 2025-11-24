@@ -1,6 +1,6 @@
 "use client";
 
-import { EntityDrawer } from "@/components/features";
+import { FormDrawer } from "@/components/features";
 import { TransactionForm } from "./transaction-form";
 import { useTransactionStore } from "../stores";
 import { useTransaction, useUpdateTransaction } from "../hooks";
@@ -21,7 +21,7 @@ export function TransactionEdit() {
   };
 
   return (
-    <EntityDrawer
+    <FormDrawer
       open={formOpen}
       onOpenChange={closeForm}
       title={editingId ? "거래 수정" : "거래 생성"}
@@ -36,6 +36,6 @@ export function TransactionEdit() {
         onCancel={closeForm}
         isLoading={isLoading}
       />
-    </EntityDrawer>
+    </FormDrawer>
   );
 }

@@ -1,146 +1,77 @@
 /**
- * @file tenants.store.ts
- * @description 테넌트 관리 Zustand 상태 저장소
+ * Tenants Zustand Store
  *
- * UI 상태를 관리하는 클라이언트 사이드 스토어
- * - 서버 상태(데이터)는 TanStack Query가 관리
- * - UI 상태(필터, 페이징, 모달)만 Zustand로 관리
- *
- * @state
- * - 모달: formOpen, editingId
- * - 필터: globalFilter, selectedStatus, selectedType, selectedIsSuspended
- * - 정렬: sorting
- * - 페이징: currentPage, itemsPerPage
+ * UI 상태만 관리합니다.
+ * 서버 상태(데이터)는 Apollo Client가 관리합니다.
  *
  * @example
- * ```typescript
- * const { formOpen, openForm, closeForm } = useTenantsStore();
- * openForm('uuid'); // 수정
- * openForm(); // 생성
- * closeForm();
- * ```
+ * const { currentPage, itemsPerPage, formOpen } = useTenantsStore();
  */
 
-import { create } from 'zustand';
-import type { Updater } from '@tanstack/react-table';
-import type { TenantStatus, TenantType } from '../types';
+import { create } from "zustand";
+import type { Updater } from "@tanstack/react-table";
 
-/**
- * TenantsStoreState 인터페이스
- * Zustand 스토어의 상태 및 액션 타입 정의
- */
-interface TenantsStoreState {
-  // Form/Modal 상태
-  formOpen: boolean;
-  editingId: string | null;
-
-  // Filter 상태
-  searchText: string;
-  selectedStatus: TenantStatus | '';
-  selectedType: TenantType | '';
-  selectedIsSuspended: string;
-
-  // 정렬 상태
-  sorting: Array<{ id: string; desc: boolean }>;
-
-  // 페이지네이션 상태
+interface TenantsStore {
+  // ===== UI 상태 =====
   currentPage: number;
   itemsPerPage: number;
+  searchText: string;
+  selectedStatus: string | null;
+  formOpen: boolean;
+  selectedId: string | null;
+  sorting: Array<{ id: string; desc: boolean }>;
 
-  // Form 액션
-  openForm: (editingId?: string | null) => void;
-  closeForm: () => void;
-  setEditingId: (id: string | null) => void;
-
-  // Filter 액션
-  setSearchText: (filter: Updater<string>) => void;
-  setSelectedStatus: (status: TenantStatus | '') => void;
-  setSelectedType: (type: TenantType | '') => void;
-  setSelectedIsSuspended: (isSuspended: string) => void;
-  resetFilters: () => void;
-
-  // 정렬 액션
-  setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
-
-  // 페이지네이션 액션
+  // ===== 액션 =====
   setCurrentPage: (page: number) => void;
   setItemsPerPage: (size: number) => void;
-
-  // 전체 리셋
+  setSearchText: (text: Updater<string>) => void;
+  setSelectedStatus: (status: string | null) => void;
+  setSelectedId: (id: string | null) => void;
+  openForm: (id?: string) => void;
+  closeForm: () => void;
+  setSorting: (sorting: Updater<Array<{ id: string; desc: boolean }>>) => void;
+  resetFilters: () => void;
   reset: () => void;
 }
 
 const initialState = {
-  formOpen: false,
-  editingId: null,
-  searchText: '',
-  selectedStatus: '' as TenantStatus | '',
-  selectedType: '' as TenantType | '',
-  selectedIsSuspended: '',
-  sorting: [{ id: 'created_at', desc: true }],
   currentPage: 0,
   itemsPerPage: 20,
+  searchText: "",
+  selectedStatus: null,
+  formOpen: false,
+  selectedId: null,
+  sorting: [],
 };
 
-/**
- * useTenantsStore
- * 테넌트 관리 UI 상태 스토어
- */
-export const useTenantsStore = create<TenantsStoreState>((set) => ({
+export const useTenantsStore = create<TenantsStore>((set) => ({
   ...initialState,
 
-  // Form 액션
-  openForm: (editingId = null) =>
-    set({ formOpen: true, editingId }),
-
-  closeForm: () =>
-    set({ formOpen: false, editingId: null }),
-
-  setEditingId: (id) =>
-    set({ editingId: id }),
-
-  // Filter 액션
-  setSearchText: (filter) =>
+  setCurrentPage: (page) => set({ currentPage: page }),
+  setItemsPerPage: (size) => set({ itemsPerPage: size, currentPage: 0 }),
+  setSearchText: (text) =>
     set((state) => ({
-      searchText: typeof filter === 'function' ? filter(state.searchText) : filter,
+      searchText: typeof text === "function" ? text(state.searchText) : text,
       currentPage: 0,
     })),
-
   setSelectedStatus: (status) =>
-    set({ selectedStatus: status, currentPage: 0 }),
-
-  setSelectedType: (type) =>
-    set({ selectedType: type, currentPage: 0 }),
-
-  setSelectedIsSuspended: (isSuspended) =>
-    set({ selectedIsSuspended: isSuspended, currentPage: 0 }),
-
-  resetFilters: () =>
     set({
-      searchText: '',
-      selectedStatus: '',
-      selectedType: '',
-      selectedIsSuspended: '',
-      sorting: [{ id: 'created_at', desc: true }],
+      selectedStatus: status,
       currentPage: 0,
     }),
-
-  // 정렬 액션
+  setSelectedId: (id) => set({ selectedId: id }),
+  openForm: (id) => set({ formOpen: true, selectedId: id || null }),
+  closeForm: () => set({ formOpen: false, selectedId: null }),
   setSorting: (sorting) =>
     set((state) => ({
-      sorting: typeof sorting === 'function' ? sorting(state.sorting) : sorting,
+      sorting: typeof sorting === "function" ? sorting(state.sorting) : sorting,
     })),
-
-  // 페이지네이션 액션
-  setCurrentPage: (page) =>
-    set({ currentPage: page }),
-
-  setItemsPerPage: (size) =>
+  resetFilters: () =>
     set({
-      itemsPerPage: size,
+      searchText: "",
+      selectedStatus: null,
+      sorting: [],
       currentPage: 0,
     }),
-
-  // 전체 리셋
   reset: () => set(initialState),
 }));

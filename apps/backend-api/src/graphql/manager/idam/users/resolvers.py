@@ -84,7 +84,11 @@ async def resolve_manager_user_sessions(user_id: UUID, info, status: str | None 
     from ..sessions.queries import manager_session_to_graphql
 
     # DB 모델을 GraphQL 타입으로 변환
-    return [manager_session_to_graphql(session) for session in sessions]
+    graphql_sessions = []
+    for session in sessions:
+        graphql_session = await manager_session_to_graphql(session, db)
+        graphql_sessions.append(graphql_session)
+    return graphql_sessions
 
 
 async def resolve_manager_user_permissions(user_id: UUID, info):
